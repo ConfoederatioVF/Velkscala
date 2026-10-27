@@ -2,9 +2,10 @@ let fs = require("fs");
 let path = require("path");
 let { parentPort } = require("worker_threads");
 
-//Initialise worker environment and dependencies
-let root_dir = path.resolve(__dirname, "..");
-let pngjs = require(path.join(root_dir, "node_modules/pngjs"));
+//Initialise worker environment and dependencies via common_defines.json5
+let DefinesLoader = require(path.resolve(__dirname, "../../../core/framework/defines_loader.js"));
+let env_defines = DefinesLoader.loadDefines();
+let pngjs = DefinesLoader.requirePNGJS(env_defines.svea_dir);
 
 //Declare worker local instance variables
 let height = 0;
@@ -26,7 +27,7 @@ parentPort.on("message", (arg0_message) => {
     height = message.height;
     num_countries = message.num_countries;
     pixel_country = new Int16Array(message.shared_pixel_country_buffer);
-    total_pixels = message.width * message.height;
+    total_pixels = message.width*message.height;
     width = message.width;
 
     parentPort.postMessage({ id: message.id, status: "ready" });
@@ -58,15 +59,15 @@ parentPort.on("message", (arg0_message) => {
         for (let i = 0; i < total_pixels; i++) {
           let cid = pixel_country[i];
           if (cid > 0) {
-            let prob = dv.getFloat32(i * 4, false);
-            if (prob > 0) sums[cid] += prob * pop_data[i];
+            let prob = dv.getFloat32(i*4, false);
+            if (prob > 0) sums[cid] += prob*pop_data[i];
           }
         }
       } else {
         for (let i = 0; i < total_pixels; i++) {
           let cid = pixel_country[i];
           if (cid > 0) {
-            let val = dv.getFloat32(i * 4, false);
+            let val = dv.getFloat32(i*4, false);
             if (val > 0) sums[cid] += val;
           }
         }

@@ -1,7 +1,7 @@
 # ==============================================================================
 # Contemporary Demographic Transition (CDT) Validation Plotter (2x2 Dashboard)
 # ==============================================================================
-# UPDATED: Increased vertical margins to prevent header cutoff.
+# UPDATED: Paths resolved to data/3.data_transform/test_cdt and outputs/.
 # Normalized residuals to median relative country error.
 # FIXED: Added coord_cartesian(clip = 'off') to prevent label cutoff.
 # ==============================================================================
@@ -21,18 +21,33 @@ for (pkg in required_packages) {
 get_project_dir <- function () {
   if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
     doc_path <- tryCatch(rstudioapi::getActiveDocumentContext()$path, error = function(e) "")
-    if (nzchar(doc_path)) return(normalizePath(file.path(dirname(doc_path), "..")))
+    if (nzchar(doc_path)) return(normalizePath(file.path(dirname(doc_path), "..", "..", "..")))
   }
   wd <- getwd()
-  if (file.exists(file.path(wd, "tests", "validation_age_sex_cdt.json"))) return(wd)
+  if (file.exists(file.path(wd, "data", "3.data_transform", "test_cdt", "validation_age_sex_cdt.json"))) return(wd)
+  if (file.exists(file.path(wd, "validation_age_sex_cdt.json"))) return(normalizePath(file.path(wd, "..", "..", "..")))
   return(wd)
 }
 
 project_dir <- get_project_dir()
-tests_dir   <- file.path(project_dir, "tests")
+tests_dir   <- file.path(project_dir, "data", "3.data_transform", "test_cdt")
+outputs_dir <- file.path(project_dir, "outputs")
 
-as_json_path <- file.path(tests_dir, "validation_age_sex_cdt.json")
-bd_json_path <- file.path(tests_dir, "validation_births_deaths_cdt.json")
+if (!dir.exists(outputs_dir)) {
+  dir.create(outputs_dir, recursive = TRUE)
+}
+
+as_json_path <- if (file.exists(file.path(outputs_dir, "validation_age_sex_cdt.json"))) {
+  file.path(outputs_dir, "validation_age_sex_cdt.json")
+} else {
+  file.path(tests_dir, "validation_age_sex_cdt.json")
+}
+
+bd_json_path <- if (file.exists(file.path(outputs_dir, "validation_births_deaths_cdt.json"))) {
+  file.path(outputs_dir, "validation_births_deaths_cdt.json")
+} else {
+  file.path(tests_dir, "validation_births_deaths_cdt.json")
+}
 
 if (!file.exists(as_json_path) || !file.exists(bd_json_path)) {
   stop("Validation JSON files not found. Please run validation tests first.")
@@ -69,13 +84,13 @@ for (yr in names(bd_root$per_country)) {
   yr_obj <- bd_root$per_country[[yr]]
   for (iso in names(yr_obj)) {
     item <- yr_obj[[iso]]
-    b_emp <- if(!is.null(item$empirical_births)) as.numeric(item$empirical_births) else 0
-    d_emp <- if(!is.null(item$empirical_deaths)) as.numeric(item$empirical_deaths) else 0
-    
+    b_emp <- if (!is.null(item$empirical_births)) as.numeric(item$empirical_births) else 0
+    d_emp <- if (!is.null(item$empirical_deaths)) as.numeric(item$empirical_deaths) else 0
+
     # Calculate relative error for the country: (Proxy - Empirical) / Empirical
-    b_err <- if(b_emp > 0) as.numeric(item$diff_births) / b_emp else NA
-    d_err <- if(d_emp > 0) as.numeric(item$diff_deaths) / d_emp else NA
-    
+    b_err <- if (b_emp > 0) as.numeric(item$diff_births) / b_emp else NA
+    d_err <- if (d_emp > 0) as.numeric(item$diff_deaths) / d_emp else NA
+
     bd_data_list[[length(bd_data_list) + 1]] <- data.frame(
       year = as.numeric(yr), iso3 = iso,
       birth_err_pct = b_err, death_err_pct = d_err
@@ -102,48 +117,45 @@ cdt_theme <- theme_minimal(base_size = 12) +
     panel.grid.major = element_line(colour = "#E2E8F0", linewidth = 0.5),
     panel.background = element_rect(fill = "#FAFAFA", colour = NA),
     plot.background  = element_rect(fill = "#FFFFFF", colour = NA),
-    plot.margin      = margin(t = 15, r = 15, b = 15, l = 15) # Added margin to safely house unclipped text
+    plot.margin      = margin(t = 15, r = 15, b = 15, l = 15)
   )
 
 # 4. Construct Subplots -------------------------------------------------------
-
 p1_raw <- ggplot() +
-  geom_point(data = df_age_sex, aes(x = year, y = raw_r2), colour = "#3B82F6", alpha = 0.4, position = position_jitter(width=0.8, seed=42)) +
+  geom_point(data = df_age_sex, aes(x = year, y = raw_r2), colour = "#3B82F6", alpha = 0.4, position = position_jitter(width = 0.8, seed = 42)) +
   geom_line(data = df_as_summary, aes(x = year, y = raw_geomean), colour = "#3B82F6", linewidth = 1.2) +
-  geom_label(data = df_as_summary, aes(x = year, y = raw_geomean, label = sprintf("%.1f%%", raw_geomean*100)), colour="black", size=3, fontface="bold", vjust=-0.7, label.size=0) +
+  geom_label(data = df_as_summary, aes(x = year, y = raw_geomean, label = sprintf("%.1f%%", raw_geomean * 100)), colour = "black", size = 3, fontface = "bold", vjust = -0.7, label.size = 0) +
   scale_y_continuous(labels = percent_format(), limits = c(0, 1.05)) +
-  coord_cartesian(clip = "off") + # Fixes vertical clipping
+  coord_cartesian(clip = "off") +
   labs(title = "Multinomial Logit, R^2", x = "Year", y = "R²") + cdt_theme
 
 p3_births <- ggplot() +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "#475569") +
-  geom_point(data = df_bd, aes(x = year, y = birth_err_pct), colour = "#F59E0B", alpha = 0.4, position = position_jitter(width=0.8, seed=42)) +
+  geom_point(data = df_bd, aes(x = year, y = birth_err_pct), colour = "#F59E0B", alpha = 0.4, position = position_jitter(width = 0.8, seed = 42)) +
   geom_line(data = df_bd_summary, aes(x = year, y = median_birth_err), colour = "#F59E0B", linewidth = 1.2) +
-  geom_label(data = df_bd_summary, aes(x = year, y = median_birth_err, label = sprintf("%+.1f%%", median_birth_err*100)), colour="black", size=3, fontface="bold", vjust=-0.7, label.size=0) +
+  geom_label(data = df_bd_summary, aes(x = year, y = median_birth_err, label = sprintf("%+.1f%%", median_birth_err * 100)), colour = "black", size = 3, fontface = "bold", vjust = -0.7, label.size = 0) +
   scale_y_continuous(labels = percent_format(), limits = c(-0.6, 0.6), oob = scales::squish) +
-  coord_cartesian(clip = "off") + # Fixes vertical clipping
+  coord_cartesian(clip = "off") +
   labs(title = "Births Relative Error (%)", subtitle = "Median Country Deviation", x = "Year", y = "% Difference") + cdt_theme
 
 p2_clamped <- ggplot() +
-  geom_point(data = df_age_sex, aes(x = year, y = clamped_r2), colour = "#10B981", alpha = 0.4, position = position_jitter(width=0.8, seed=42)) +
+  geom_point(data = df_age_sex, aes(x = year, y = clamped_r2), colour = "#10B981", alpha = 0.4, position = position_jitter(width = 0.8, seed = 42)) +
   geom_line(data = df_as_summary, aes(x = year, y = clamped_geomean), colour = "#10B981", linewidth = 1.2) +
-  geom_label(data = df_as_summary, aes(x = year, y = clamped_geomean, label = sprintf("%.1f%%", clamped_geomean*100)), colour="black", size=3, fontface="bold", vjust=-0.7, label.size=0) +
+  geom_label(data = df_as_summary, aes(x = year, y = clamped_geomean, label = sprintf("%.1f%%", clamped_geomean * 100)), colour = "black", size = 3, fontface = "bold", vjust = -0.7, label.size = 0) +
   scale_y_continuous(labels = percent_format(), limits = c(0, 1.05)) +
-  coord_cartesian(clip = "off") + # Fixes vertical clipping
+  coord_cartesian(clip = "off") +
   labs(title = "MNL Clamping, R^2", subtitle = "PAVA/Whittaker-Henderson (logistic kernel)", x = "Year", y = "R²") + cdt_theme
 
 p4_deaths <- ggplot() +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "#475569") +
-  geom_point(data = df_bd, aes(x = year, y = death_err_pct), colour = "#8B5CF6", alpha = 0.4, position = position_jitter(width=0.8, seed=42)) +
+  geom_point(data = df_bd, aes(x = year, y = death_err_pct), colour = "#8B5CF6", alpha = 0.4, position = position_jitter(width = 0.8, seed = 42)) +
   geom_line(data = df_bd_summary, aes(x = year, y = median_death_err), colour = "#8B5CF6", linewidth = 1.2) +
-  geom_label(data = df_bd_summary, aes(x = year, y = median_death_err, label = sprintf("%+.1f%%", median_death_err*100)), colour="black", size=3, fontface="bold", vjust=-0.7, label.size=0) +
+  geom_label(data = df_bd_summary, aes(x = year, y = median_death_err, label = sprintf("%+.1f%%", median_death_err * 100)), colour = "black", size = 3, fontface = "bold", vjust = -0.7, label.size = 0) +
   scale_y_continuous(labels = percent_format(), limits = c(-0.6, 0.6), oob = scales::squish) +
-  coord_cartesian(clip = "off") + # Fixes vertical clipping
+  coord_cartesian(clip = "off") +
   labs(title = "Deaths Relative Error (%)", subtitle = "Median Country Deviation", x = "Year", y = "% Difference") + cdt_theme
 
 # 5. Assemble Dashboard with Increased Margins ---------------------------------
-# We increase the plot.margin top (t) and subtitle bottom (b) to ensure text 
-# is not cut off by the device boundaries or the grid itself.
 cdt_2x2_dashboard <- (p1_raw | p3_births) / (p2_clamped | p4_deaths) +
   plot_annotation(
     title    = "Velkscala 1.0: CDT Proxy vs. CDT Empirical",
@@ -153,12 +165,16 @@ cdt_2x2_dashboard <- (p1_raw | p3_births) / (p2_clamped | p4_deaths) +
       plot.title    = element_text(face = "bold", size = 22, margin = margin(t = 20, b = 10)),
       plot.subtitle = element_text(size = 15, colour = "#64748B", margin = margin(b = 40)),
       plot.caption  = element_text(size = 11, colour = "#64748B", margin = margin(t = 15)),
-      plot.margin   = margin(t = 15, r = 25, b = 20, l = 15) # Broad margins for the assembly
+      plot.margin   = margin(t = 15, r = 25, b = 20, l = 15)
     )
   )
 
-# 6. Export Visualisation -----------------------------------------------------
-out_path <- file.path(tests_dir, "cdt_proxy_vs_empirical.png")
-ggsave(out_path, plot = cdt_2x2_dashboard, width = 16, height = 10, dpi = 200)
-message(sprintf("✔ Final dashboard saved to: %s", out_path))
-print(cdt_2x2_dashboard)
+# 6. Export Visualisation to outputs/ and test_cdt/ ---------------------------
+out_path_outputs <- file.path(outputs_dir, "cdt_proxy_vs_empirical.png")
+out_path_local   <- file.path(tests_dir, "cdt_proxy_vs_empirical.png")
+
+ggsave(out_path_outputs, plot = cdt_2x2_dashboard, width = 16, height = 10, dpi = 200)
+if (dir.exists(tests_dir)) {
+  file.copy(out_path_outputs, out_path_local, overwrite = TRUE)
+}
+message(sprintf("✔ Final CDT dashboard saved to: %s", out_path_outputs))

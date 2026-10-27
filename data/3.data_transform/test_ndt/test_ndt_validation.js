@@ -16,22 +16,24 @@
  *   - Test 5: Spatial differentiation across geocodes (refuting global age-structure templates).
  *
  * Usage:
- *   node tests/test_ndt_validation.js
+ *   node data/3.data_transform/test_ndt/test_ndt_validation.js
  */
 
 let fs = require("fs");
 let os = require("os");
 let path = require("path");
 let { Worker } = require("worker_threads");
+let DefinesLoader = require(path.resolve(__dirname, "../../../core/framework/defines_loader.js"));
 
-//Bootstrap UF environment and dependencies
+//Bootstrap UF environment and dependencies via common_defines.json5
+let env_defines = DefinesLoader.loadDefines();
 global.fs = fs;
 global.path = path;
-let root_dir = path.resolve(__dirname, "..");
-global.pngjs = require(path.join(root_dir, "node_modules/pngjs"));
+let root_dir = env_defines.svea_dir;
+global.pngjs = DefinesLoader.requirePNGJS(root_dir);
 
-try { global.JSON5 = require("json5"); } catch (e) {}
-try { global.mathjs = require("mathjs"); } catch (e) {}
+try { global.JSON5 = require(path.join(root_dir, "node_modules/json5")); } catch (e) {}
+try { global.mathjs = require(path.join(root_dir, "node_modules/mathjs")); } catch (e) {}
 
 let loadDirectory = function (arg0_rel_dir) {
   //Convert from parameters
@@ -398,17 +400,23 @@ let runNDTValidation = async function () {
   let cohorts = ["f_00", "m_00", "f_01", "m_01", "f_05", "m_05", "f_10", "m_10", "f_15", "m_15"];
   let tasks = [];
 
+  let resolveHydeRaster = function (arg0_prefix, arg1_y_str) {
+    let p_direct = path.join(root_dir, `histmap/2.data_cleaning/landuse_HYDE/rasters/${arg0_prefix}${arg1_y_str}.png`);
+    if (fs.existsSync(p_direct)) return p_direct;
+    return path.join(root_dir, `histmap/2.data_cleaning/landuse_HYDE/rasters/${arg0_prefix}${arg1_y_str}_number.png`);
+  };
+
   for (let y of all_years) {
     let y_str = getHYDEYearSuffix(y);
 
     //Land use rasters
-    tasks.push({ file_path: path.join(root_dir, `histmap/2.data_cleaning/landuse_HYDE/rasters/cropland${y_str}_number.png`), type: "cropland", year: y });
-    tasks.push({ file_path: path.join(root_dir, `histmap/2.data_cleaning/landuse_HYDE/rasters/pasture${y_str}_number.png`), type: "pasture", year: y });
-    tasks.push({ file_path: path.join(root_dir, `histmap/2.data_cleaning/landuse_HYDE/rasters/grazing${y_str}_number.png`), type: "grazing", year: y });
+    tasks.push({ file_path: resolveHydeRaster("cropland", y_str), type: "cropland", year: y });
+    tasks.push({ file_path: resolveHydeRaster("pasture", y_str), type: "pasture", year: y });
+    tasks.push({ file_path: resolveHydeRaster("grazing", y_str), type: "grazing", year: y });
 
     //Population rasters
     tasks.push({ file_path: path.join(root_dir, `histmap/2.data_cleaning/population_Stadester/stadester_population_rasters/stadester_population_${y}.png`), type: "pop_stadester", year: y });
-    tasks.push({ file_path: path.join(root_dir, `histmap/2.data_cleaning/landuse_HYDE/rasters/popc_${y_str}_number.png`), type: "pop_hyde", year: y });
+    tasks.push({ file_path: resolveHydeRaster("popc_", y_str), type: "pop_hyde", year: y });
 
     //Demographic cohorts (clamped to Stadester)
     for (let c of cohorts) {
@@ -710,15 +718,20 @@ let runNDTValidation = async function () {
     tracked_geocodes: processed_geocodes
   };
 
-  fs.writeFileSync(out_json_path, JSON.stringify(export_payload, null, 2));
-  console.log(`✔ JSON payload written to: ${ANSI.bold}${out_json_path}${ANSI.reset}`);
+  let json_payload_str = JSON.stringify(export_payload, null, 2);
+  let out_outputs_json_path = path.join(env_defines.outputs_dir, "ndt_validation_results.json");
+  fs.writeFileSync(out_json_path, json_payload_str);
+  fs.writeFileSync(out_outputs_json_path, json_payload_str);
+  console.log(`✔ JSON payload written to: ${ANSI.bold}${out_outputs_json_path}${ANSI.reset}`);
 
-  //6. Generate comprehensive, mathematically consistent Markdown audit artifact: tests/ndt.md
-  console.log(`[4/4] Generating tests/ndt.md with complete empirical tables and audit notes...`);
+  //6. Generate comprehensive, mathematically consistent Markdown audit artifact: outputs/ndt.md
+  console.log(`[4/4] Generating outputs/ndt.md with complete empirical tables and audit notes...`);
   let md_content = generateMarkdownReport(export_payload);
   let out_md_path = path.join(__dirname, "ndt.md");
+  let out_outputs_md_path = path.join(env_defines.outputs_dir, "ndt.md");
   fs.writeFileSync(out_md_path, md_content);
-  console.log(`✔ Full NDT validation document written to: ${ANSI.bold}${out_md_path}${ANSI.reset}\n`);
+  fs.writeFileSync(out_outputs_md_path, md_content);
+  console.log(`✔ Full NDT validation document written to: ${ANSI.bold}${out_outputs_md_path}${ANSI.reset}\n`);
 
   console.log(`${ANSI.bold}${ANSI.green}NDT Audit and Validation completed successfully.${ANSI.reset}`);
 };

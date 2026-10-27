@@ -1,0 +1,101 @@
+{
+  // =========================================================================
+  // Velkscala 1.0 - Common Defines & Pipeline Configuration
+  // Single source of truth for SVEA dataset paths, test suites, R rendering,
+  // and the OpenTUI / Vite orchestration server (port 16000).
+  // =========================================================================
+  project_name: "Velkscala 1.0",
+  svea_dir: "D:/Project 1509 - SVEA",
+  outputs_dir: "outputs",
+  rscript_path: "C:/Program Files/R/R-4.6.1/bin/Rscript.exe",
+
+  server: {
+    host: "127.0.0.1",
+    port: 16000
+  },
+
+  paths: {
+    h1: "D:/Project 1509 - SVEA/histmap/1.data_raw/",
+    h2: "D:/Project 1509 - SVEA/histmap/2.data_cleaning/",
+    h3: "D:/Project 1509 - SVEA/histmap/3.data_transform/",
+    h4: "D:/Project 1509 - SVEA/histmap/4.data_exports/",
+    h5: "D:/Project 1509 - SVEA/histmap/5.data_visualisation/",
+    svea_node_modules: "D:/Project 1509 - SVEA/node_modules",
+    svea_uf: "D:/Project 1509 - SVEA/UF",
+    test_cdt_dir: "data/3.data_transform/test_cdt",
+    test_ndt_dir: "data/3.data_transform/test_ndt"
+  },
+
+  pipelines: {
+    test_cdt: {
+      id: "test_cdt",
+      name: "CDT Validation Suite (Quick)",
+      category: "validation",
+      description: "Validates Contemporary Demographic Transition (1850-2019) Raw MNL vs Clamped to Stadestér against HMD, UNWPP & Kummu priors.",
+      command: "node",
+      args: ["data/3.data_transform/test_cdt/test_cdt_validation.js", "--quick"],
+      outputs: [
+        "outputs/validation_age_sex_cdt.json",
+        "outputs/validation_births_deaths_cdt.json",
+        "outputs/cdt.md"
+      ]
+    },
+    test_cdt_full: {
+      id: "test_cdt_full",
+      name: "CDT Validation Suite (Full Decadal)",
+      category: "validation",
+      description: "Runs full decadal Contemporary Demographic Transition validation across all 16 benchmark epochs (1850-2019).",
+      command: "node",
+      args: ["data/3.data_transform/test_cdt/test_cdt_validation.js"],
+      outputs: [
+        "outputs/validation_age_sex_cdt.json",
+        "outputs/validation_births_deaths_cdt.json",
+        "outputs/cdt.md"
+      ]
+    },
+    test_ndt: {
+      id: "test_ndt",
+      name: "NDT Empirical Validation Suite",
+      category: "validation",
+      description: "Evaluates Neolithic Demographic Transition (10000 BC - 1000 AD) across 5 macro-regions and 19 geocodes against Bocquet-Appel priors.",
+      command: "node",
+      args: ["data/3.data_transform/test_ndt/test_ndt_validation.js"],
+      outputs: [
+        "outputs/ndt_validation_results.json",
+        "outputs/ndt.md"
+      ]
+    },
+    test_piecewise_ndt: {
+      id: "test_piecewise_ndt",
+      name: "NDT Piecewise Model Verification",
+      category: "validation",
+      description: "Verifies premodern 34-covariate multinomial logit architecture, unified coverage ensemble, and agricultural logit differential.",
+      command: "node",
+      args: ["data/3.data_transform/test_ndt/test_piecewise_ndt_verification.js"],
+      outputs: []
+    },
+    render_cdt_r: {
+      id: "render_cdt_r",
+      name: "R Render: CDT 2x2 Validation Dashboard",
+      category: "visualisation",
+      description: "Executes plot_cdt_validation.R via Rscript to render outputs/cdt_proxy_vs_empirical.png.",
+      command: "Rscript",
+      args: ["data/3.data_transform/test_cdt/plot_cdt_validation.R"],
+      outputs: [
+        "outputs/cdt_proxy_vs_empirical.png"
+      ]
+    },
+    render_ndt_r: {
+      id: "render_ndt_r",
+      name: "R Render: NDT Paleodemographic Dashboard",
+      category: "visualisation",
+      description: "Executes plot_ndt_validation.R via Rscript to render outputs/ndt_paleodemographic_dashboard.png.",
+      command: "Rscript",
+      args: ["data/3.data_transform/test_ndt/plot_ndt_validation.R"],
+      outputs: [
+        "outputs/ndt_paleodemographic_dashboard.png"
+      ]
+    }
+  }
+}
+

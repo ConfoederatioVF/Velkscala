@@ -1,0 +1,229 @@
+/* -- Base reset & terminal root variables -- */
+:root {
+  --bg-primary: #070b14;
+  --bg-panel: #0d1424;
+  --bg-card: #111b30;
+  --bg-hover: #182642;
+  --bg-active: #1e335c;
+  --border-subtle: #1e293b;
+  --border-accent: #38bdf8;
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-cyan: #38bdf8;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-rose: #f43f5e;
+  --accent-violet: #a78bfa;
+  --font-mono: "JetBrains Mono", "Cascadia Code", "Fira Code", "Consolas", monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  height: 100vh;
+  line-height: 1.45;
+  overflow: hidden;
+  width: 100vw;
+}
+
+/* -- Scrollbars -- */
+::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-cyan);
+}
+
+/* -- OpenTUI wrapper utilities -- */
+.opentui-viewport {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: 10px 12px;
+  width: 100vw;
+}
+
+.opentui-box {
+  position: relative;
+}
+
+.opentui-select-item:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+.opentui-tab-button:hover {
+  background-color: var(--bg-hover) !important;
+  color: #ffffff !important;
+}
+
+/* -- Tables -- */
+.tui-table {
+  border-collapse: collapse;
+  font-size: 12px;
+  width: 100%;
+}
+
+.tui-table th {
+  background-color: #0f192d;
+  border-bottom: 1px solid #334155;
+  color: var(--accent-cyan);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 6px 8px;
+  position: sticky;
+  text-align: left;
+  top: 0;
+  z-index: 2;
+}
+
+.tui-table td {
+  border-bottom: 1px solid #162238;
+  padding: 5px 8px;
+  vertical-align: middle;
+}
+
+.tui-table tr:hover td {
+  background-color: rgba(56, 189, 248, 0.06);
+}
+
+.tui-table .num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* -- Badges & Buttons -- */
+.tui-badge {
+  border-radius: 3px;
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  text-transform: uppercase;
+}
+
+.tui-badge-pass,
+.tui-badge-completed {
+  background-color: rgba(16, 185, 129, 0.16);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  color: #34d399;
+}
+
+.tui-badge-running {
+  background-color: rgba(245, 158, 11, 0.18);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  color: #fbbf24;
+}
+
+.tui-badge-failed {
+  background-color: rgba(244, 63, 94, 0.18);
+  border: 1px solid rgba(244, 63, 94, 0.5);
+  color: #fb7185;
+}
+
+.tui-badge-idle {
+  background-color: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #94a3b8;
+}
+
+.tui-btn {
+  background-color: #162647;
+  border: 1px solid var(--accent-cyan);
+  border-radius: 3px;
+  color: #e0f2fe;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 11px;
+  transition: all 0.12s ease;
+}
+
+.tui-btn:hover:not(:disabled) {
+  background-color: #1e3a6e;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.35);
+}
+
+.tui-btn:disabled {
+  border-color: #334155;
+  color: #64748b;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.tui-btn-emerald {
+  background-color: #063829;
+  border-color: var(--accent-emerald);
+  color: #a7f3d0;
+}
+
+.tui-btn-emerald:hover:not(:disabled) {
+  background-color: #0a4f3a;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.35);
+}
+
+/* -- Plot viewer -- */
+.tui-plot-card {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+}
+
+.tui-plot-img-wrap {
+  align-items: center;
+  background-color: #050811;
+  border: 1px solid #1e293b;
+  border-radius: 3px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  padding: 6px;
+}
+
+.tui-plot-img {
+  height: auto;
+  max-height: 520px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* -- Preformatted code / markdown preview -- */
+.tui-code-block {
+  background-color: #060a12;
+  border: 1px solid #1e293b;
+  border-radius: 3px;
+  color: #cbd5e1;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-x: auto;
+  padding: 10px 12px;
+  white-space: pre-wrap;
+}
+

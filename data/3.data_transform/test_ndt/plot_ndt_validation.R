@@ -1,0 +1,187 @@
+# ==============================================================================
+# Neolithic Demographic Transition (NDT) Validation Plotter (2x2 Dashboard)
+# ==============================================================================
+# Visualises macro-regional growth trajectories, Bocquet-Appel IJP p(5-19)
+# surges relative to agricultural onset, cropland per capita expansion, and
+# subnational geocode age-structure differentiation from 10000 BC to 1000 AD.
+# ==============================================================================
+
+# 1. Package Management & Setup ------------------------------------------------
+required_packages <- c("jsonlite", "ggplot2", "patchwork", "scales", "dplyr")
+
+for (pkg in required_packages) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    message(sprintf("Installing required package: %s ...", pkg))
+    install.packages(pkg, repos = "https://cloud.r-project.org")
+  }
+  library(pkg, character.only = TRUE)
+}
+
+get_project_dir <- function () {
+  if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+    doc_path <- tryCatch(rstudioapi::getActiveDocumentContext()$path, error = function(e) "")
+    if (nzchar(doc_path)) return(normalizePath(file.path(dirname(doc_path), "..", "..", "..")))
+  }
+  wd <- getwd()
+  if (file.exists(file.path(wd, "data", "3.data_transform", "test_ndt", "ndt_validation_results.json"))) return(wd)
+  if (file.exists(file.path(wd, "ndt_validation_results.json"))) return(normalizePath(file.path(wd, "..", "..", "..")))
+  return(wd)
+}
+
+project_dir <- get_project_dir()
+tests_dir   <- file.path(project_dir, "data", "3.data_transform", "test_ndt")
+outputs_dir <- file.path(project_dir, "outputs")
+
+if (!dir.exists(outputs_dir)) {
+  dir.create(outputs_dir, recursive = TRUE)
+}
+
+ndt_json_path <- if (file.exists(file.path(outputs_dir, "ndt_validation_results.json"))) {
+  file.path(outputs_dir, "ndt_validation_results.json")
+} else {
+  file.path(tests_dir, "ndt_validation_results.json")
+}
+
+if (!file.exists(ndt_json_path)) {
+  stop("NDT validation JSON not found. Please run test_ndt_validation.js first.")
+}
+
+# 2. Data Ingestion & Transformation -------------------------------------------
+message("Ingesting NDT validation dataset...")
+ndt_root <- jsonlite::fromJSON(ndt_json_path, simplifyVector = FALSE)
+
+epoch_rows <- list()
+for (reg_name in names(ndt_root$regional_data)) {
+  reg_obj <- ndt_root$regional_data[[reg_name]]
+  for (ep in reg_obj$epochs) {
+    epoch_rows[[length(epoch_rows) + 1]] <- data.frame(
+      region = reg_name,
+      year = as.numeric(ep$year),
+      dt = as.numeric(ep$dt),
+      pop = as.numeric(ep$pop_stadester),
+      growth_r = if (!is.null(ep$growth_rate_pct)) as.numeric(ep$growth_rate_pct) else NA,
+      ijp = as.numeric(ep$p_5_19_bocquet_pct) / 100,
+      under5 = as.numeric(ep$p_under5_pct) / 100,
+      crop_pc = as.numeric(ep$cropland_per_capita_m2),
+      stringsAsFactors = FALSE
+    )
+  }
+}
+df_epochs <- do.call(rbind, epoch_rows)
+
+geocode_rows <- list()
+for (geo_code in names(ndt_root$tracked_geocodes)) {
+  g_obj <- ndt_root$tracked_geocodes[[geo_code]]
+  ep0 <- g_obj$benchmark_epochs[["0"]]
+  ep600 <- g_obj$benchmark_epochs[["600"]]
+  if (!is.null(ep0) && !is.null(ep600)) {
+    geocode_rows[[length(geocode_rows) + 1]] <- data.frame(
+      code = geo_code,
+      region = g_obj$info$region,
+      ijp_0AD = as.numeric(ep0$p_5_19_bocquet_pct) / 100,
+      ijp_600AD = as.numeric(ep600$p_5_19_bocquet_pct) / 100,
+      u5_0AD = as.numeric(ep0$p_under5_pct) / 100,
+      stringsAsFactors = FALSE
+    )
+  }
+}
+df_geocodes <- do.call(rbind, geocode_rows)
+
+# 3. Theme & Palette -----------------------------------------------------------
+region_palette <- c(
+  "Southwest Asia" = "#D97706",
+  "Europe" = "#2563EB",
+  "East Asia" = "#DC2626",
+  "Southeast Asia" = "#059669",
+  "American Southwest" = "#7C3AED"
+)
+
+ndt_theme <- theme_minimal(base_size = 12) +
+  theme(
+    plot.title       = element_text(face = "bold", size = 13, colour = "#1E293B", margin = margin(b = 4)),
+    plot.subtitle    = element_text(size = 10, colour = "#64748B", margin = margin(b = 14)),
+    axis.title       = element_text(face = "bold", size = 10.5, colour = "#334155"),
+    panel.grid.major = element_line(colour = "#E2E8F0", linewidth = 0.5),
+    panel.background = element_rect(fill = "#FAFAFA", colour = NA),
+    plot.background  = element_rect(fill = "#FFFFFF", colour = NA),
+    legend.position  = "bottom",
+    legend.title     = element_blank(),
+    plot.margin      = margin(t = 12, r = 15, b = 12, l = 15)
+  )
+
+# 4. Construct Subplots --------------------------------------------------------
+p1_ijp <- ggplot(df_epochs %>% filter(dt >= -3000 & dt <= 3500), aes(x = dt, y = ijp, colour = region)) +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "#475569", linewidth = 0.7) +
+  geom_line(linewidth = 1.1) +
+  geom_point(size = 2) +
+  scale_colour_manual(values = region_palette) +
+  scale_y_continuous(labels = percent_format(accuracy = 1)) +
+  labs(
+    title = "Bocquet-Appel Juvenile Proportion p(5-19) / p(5+)",
+    subtitle = "Aligned to regional agricultural onset (dt = 0)",
+    x = "Years Relative to Onset (Δt)",
+    y = "Juvenile Ratio (IJP)"
+  ) + ndt_theme
+
+p2_growth <- ggplot(df_epochs %>% filter(!is.na(growth_r) & dt >= -3000 & dt <= 3500), aes(x = dt, y = growth_r / 100, colour = region)) +
+  geom_hline(yintercept = 0, linetype = "dotted", colour = "#64748B") +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "#475569", linewidth = 0.7) +
+  geom_line(linewidth = 1.0) +
+  geom_point(size = 2) +
+  scale_colour_manual(values = region_palette) +
+  scale_y_continuous(labels = percent_format(accuracy = 0.01)) +
+  labs(
+    title = "Annualised Population Growth Rate (r %/yr)",
+    subtitle = "Transient Neolithic boom vs. LBK boom-bust cycles",
+    x = "Years Relative to Onset (Δt)",
+    y = "Annual Growth Rate"
+  ) + ndt_theme
+
+p3_cropland <- ggplot(df_epochs %>% filter(year >= -8000), aes(x = year, y = crop_pc, colour = region)) +
+  geom_line(linewidth = 1.1) +
+  geom_point(size = 1.8) +
+  scale_colour_manual(values = region_palette) +
+  scale_y_continuous(labels = comma_format(suffix = " m²")) +
+  labs(
+    title = "Per-Capita Arable Cropland Trajectory (8000 BC - 1000 AD)",
+    subtitle = "HYDE 3.3 / Velkscala 1.0 agricultural intensification",
+    x = "Calendar Year (BC/AD)",
+    y = "Cropland / Capita (m²)"
+  ) + ndt_theme
+
+p4_geocodes <- ggplot(df_geocodes, aes(x = reorder(code, ijp_0AD), y = ijp_0AD, fill = region)) +
+  geom_col(alpha = 0.88, width = 0.72) +
+  coord_flip() +
+  scale_fill_manual(values = region_palette) +
+  scale_y_continuous(labels = percent_format(accuracy = 1), limits = c(0, 0.42)) +
+  labs(
+    title = "Spatial Age-Structure Differentiation (0 AD Benchmark)",
+    subtitle = "Endogenous per-geocode Bocquet-Appel IJP variation across 19 jurisdictions",
+    x = "Geocode",
+    y = "Bocquet-Appel IJP (0 AD)"
+  ) + ndt_theme
+
+# 5. Assemble 2x2 Dashboard ----------------------------------------------------
+ndt_dashboard <- (p1_ijp | p2_growth) / (p3_cropland | p4_geocodes) +
+  plot_annotation(
+    title    = "Velkscala 1.0: Neolithic Demographic Transition (NDT) Empirical Audit",
+    subtitle = "10000 BC - 1000 AD | 5 Agricultural Origins & 19 Subnational/National Geocodes",
+    caption  = "Priors: Bocquet-Appel (2002, 2008), Shennan et al. (2013), HYDE 3.3 & Stadestér/Velkscala 1.0 (2026).",
+    theme    = theme(
+      plot.title    = element_text(face = "bold", size = 20, margin = margin(t = 15, b = 8)),
+      plot.subtitle = element_text(size = 14, colour = "#64748B", margin = margin(b = 25)),
+      plot.caption  = element_text(size = 10.5, colour = "#64748B", margin = margin(t = 12)),
+      plot.margin   = margin(t = 12, r = 20, b = 15, l = 12)
+    )
+  )
+
+# 6. Export Visualisation to outputs/ and test_ndt/ ----------------------------
+out_path_outputs <- file.path(outputs_dir, "ndt_paleodemographic_dashboard.png")
+out_path_local   <- file.path(tests_dir, "ndt_paleodemographic_dashboard.png")
+
+ggsave(out_path_outputs, plot = ndt_dashboard, width = 16, height = 10, dpi = 200)
+if (dir.exists(tests_dir)) {
+  file.copy(out_path_outputs, out_path_local, overwrite = TRUE)
+}
+message(sprintf("✔ Final NDT dashboard saved to: %s", out_path_outputs))
+

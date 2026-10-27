@@ -9,23 +9,26 @@
  * (Niva et al. Kummu and UNWPP), evaluating residuals and migration accuracy.
  *
  * Usage:
- *   node tests/test_cdt_validation.js [--quick] [--extract] [--years=1900,1950,2000,2010]
+ *   node data/3.data_transform/test_cdt/test_cdt_validation.js [--quick] [--extract] [--years=1900,1950,2000,2010]
  */
 
 let fs = require("fs");
 let os = require("os");
 let path = require("path");
 let { Worker } = require("worker_threads");
+let DefinesLoader = require(path.resolve(__dirname, "../../../core/framework/defines_loader.js"));
+let { generateCDTMarkdown } = require(path.join(__dirname, "generate_cdt_markdown.js"));
 
-//Bootstrap UF environment and dependencies
+//Bootstrap UF environment and dependencies via common_defines.json5
+let env_defines = DefinesLoader.loadDefines();
 global.fs = fs;
 global.path = path;
-let root_dir = path.resolve(__dirname, "..");
-global.pngjs = require(path.join(root_dir, "node_modules/pngjs"));
+let root_dir = env_defines.svea_dir;
+global.pngjs = DefinesLoader.requirePNGJS(root_dir);
 
-try { global.JSON5 = require("json5"); } catch (e) {}
-try { global.mathjs = require("mathjs"); } catch (e) {}
-try { global.ml_matrix = require("ml-matrix"); } catch (e) {}
+try { global.JSON5 = require(path.join(root_dir, "node_modules/json5")); } catch (e) {}
+try { global.mathjs = require(path.join(root_dir, "node_modules/mathjs")); } catch (e) {}
+try { global.ml_matrix = require(path.join(root_dir, "node_modules/ml-matrix")); } catch (e) {}
 
 let loadDirectory = function (arg0_rel_dir) {
   //Convert from parameters
@@ -989,11 +992,18 @@ async function main () {
     summary_by_epoch: bd_results
   };
 
-  fs.writeFileSync(path.join(__dirname, "validation_age_sex_cdt.json"), JSON.stringify(validation_age_sex_json, null, 2));
-  fs.writeFileSync(path.join(__dirname, "validation_births_deaths_cdt.json"), JSON.stringify(validation_bd_json, null, 2));
+  let as_json_str = JSON.stringify(validation_age_sex_json, null, 2);
+  let bd_json_str = JSON.stringify(validation_bd_json, null, 2);
 
-  console.log(`  ${ANSI.green}✔ Written tests/validation_age_sex_cdt.json${ANSI.reset}`);
-  console.log(`  ${ANSI.green}✔ Written tests/validation_births_deaths_cdt.json${ANSI.reset}`);
+  fs.writeFileSync(path.join(__dirname, "validation_age_sex_cdt.json"), as_json_str);
+  fs.writeFileSync(path.join(__dirname, "validation_births_deaths_cdt.json"), bd_json_str);
+  fs.writeFileSync(path.join(env_defines.outputs_dir, "validation_age_sex_cdt.json"), as_json_str);
+  fs.writeFileSync(path.join(env_defines.outputs_dir, "validation_births_deaths_cdt.json"), bd_json_str);
+  generateCDTMarkdown({ age_sex_data: validation_age_sex_json, births_deaths_data: validation_bd_json });
+
+  console.log(`  ${ANSI.green}✔ Written outputs/validation_age_sex_cdt.json${ANSI.reset}`);
+  console.log(`  ${ANSI.green}✔ Written outputs/validation_births_deaths_cdt.json${ANSI.reset}`);
+  console.log(`  ${ANSI.green}✔ Written outputs/cdt.md${ANSI.reset}`);
 
   //Render Complete TUI Report Dashboard
   console.log("\n");
