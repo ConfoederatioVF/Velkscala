@@ -1,0 +1,84 @@
+{
+  // =========================================================================
+  // NDT Visualisation & Numbered Figure Preparation (common/visualisation/)
+  // =========================================================================
+  category: "visualisation",
+  suite: "ndt",
+  title: "2. Neolithic Demographic Transition (NDT)",
+
+  pipelines: {
+    render_ndt_r: {
+      id: "render_ndt_r",
+      name: "R Render: Fig. 2 NDT Paleodemographic Dashboard",
+      category: "visualisation",
+      stage: "generate_figures",
+      description: "Executes plot_ndt_validation.R via Rscript to render outputs/ndt_paleodemographic_dashboard.png from compiled NDT JSON files.",
+      command: "Rscript",
+      args: ["$TEST_NDT_DIR/plot_ndt_validation.R"],
+      inputs: [
+        "$OUTPUTS_DIR/ndt_validation_results.json"
+      ],
+      outputs: [
+        "$OUTPUTS_DIR/ndt_paleodemographic_dashboard.png"
+      ],
+      tab_index: 2
+    }
+  },
+
+  figures: [
+    {
+      id: "fig_2_ndt_dashboard",
+      number: "Fig. 2",
+      name: "NDT Paleodemographic Dashboard",
+      pipeline_id: "render_ndt_r",
+      file_name: "ndt_paleodemographic_dashboard.png",
+      output_path: "$OUTPUTS_DIR/ndt_paleodemographic_dashboard.png",
+      script_path: "$TEST_NDT_DIR/plot_ndt_validation.R",
+      tab_index: 2,
+      description: "Composite 2x2 paleodemographic dashboard across 5 agricultural hearths and 19 subnational geocodes (10000 BC–1000 AD).",
+      children: [
+        {
+          id: "fig_2_1_bocquet_appel_ijp",
+          number: "Fig. 2.1",
+          name: "Bocquet-Appel Juvenile Proportion p(5–19)/p(5+)",
+          pipeline_id: "render_ndt_r",
+          file_name: "ndt_paleodemographic_dashboard.png",
+          source_json: "$OUTPUTS_DIR/ndt_validation_results.json",
+          tab_index: 2,
+          description: "Panel A: Immature juvenile proportion trajectories aligned by relative time Δt from regional agricultural onset."
+        },
+        {
+          id: "fig_2_2_regional_growth_rates",
+          number: "Fig. 2.2",
+          name: "Annual Population Growth Rate r (%/yr)",
+          pipeline_id: "render_ndt_r",
+          file_name: "ndt_paleodemographic_dashboard.png",
+          source_json: "$OUTPUTS_DIR/ndt_validation_results.json",
+          tab_index: 2,
+          description: "Panel B: Macro-regional growth rate surges and LBK boom-bust dynamics across the Neolithic transition."
+        },
+        {
+          id: "fig_2_3_cropland_per_capita",
+          number: "Fig. 2.3",
+          name: "Cropland Expansion per Capita (m²/person)",
+          pipeline_id: "render_ndt_r",
+          file_name: "ndt_paleodemographic_dashboard.png",
+          source_json: "$OUTPUTS_DIR/ndt_validation_results.json",
+          tab_index: 2,
+          description: "Panel C: HYDE 3.3 / Stadestér per-capita arable land trajectory from 10000 BC to 1000 AD."
+        },
+        {
+          id: "fig_2_4_geocode_differentiation",
+          number: "Fig. 2.4",
+          name: "Subnational Geocode 15P5 Differentiation (0 AD vs 600 AD)",
+          pipeline_id: "render_ndt_r",
+          file_name: "ndt_paleodemographic_dashboard.png",
+          source_json: "$OUTPUTS_DIR/ndt_validation_results.json",
+          tab_index: 2,
+          description: "Panel D: Spatial variation in juvenile shares across 19 tracked anchor jurisdictions."
+        }
+      ]
+    }
+  ]
+}
+

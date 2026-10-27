@@ -1,0 +1,67 @@
+{
+  // =========================================================================
+  // CDT Tabulation & Data Compilation Configuration (common/tabulation/)
+  // Compiles and bins Contemporary Demographic Transition (1850-2019) data
+  // into structured .json and .md files for visualisation and reporting.
+  // =========================================================================
+  category: "tabulation",
+  suite: "cdt",
+  title: "CDT Tabulation (1850–2019)",
+
+  pipelines: {
+    tab_cdt: {
+      id: "tab_cdt",
+      name: "Compile CDT Tabulation (.json & .md)",
+      category: "tabulation",
+      stage: "generate_data",
+      description: "Compiles and bins CDT age/sex bracket R² and vital flows (births/deaths) into outputs/validation_age_sex_cdt.json, outputs/validation_births_deaths_cdt.json, and outputs/cdt.md.",
+      command: "node",
+      args: ["$TEST_CDT_DIR/generate_cdt_markdown.js"],
+      inputs: [
+        "$TEST_CDT_DIR/empirical_age_sex.json",
+        "$TEST_CDT_DIR/empirical_births_deaths.json",
+        "$TEST_CDT_DIR/validation_age_sex_cdt.json",
+        "$TEST_CDT_DIR/validation_births_deaths_cdt.json"
+      ],
+      outputs: [
+        "$OUTPUTS_DIR/validation_age_sex_cdt.json",
+        "$OUTPUTS_DIR/validation_births_deaths_cdt.json",
+        "$OUTPUTS_DIR/cdt.md"
+      ]
+    }
+  },
+
+  tables: [
+    {
+      id: "table_cdt_age_sex_epochs",
+      number: "Table 1.1",
+      name: "Age & Sex Bracket Fit by Epoch",
+      pipeline_id: "tab_cdt",
+      source_file: "$OUTPUTS_DIR/validation_age_sex_cdt.json",
+      report_file: "$OUTPUTS_DIR/cdt.md",
+      tab_index: 0,
+      description: "Epoch-level geometric mean R² comparing Raw MNL probabilities against Stadestér-clamped distributions (1850–2019)."
+    },
+    {
+      id: "table_cdt_vital_flows",
+      number: "Table 1.2",
+      name: "Global Vital Flows (Births & Deaths)",
+      pipeline_id: "tab_cdt",
+      source_file: "$OUTPUTS_DIR/validation_births_deaths_cdt.json",
+      report_file: "$OUTPUTS_DIR/cdt.md",
+      tab_index: 0,
+      description: "Proxy vs empirical births and deaths across HMD, UNWPP, and Niva et al. (Kummu) benchmarks."
+    },
+    {
+      id: "table_cdt_country_breakdown",
+      number: "Table 1.3",
+      name: "Country-Level R² Breakdown (189 ISO3)",
+      pipeline_id: "tab_cdt",
+      source_file: "$OUTPUTS_DIR/validation_age_sex_cdt.json",
+      report_file: "$OUTPUTS_DIR/cdt.md",
+      tab_index: 0,
+      description: "Per-country Raw MNL vs Clamped R² and male/female cohort breakdown by benchmark year."
+    }
+  ]
+}
+

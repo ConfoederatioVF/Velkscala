@@ -84,6 +84,8 @@ let generateCDTMarkdown = function (arg0_options) {
   md_string = md.join("\n");
   fs.writeFileSync(path.join(__dirname, "cdt.md"), md_string);
   fs.writeFileSync(path.join(env_defines.outputs_dir, "cdt.md"), md_string);
+  fs.writeFileSync(path.join(env_defines.outputs_dir, "validation_age_sex_cdt.json"), JSON.stringify(d1, null, 2));
+  fs.writeFileSync(path.join(env_defines.outputs_dir, "validation_births_deaths_cdt.json"), JSON.stringify(d2, null, 2));
 
   //Return statement
   return md_string;

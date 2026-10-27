@@ -1,0 +1,42 @@
+{
+  // =========================================================================
+  // CDT Testing & Validation Configuration (common/testing/)
+  // =========================================================================
+  category: "testing",
+  suite: "cdt",
+  title: "CDT Validation Suites",
+
+  pipelines: {
+    test_cdt: {
+      id: "test_cdt",
+      name: "CDT Validation Suite (Quick)",
+      category: "testing",
+      stage: "run_tests",
+      description: "Validates Contemporary Demographic Transition (1850–2019) Raw MNL vs Clamped to Stadestér against HMD, UNWPP & Kummu priors.",
+      command: "node",
+      args: ["$TEST_CDT_DIR/test_cdt_validation.js", "--quick"],
+      outputs: [
+        "$OUTPUTS_DIR/validation_age_sex_cdt.json",
+        "$OUTPUTS_DIR/validation_births_deaths_cdt.json",
+        "$OUTPUTS_DIR/cdt.md"
+      ],
+      tab_index: 0
+    },
+    test_cdt_full: {
+      id: "test_cdt_full",
+      name: "CDT Validation Suite (Full Decadal)",
+      category: "testing",
+      stage: "run_tests",
+      description: "Runs full decadal Contemporary Demographic Transition validation across all 16 benchmark epochs (1850–2019).",
+      command: "node",
+      args: ["$TEST_CDT_DIR/test_cdt_validation.js"],
+      outputs: [
+        "$OUTPUTS_DIR/validation_age_sex_cdt.json",
+        "$OUTPUTS_DIR/validation_births_deaths_cdt.json",
+        "$OUTPUTS_DIR/cdt.md"
+      ],
+      tab_index: 0
+    }
+  }
+}
+

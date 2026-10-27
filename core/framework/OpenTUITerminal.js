@@ -1,10 +1,11 @@
 let readline = require("readline");
-let DefinesLoader = require("./defines_loader.js");
+let ConfigLoader = require("./ConfigLoader.js");
 let OrchestratorServer = require("../server/OrchestratorServer.js");
+
 
 /**
  * Terminal OpenTUI renderer and interactive keyboard controller for Node.js.
- * Renders the Velkscala orchestration dashboard directly in the console window whilst Vite serves port 16000.
+ * Renders the Velkscala orchestration dashboard and nested figure explorer directly in the console window.
  */
 class OpenTUITerminal {
   constructor (arg0_options) {
@@ -12,14 +13,14 @@ class OpenTUITerminal {
     let options = (arg0_options) ? arg0_options : {};
 
     //Declare local instance variables
-    let env_defines = DefinesLoader.loadDefines();
+    let env_defines = ConfigLoader.loadDefines();
 
     this.active_view = 0;
     this.defines = env_defines.defines;
+    this.explorer_items = this.buildFlatExplorerItems(this.defines);
     this.has_tty = Boolean(process.stdin && process.stdin.isTTY);
     this.headless = Boolean(options.headless);
     this.in_alternate_buffer = false;
-    this.pipeline_keys = Object.keys(this.defines.pipelines || {});
     this.refresh_timer = null;
     this.selected_index = 0;
     this.sort_asc = false;
@@ -29,10 +30,71 @@ class OpenTUITerminal {
 
 
   /**
-   * Formats a number using European decimals (e.g. 58,88) and optional semantic suffixes.
+   * Builds a flat list of indented tree items from common/visualisation/, common/tabulation/, and common/testing/
+   * for keyboard navigation in the terminal TUI.
+   *
+   * @param {Object} arg0_defines
+   *
+   * @returns {Array<Object>}
+   */
+  buildFlatExplorerItems (arg0_defines) {
+    //Convert from parameters
+    let defines_obj = (arg0_defines) ? arg0_defines : {};
+
+    //Declare local instance variables
+    let figures_array = defines_obj.figures || [];
+    let items_array = [];
+    let pipelines_obj = defines_obj.pipelines || {};
+    let tables_array = defines_obj.tables || [];
+
+    for (let i = 0; i < figures_array.length; i++) {
+      let fig = figures_array[i];
+      items_array.push({
+        category: "visualisation",
+        description: fig.description || "",
+        id: fig.id,
+        label: `[vis] ${fig.number} — ${fig.name}`,
+        pipeline_id: fig.pipeline_id
+      });
+    }
+
+    for (let i = 0; i < tables_array.length; i++) {
+      let tbl = tables_array[i];
+      items_array.push({
+        category: "tabulation",
+        description: tbl.description || "",
+        id: tbl.id,
+        label: `[tab] ${tbl.number} — ${tbl.name}`,
+        pipeline_id: tbl.pipeline_id
+      });
+    }
+
+    let p_keys = Object.keys(pipelines_obj);
+    for (let i = 0; i < p_keys.length; i++) {
+      let p_key = p_keys[i];
+      let p_def = pipelines_obj[p_key];
+      if (p_def.category === "testing" || p_def.category === "validation") {
+        items_array.push({
+          category: "testing",
+          description: p_def.description || "",
+          id: p_key,
+          label: `[test] ${p_def.name || p_key}`,
+          pipeline_id: p_key
+        });
+      }
+    }
+
+    //Return statement
+    return items_array;
+  }
+
+
+  /**
+   * Formats a number using European decimals (e.g. 58,88).
    *
    * @param {number} arg0_val
    * @param {number} [arg1_decimals=2]
+   *
    * @returns {string}
    */
   formatEuro (arg0_val, arg1_decimals) {
@@ -45,6 +107,62 @@ class OpenTUITerminal {
 
     //Return statement
     return val.toFixed(decimals).replace(".", ",");
+  }
+
+
+  /**
+   * Handles a key input action from either raw TTY keypress or line input.
+   *
+   * @param {string} arg0_name
+   * @param {boolean} [arg1_ctrl=false]
+   */
+  handleKeyAction (arg0_name, arg1_ctrl) {
+    //Convert from parameters
+    let name = arg0_name;
+    let ctrl = Boolean(arg1_ctrl);
+
+    //Guard clauses
+    if (!name) return;
+
+    if ((ctrl && name === "c") || name === "q" || name === "Q") {
+      this.stop();
+      process.exit(0);
+    } else if (name === "up" || name === "k") {
+      this.selected_index = (this.selected_index - 1 + this.explorer_items.length) % this.explorer_items.length;
+      this.renderFrame();
+    } else if (name === "down" || name === "j") {
+      this.selected_index = (this.selected_index + 1) % this.explorer_items.length;
+      this.renderFrame();
+    } else if (name === "tab") {
+      this.active_view = (this.active_view + 1) % 3;
+      this.renderFrame();
+    } else if (name === "s" || name === "S") {
+      this.sort_asc = !this.sort_asc;
+      this.renderFrame();
+    } else if (name === "g" || name === "G") {
+      OrchestratorServer.runStage("generate_data", () => this.renderFrame());
+      this.renderFrame();
+    } else if (name === "t" || name === "T") {
+      OrchestratorServer.runStage("run_tests", () => this.renderFrame());
+      this.renderFrame();
+    } else if (name === "f" || name === "F") {
+      OrchestratorServer.runStage("generate_figures", () => this.renderFrame());
+      this.renderFrame();
+    } else if (name === "r" || name === "R") {
+      this.renderFrame();
+    } else if (name >= "1" && name <= "9") {
+      let idx = Number(name) - 1;
+      if (idx >= 0 && idx < this.explorer_items.length) {
+        this.selected_index = idx;
+        this.renderFrame();
+      }
+    } else if (name === "return" || name === "enter") {
+      let selected_item = this.explorer_items[this.selected_index];
+      if (selected_item && selected_item.pipeline_id) {
+        OrchestratorServer.runPipeline(selected_item.pipeline_id, () => this.renderFrame());
+        this.renderFrame();
+      }
+    }
   }
 
 
@@ -90,7 +208,8 @@ class OpenTUITerminal {
 
     lines.push(`${ANSI.cyan}────────────────────────────────────────────────────────────────────────────────────────────────────${ANSI.reset}`);
     lines.push(
-      `  ${ANSI.bold}${ANSI.white}Velkscala${ANSI.reset} ${ANSI.dim}— Demographic Transition Validation (CDT & NDT)${ANSI.reset}`
+      `  ${ANSI.bold}${ANSI.white}Velkscala${ANSI.reset} ${ANSI.dim}— Demographic Transition Validation${ANSI.reset}   ` +
+      `${ANSI.cyan}[G] Generate Data${ANSI.reset}  ${ANSI.yellow}[T] Run Tests${ANSI.reset}  ${ANSI.red}[F] Generate Figures${ANSI.reset}`
     );
     lines.push(
       `  ${ANSI.dim}Web mirror:${ANSI.reset} ${ANSI.green}${this.vite_url}${ANSI.reset} [${this.vite_status}]   ${ANSI.dim}| SVEA:${ANSI.reset} ${state.svea_status.svea_dir} ${state.svea_status.exists ? `${ANSI.green}[Connected]${ANSI.reset}` : `${ANSI.red}[Missing]${ANSI.reset}`}`
@@ -104,15 +223,13 @@ class OpenTUITerminal {
     );
     lines.push("");
 
-    //Pipelines selector section
     lines.push(
-      `  ${ANSI.bold}Pipelines${ANSI.reset} ${ANSI.dim}(↑/↓ or 1-6 select, Enter run, Tab view, S sort, Q quit)${ANSI.reset}`
+      `  ${ANSI.bold}Figure & Pipeline Explorer${ANSI.reset} ${ANSI.dim}(↑/↓ select, Enter execute node, G/T/F stages, Tab view, S sort, Q quit)${ANSI.reset}`
     );
 
-    for (let i = 0; i < this.pipeline_keys.length; i++) {
-      let key = this.pipeline_keys[i];
-      let p = this.defines.pipelines[key];
-      let job = state.jobs[key];
+    for (let i = 0; i < this.explorer_items.length; i++) {
+      let item = this.explorer_items[i];
+      let job = state.jobs[item.pipeline_id];
       let status_str = job ? job.status.toUpperCase() : "IDLE";
       let status_col = ANSI.dim;
       if (status_str === "RUNNING") {
@@ -125,17 +242,15 @@ class OpenTUITerminal {
 
       let is_sel = (i === this.selected_index);
       let cursor = is_sel ? `${ANSI.white}❯${ANSI.reset}` : " ";
-      let p_title = p.name || p.label || key;
-      let label_fmt = is_sel ? `${ANSI.bold}${ANSI.white}${p_title}${ANSI.reset}` : p_title;
+      let label_fmt = is_sel ? `${ANSI.bold}${ANSI.white}${item.label}${ANSI.reset}` : item.label;
       lines.push(`  ${cursor} [${i + 1}] [${status_col}${status_str.padEnd(9)}${ANSI.reset}] ${label_fmt}`);
-      if (is_sel && p.description) {
-        lines.push(`        ${ANSI.dim}${p.description}${ANSI.reset}`);
+      if (is_sel && item.description) {
+        lines.push(`        ${ANSI.dim}${item.description}${ANSI.reset}`);
       }
     }
 
     lines.push("");
 
-    //Tabbed data summary panel inside the terminal TUI
     let sort_dir_str = this.sort_asc ? "▲ asc" : "▼ desc";
     let view_tabs = [
       "1: CDT Epoch R² Summary",
@@ -152,7 +267,6 @@ class OpenTUITerminal {
     }
     lines.push(`${tab_bar}${ANSI.dim}(Tab cycle | S sort: ${sort_dir_str})${ANSI.reset}`);
 
-    //Notice: Outside the first column, cells are NOT bolded per user instructions
     if (this.active_view === 0) {
       let epochs = (state.cdt_age_sex?.summary_by_epoch || []).slice();
       epochs.sort((a, b) => {
@@ -217,7 +331,7 @@ class OpenTUITerminal {
       let log_budget = Math.max(1, max_lines - lines.length);
       let recent_logs = state.logs.slice(-log_budget);
       if (recent_logs.length === 0) {
-        lines.push(`  ${ANSI.dim}Ready. Select a pipeline above or browse to ${this.vite_url}.${ANSI.reset}`);
+        lines.push(`  ${ANSI.dim}Ready. Select a figure/pipeline above or browse to ${this.vite_url}.${ANSI.reset}`);
       } else {
         for (let i = 0; i < recent_logs.length && lines.length < max_lines; i++) {
           let l = recent_logs[i];
@@ -226,59 +340,10 @@ class OpenTUITerminal {
       }
     }
 
-    //Clamp strictly to max_lines to prevent any terminal scrolling
     if (lines.length > max_lines) lines = lines.slice(0, max_lines);
 
-    //Draw to screen using cursor home and erase to end of line without trailing scroll
     frame_str = "\x1b[H" + lines.map((ln) => ln + ANSI.clearEnd).join("\n") + "\x1b[J";
     process.stdout.write(frame_str);
-  }
-
-
-  /**
-   * Handles a key input action from either raw TTY keypress or line input.
-   *
-   * @param {string} arg0_name
-   * @param {boolean} [arg1_ctrl=false]
-   */
-  handleKeyAction (arg0_name, arg1_ctrl) {
-    //Convert from parameters
-    let name = arg0_name;
-    let ctrl = Boolean(arg1_ctrl);
-
-    //Guard clauses
-    if (!name) return;
-
-    if ((ctrl && name === "c") || name === "q" || name === "Q") {
-      this.stop();
-      process.exit(0);
-    } else if (name === "up" || name === "k") {
-      this.selected_index = (this.selected_index - 1 + this.pipeline_keys.length) % this.pipeline_keys.length;
-      this.renderFrame();
-    } else if (name === "down" || name === "j") {
-      this.selected_index = (this.selected_index + 1) % this.pipeline_keys.length;
-      this.renderFrame();
-    } else if (name === "tab" || name === "t" || name === "T") {
-      this.active_view = (this.active_view + 1) % 3;
-      this.renderFrame();
-    } else if (name === "s" || name === "S") {
-      this.sort_asc = !this.sort_asc;
-      this.renderFrame();
-    } else if (name === "r" || name === "R") {
-      this.renderFrame();
-    } else if (name >= "1" && name <= "6") {
-      let idx = Number(name) - 1;
-      if (idx >= 0 && idx < this.pipeline_keys.length) {
-        this.selected_index = idx;
-        this.renderFrame();
-      }
-    } else if (name === "return" || name === "enter") {
-      let selected_key = this.pipeline_keys[this.selected_index];
-      if (selected_key) {
-        OrchestratorServer.runPipeline(selected_key, () => this.renderFrame());
-        this.renderFrame();
-      }
-    }
   }
 
 
@@ -291,7 +356,6 @@ class OpenTUITerminal {
       return;
     }
 
-    //Enter Alternate Screen Buffer to eliminate scrollback ghosting & hide cursor
     process.stdout.write("\x1b[?1049h\x1b[2J\x1b[H\x1b[?25l");
     this.in_alternate_buffer = true;
 
@@ -322,7 +386,6 @@ class OpenTUITerminal {
       });
     }
 
-    //Handle window resize cleanly
     if (process.stdout.on) {
       process.stdout.on("resize", () => {
         process.stdout.write("\x1b[2J\x1b[H");
@@ -357,7 +420,6 @@ class OpenTUITerminal {
     }
 
     if (this.in_alternate_buffer) {
-      //Exit Alternate Screen Buffer and restore cursor
       process.stdout.write("\x1b[?1049l\x1b[?25h\n");
       this.in_alternate_buffer = false;
     } else {

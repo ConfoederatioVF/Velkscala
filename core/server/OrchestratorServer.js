@@ -1,11 +1,13 @@
 let { spawn } = require("child_process");
 let fs = require("fs");
 let path = require("path");
-let DefinesLoader = require("../framework/defines_loader.js");
+let ConfigLoader = require("../framework/ConfigLoader.js");
+let LocalhostBridge = require("../framework/LocalhostBridge.js");
+
 
 /**
- * Backend orchestrator for Velkscala validation suites (CDT, NDT) and R visualisation pipelines.
- * Integrates into Vite on port 16000 and is also callable directly from the terminal TUI.
+ * Backend orchestrator for Velkscala tabulation, validation suites (CDT, NDT), and R visualisation pipelines.
+ * Integrates into Vite on port 16000 via LocalhostBridge and is callable directly from the terminal TUI.
  */
 class OrchestratorServer {
   static active_processes = new Map();
@@ -34,7 +36,7 @@ class OrchestratorServer {
     clean_lines = String(message)
       .replace(/\x1b\[[0-9;]*m/g, "")
       .split(/\r?\n/)
-      .filter(l => l.trim().length > 0);
+      .filter((l) => l.trim().length > 0);
 
     for (let i = 0; i < clean_lines.length; i++) {
       OrchestratorServer.log_lines.push({
@@ -57,19 +59,12 @@ class OrchestratorServer {
    */
   static createVitePlugin () {
     //Return statement
-    return {
-      configureServer (server) {
-        server.middlewares.use((req, res, next) => {
-          OrchestratorServer.handleHTTPRequest(req, res, next);
-        });
-      },
-      name: "velkscala-orchestrator-plugin"
-    };
+    return LocalhostBridge.createVitePlugin(OrchestratorServer);
   }
 
 
   /**
-   * Collects the complete state payload (defines, SVEA status, CDT/NDT tabular results, outputs).
+   * Collects the complete state payload (defines, common/ categories, SVEA status, CDT/NDT results, outputs).
    *
    * @returns {Object}
    */
@@ -78,7 +73,7 @@ class OrchestratorServer {
     let cdt_age_sex = null;
     let cdt_births_deaths = null;
     let cdt_md = "";
-    let env_defines = DefinesLoader.loadDefines();
+    let env_defines = ConfigLoader.loadDefines();
     let ndt_md = "";
     let ndt_results = null;
     let outputs_dir = env_defines.outputs_dir;
@@ -150,7 +145,7 @@ class OrchestratorServer {
 
 
   /**
-   * Handles incoming HTTP requests for /api/state, /api/run, and /outputs/*.
+   * Handles incoming HTTP requests via LocalhostBridge.
    *
    * @param {Object} arg0_req
    * @param {Object} arg1_res
@@ -162,63 +157,12 @@ class OrchestratorServer {
     let res = arg1_res;
     let next = arg2_next;
 
-    //Declare local instance variables
-    let env_defines = DefinesLoader.loadDefines();
-    let parsed_url = new URL(req.url, "http://127.0.0.1:16000");
-    let pathname = parsed_url.pathname;
-
-    if (pathname === "/api/state" && req.method === "GET") {
-      let payload = OrchestratorServer.getStatePayload();
-      res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
-      res.end(JSON.stringify(payload));
-      return;
-    }
-
-    if (pathname === "/api/run" && req.method === "POST") {
-      let body = "";
-      req.on("data", (chunk) => { body += chunk; });
-      req.on("end", () => {
-        try {
-          let parsed = JSON.parse(body || "{}");
-          let job = OrchestratorServer.runPipeline(parsed.pipeline_id);
-          res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
-          res.end(JSON.stringify({ job: job, ok: true }));
-        } catch (err) {
-          res.writeHead(400, { "Content-Type": "application/json; charset=utf-8" });
-          res.end(JSON.stringify({ error: err.message, ok: false }));
-        }
-      });
-      return;
-    }
-
-    if (pathname.startsWith("/outputs/")) {
-      let rel_file = path.basename(decodeURIComponent(pathname));
-      let full_file = path.join(env_defines.outputs_dir, rel_file);
-      if (fs.existsSync(full_file) && fs.statSync(full_file).isFile()) {
-        let ext = path.extname(full_file).toLowerCase();
-        let mime = "application/octet-stream";
-        if (ext === ".png") {
-          mime = "image/png";
-        } else if (ext === ".json") {
-          mime = "application/json; charset=utf-8";
-        } else if (ext === ".md") {
-          mime = "text/markdown; charset=utf-8";
-        }
-        res.writeHead(200, {
-          "Cache-Control": "no-store",
-          "Content-Type": mime
-        });
-        fs.createReadStream(full_file).pipe(res);
-        return;
-      }
-    }
-
-    next();
+    LocalhostBridge.handleHTTPRequest(req, res, next, OrchestratorServer);
   }
 
 
   /**
-   * Spawns a configured validation or R visualisation pipeline asynchronously.
+   * Spawns a configured tabulation, testing, or R visualisation pipeline asynchronously.
    *
    * @param {string} arg0_pipeline_id
    * @param {Function} [arg1_on_complete]
@@ -233,7 +177,7 @@ class OrchestratorServer {
     //Declare local instance variables
     let child_proc;
     let cmd_bin;
-    let env_defines = DefinesLoader.loadDefines();
+    let env_defines = ConfigLoader.loadDefines();
     let job_obj;
     let pipeline_cfg = env_defines.defines.pipelines?.[pipeline_id];
 
@@ -251,6 +195,7 @@ class OrchestratorServer {
       process.execPath;
 
     job_obj = {
+      category: pipeline_cfg.category || "general",
       id: pipeline_id,
       name: pipeline_cfg.name,
       started_at: new Date().toISOString(),
@@ -290,7 +235,57 @@ class OrchestratorServer {
     //Return statement
     return job_obj;
   }
+
+
+  /**
+   * Executes all pipelines mapped to a macro stage ('generate_data', 'run_tests', 'generate_figures')
+   * or configuration category ('tabulation', 'testing', 'visualisation').
+   *
+   * @param {string} arg0_stage_id
+   * @param {Function} [arg1_on_complete]
+   *
+   * @returns {Array<Object>}
+   */
+  static runStage (arg0_stage_id, arg1_on_complete) {
+    //Convert from parameters
+    let stage_id = arg0_stage_id;
+    let on_complete = arg1_on_complete;
+
+    //Declare local instance variables
+    let env_defines = ConfigLoader.loadDefines();
+    let launched_jobs = [];
+    let pipeline_ids = [];
+    let stage_cfg = env_defines.defines.stages?.[stage_id];
+
+    //Guard clauses
+    if (!stage_id) return launched_jobs;
+
+    if (stage_cfg && Array.isArray(stage_cfg.pipeline_ids)) {
+      pipeline_ids = stage_cfg.pipeline_ids.slice();
+    } else {
+      let all_p_keys = Object.keys(env_defines.defines.pipelines || {});
+      for (let i = 0; i < all_p_keys.length; i++) {
+        let local_key = all_p_keys[i];
+        let local_p = env_defines.defines.pipelines[local_key];
+        if (local_p.stage === stage_id || local_p.category === stage_id) {
+          pipeline_ids.push(local_key);
+        }
+      }
+    }
+
+    OrchestratorServer.appendLog(
+      `Triggering stage [${stage_cfg?.label || stage_id}] (${pipeline_ids.join(", ")})...`,
+      stage_id
+    );
+
+    for (let i = 0; i < pipeline_ids.length; i++) {
+      let job = OrchestratorServer.runPipeline(pipeline_ids[i], on_complete);
+      launched_jobs.push(job);
+    }
+
+    //Return statement
+    return launched_jobs;
+  }
 }
 
 module.exports = OrchestratorServer;
-

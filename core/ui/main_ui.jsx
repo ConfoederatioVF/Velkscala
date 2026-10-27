@@ -1,7 +1,7 @@
 //Import libraries and components
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { OpenTUIProvider } from "../framework/OpenTUIWrapper.jsx";
+import { OpenTUIProvider } from "../framework/index_ui.js";
 import { VelkscalaTUIApp } from "./components/VelkscalaTUIApp.jsx";
 
 
@@ -28,4 +28,3 @@ function initVelkscalaUI () {
 }
 
 initVelkscalaUI();
-

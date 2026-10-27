@@ -1,0 +1,63 @@
+{
+  // =========================================================================
+  // NDT Tabulation & Data Compilation Configuration (common/tabulation/)
+  // Compiles and bins Neolithic Demographic Transition (10000 BC - 1000 AD)
+  // regional trajectories and subnational geocode audits into .json and .md.
+  // =========================================================================
+  category: "tabulation",
+  suite: "ndt",
+  title: "NDT Tabulation (10000 BC–1000 AD)",
+
+  pipelines: {
+    tab_ndt: {
+      id: "tab_ndt",
+      name: "Compile NDT Tabulation (.json & .md)",
+      category: "tabulation",
+      stage: "generate_data",
+      description: "Compiles and bins NDT macro-regional paleodemographic trajectories, Bocquet-Appel 15P5 scores, and 19 anchor geocodes into outputs/ndt_validation_results.json and outputs/ndt.md.",
+      command: "node",
+      args: ["$TEST_NDT_DIR/test_ndt_validation.js", "--tabulate-only"],
+      inputs: [
+        "$TEST_NDT_DIR/ndt_validation_results.json"
+      ],
+      outputs: [
+        "$OUTPUTS_DIR/ndt_validation_results.json",
+        "$OUTPUTS_DIR/ndt.md"
+      ]
+    }
+  },
+
+  tables: [
+    {
+      id: "table_ndt_scorecard",
+      number: "Table 2.1",
+      name: "Cross-Hearth NDT Hypothesis Scorecard",
+      pipeline_id: "tab_ndt",
+      source_file: "$OUTPUTS_DIR/ndt_validation_results.json",
+      report_file: "$OUTPUTS_DIR/ndt.md",
+      tab_index: 1,
+      description: "Agricultural hearth benchmarks evaluating pre-NDT vs boom growth rates and Bocquet-Appel 15P5 juvenile surges."
+    },
+    {
+      id: "table_ndt_trajectories",
+      number: "Table 2.2",
+      name: "Regional Paleodemographic Trajectories",
+      pipeline_id: "tab_ndt",
+      source_file: "$OUTPUTS_DIR/ndt_validation_results.json",
+      report_file: "$OUTPUTS_DIR/ndt.md",
+      tab_index: 1,
+      description: "21-epoch regional population, annual growth rate, cropland area, under-5 share, and 15P5 index (10000 BC–1000 AD)."
+    },
+    {
+      id: "table_ndt_geocodes",
+      number: "Table 2.3",
+      name: "Subnational Anchor Geocode Audit",
+      pipeline_id: "tab_ndt",
+      source_file: "$OUTPUTS_DIR/ndt_validation_results.json",
+      report_file: "$OUTPUTS_DIR/ndt.md",
+      tab_index: 1,
+      description: "Spatial differentiation audit across 19 subnational states and nations at 6000 BC, 2000 BC, and 0 AD."
+    }
+  ]
+}
+

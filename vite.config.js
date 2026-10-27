@@ -11,7 +11,8 @@ module.exports = defineConfig({
   resolve: {
     alias: {
       "@opentui/core": path.resolve(__dirname, "core/framework/OpenTUIWrapper.jsx"),
-      "@opentui/react": path.resolve(__dirname, "core/framework/OpenTUIWrapper.jsx")
+      "@opentui/react": path.resolve(__dirname, "core/framework/OpenTUIWrapper.jsx"),
+      "@velkscala/framework": path.resolve(__dirname, "core/framework/index_ui.js")
     }
   },
   server: {

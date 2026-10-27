@@ -379,6 +379,22 @@ let runNDTValidation = async function () {
   console.log(`${ANSI.bold}${ANSI.cyan}========================================================================${ANSI.reset}`);
   console.log(`${ANSI.dim}Domain: 10000 BC to 1000 AD | Framework: Project 1509 SVEA${ANSI.reset}\n`);
 
+  let is_tabulate_only = process.argv.includes("--tabulate-only");
+  let existing_json_path = path.join(__dirname, "ndt_validation_results.json");
+  if (is_tabulate_only && fs.existsSync(existing_json_path)) {
+    let cached_payload = JSON.parse(fs.readFileSync(existing_json_path, "utf8"));
+    let out_outputs_json_path = path.join(env_defines.outputs_dir, "ndt_validation_results.json");
+    let out_md_path = path.join(__dirname, "ndt.md");
+    let out_outputs_md_path = path.join(env_defines.outputs_dir, "ndt.md");
+    let md_content = generateMarkdownReport(cached_payload);
+
+    fs.writeFileSync(out_outputs_json_path, JSON.stringify(cached_payload, null, 2));
+    fs.writeFileSync(out_md_path, md_content);
+    fs.writeFileSync(out_outputs_md_path, md_content);
+    console.log(`✔ Compiled NDT JSON & Markdown tabulation to ${out_outputs_json_path} and ${out_outputs_md_path}`);
+    return;
+  }
+
   //1. Initialise country-level GIS mapping in shared memory
   console.log(`[1/4] Mapping 277 ISO2 country & subnational state bins to shared memory...`);
   let geo_index = initRegionalIndex();
