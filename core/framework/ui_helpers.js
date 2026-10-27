@@ -55,34 +55,12 @@ export function buildExplorerTree (arg0_defines, arg1_jobs, arg2_outputs) {
       };
     }
 
-    let sub_nodes = [];
-    if (Array.isArray(fig.children)) {
-      for (let x = 0; x < fig.children.length; x++) {
-        let sub_fig = fig.children[x];
-        sub_nodes.push({
-          category: "visualisation",
-          description: sub_fig.description || "",
-          file_name: sub_fig.file_name || fig.file_name,
-          id: sub_fig.id,
-          is_folder: false,
-          label: `${sub_fig.number} — ${sub_fig.name}`,
-          number: sub_fig.number,
-          pipeline_id: sub_fig.pipeline_id || fig.pipeline_id,
-          source_json: sub_fig.source_json,
-          status: getJobStatus(sub_fig.pipeline_id || fig.pipeline_id, sub_fig.file_name || fig.file_name),
-          suite: suite_key,
-          tab_index: (sub_fig.tab_index !== undefined) ? sub_fig.tab_index : 2
-        });
-      }
-    }
-
     figure_suite_groups[suite_key].children.push({
       category: "visualisation",
-      children: sub_nodes,
       description: fig.description || "",
       file_name: fig.file_name,
       id: fig.id,
-      is_folder: sub_nodes.length > 0,
+      is_folder: false,
       label: `${fig.number} — ${fig.name}`,
       number: fig.number,
       output_path: fig.output_path,

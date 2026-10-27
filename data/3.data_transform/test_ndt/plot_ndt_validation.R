@@ -175,13 +175,16 @@ ndt_dashboard <- (p1_ijp | p2_growth) / (p3_cropland | p4_geocodes) +
     )
   )
 
-# 6. Export Visualisation to outputs/ and test_ndt/ ----------------------------
+# 6. Export Visualisation to outputs/ and test_ndt/ (Atomic write) ------------
+out_path_tmp     <- file.path(outputs_dir, "ndt_paleodemographic_dashboard.tmp.png")
 out_path_outputs <- file.path(outputs_dir, "ndt_paleodemographic_dashboard.png")
 out_path_local   <- file.path(tests_dir, "ndt_paleodemographic_dashboard.png")
 
-ggsave(out_path_outputs, plot = ndt_dashboard, width = 16, height = 10, dpi = 200)
+ggsave(out_path_tmp, plot = ndt_dashboard, width = 16, height = 10, dpi = 200)
+file.copy(out_path_tmp, out_path_outputs, overwrite = TRUE)
 if (dir.exists(tests_dir)) {
-  file.copy(out_path_outputs, out_path_local, overwrite = TRUE)
+  file.copy(out_path_tmp, out_path_local, overwrite = TRUE)
 }
+unlink(out_path_tmp)
 message(sprintf("✔ Final NDT dashboard saved to: %s", out_path_outputs))
 

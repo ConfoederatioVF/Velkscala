@@ -1,10 +1,10 @@
 //Import React hooks and core/framework UI helpers
 import React, { useMemo, useState } from "react";
-import { formatEuroNumber, formatYearBCAD, SortHeader, useSortableData } from "../../framework/index_ui.js";
+import { FlexPartition, formatEuroNumber, formatYearBCAD, SortHeader, useSortableData } from "../../framework/index_ui.js";
 
 
 /**
- * Tab 2: Neolithic Demographic Transition (NDT) Validation (Sortable, non-bold cells outside col 1).
+ * Tab 2: Neolithic Demographic Transition (NDT) Validation with resizable flex partitions.
  *
  * @param {Object} arg0_props
  *  @param {Object} arg0_props.ndtData
@@ -60,105 +60,114 @@ export function NDTValidationView (arg0_props) {
 
   //Return statement
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      {/* Table 2.1: Cross-Hearth Scorecard */}
-      <div>
-        <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "8px" }}>
-          Table 2.1 — Agricultural hearth benchmarks (Bocquet-Appel &amp; Shennan priors)
-        </div>
-        <div className="linear-table-container">
-          <table className="linear-table">
-            <thead>
-              <tr>
-                <SortHeader label="Hearth" onSort={() => requestScSort("name")} sortConfig={scSortCfg} sortKey="name" />
-                <SortHeader label="Neolithic onset" onSort={() => requestScSort("onset_label")} sortConfig={scSortCfg} sortKey="onset_label" />
-                <SortHeader isNum={true} label="Pre-NDT growth" onSort={() => requestScSort("pre_growth_rate_clean")} sortConfig={scSortCfg} sortKey="pre_growth_rate_clean" />
-                <SortHeader isNum={true} label="Peak boom growth" onSort={() => requestScSort("peak_early_growth_rate")} sortConfig={scSortCfg} sortKey="peak_early_growth_rate" />
-                <SortHeader label="Peak interval" onSort={() => requestScSort("peak_early_interval")} sortConfig={scSortCfg} sortKey="peak_early_interval" />
-                <SortHeader isNum={true} label="Pre 15P5" onSort={() => requestScSort("ijp_pre_mean")} sortConfig={scSortCfg} sortKey="ijp_pre_mean" />
-                <SortHeader isNum={true} label="Peak 15P5" onSort={() => requestScSort("ijp_boom_peak")} sortConfig={scSortCfg} sortKey="ijp_boom_peak" />
-                <SortHeader isNum={true} label="15P5 gain (Δ)" onSort={() => requestScSort("ijp_delta_pp")} sortConfig={scSortCfg} sortKey="ijp_delta_pp" />
-              </tr>
-            </thead>
-            <tbody>
-              {sc_items.map((sc) => (
-                <tr key={sc.name}>
-                  <td><strong>{sc.name}</strong></td>
-                  <td>{sc.onset_label}</td>
-                  <td className="num">{formatEuroNumber(sc.pre_growth_rate_clean, { decimals: 3, is_already_percent: true })}</td>
-                  <td className="num">{formatEuroNumber(sc.peak_early_growth_rate, { decimals: 3, is_already_percent: true, is_signed: true })}</td>
-                  <td>{sc.peak_early_interval}</td>
-                  <td className="num">{formatEuroNumber(sc.ijp_pre_mean, { is_already_percent: true })}</td>
-                  <td className="num">{formatEuroNumber(sc.ijp_boom_peak, { is_already_percent: true })}</td>
-                  <td className="num">{formatEuroNumber(sc.ijp_delta_pp, { is_signed: true })} pp</td>
+    <FlexPartition
+      direction="vertical"
+      initialRatio={0.62}
+      maxFirstPct={85}
+      minFirstPct={25}
+      style={{ flex: 1, height: "100%", minHeight: 0 }}
+    >
+      {/* Top Pane: Cross-Hearth Scorecard & Regional Trajectory */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px", height: "100%", minHeight: 0, overflowY: "auto", paddingRight: "4px" }}>
+        {/* Table 2.1: Cross-Hearth Scorecard */}
+        <div>
+          <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "8px" }}>
+            Table 2.1 — Agricultural hearth benchmarks (Bocquet-Appel &amp; Shennan priors)
+          </div>
+          <div className="linear-table-container">
+            <table className="linear-table">
+              <thead>
+                <tr>
+                  <SortHeader label="Hearth" onSort={() => requestScSort("name")} sortConfig={scSortCfg} sortKey="name" />
+                  <SortHeader label="Neolithic onset" onSort={() => requestScSort("onset_label")} sortConfig={scSortCfg} sortKey="onset_label" />
+                  <SortHeader isNum={true} label="Pre-NDT growth" onSort={() => requestScSort("pre_growth_rate_clean")} sortConfig={scSortCfg} sortKey="pre_growth_rate_clean" />
+                  <SortHeader isNum={true} label="Peak boom growth" onSort={() => requestScSort("peak_early_growth_rate")} sortConfig={scSortCfg} sortKey="peak_early_growth_rate" />
+                  <SortHeader label="Peak interval" onSort={() => requestScSort("peak_early_interval")} sortConfig={scSortCfg} sortKey="peak_early_interval" />
+                  <SortHeader isNum={true} label="Pre 15P5" onSort={() => requestScSort("ijp_pre_mean")} sortConfig={scSortCfg} sortKey="ijp_pre_mean" />
+                  <SortHeader isNum={true} label="Peak 15P5" onSort={() => requestScSort("ijp_boom_peak")} sortConfig={scSortCfg} sortKey="ijp_boom_peak" />
+                  <SortHeader isNum={true} label="15P5 gain (Δ)" onSort={() => requestScSort("ijp_delta_pp")} sortConfig={scSortCfg} sortKey="ijp_delta_pp" />
                 </tr>
+              </thead>
+              <tbody>
+                {sc_items.map((sc) => (
+                  <tr key={sc.name}>
+                    <td><strong>{sc.name}</strong></td>
+                    <td>{sc.onset_label}</td>
+                    <td className="num">{formatEuroNumber(sc.pre_growth_rate_clean, { decimals: 3, is_already_percent: true })}</td>
+                    <td className="num">{formatEuroNumber(sc.peak_early_growth_rate, { decimals: 3, is_already_percent: true, is_signed: true })}</td>
+                    <td>{sc.peak_early_interval}</td>
+                    <td className="num">{formatEuroNumber(sc.ijp_pre_mean, { is_already_percent: true })}</td>
+                    <td className="num">{formatEuroNumber(sc.ijp_boom_peak, { is_already_percent: true })}</td>
+                    <td className="num">{formatEuroNumber(sc.ijp_delta_pp, { is_signed: true })} pp</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Table 2.2: Regional Trajectory Table */}
+        <div>
+          <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+            <div style={{ fontSize: "13px", fontWeight: 700 }}>
+              Table 2.2 — Paleodemographic trajectory (10000 BC–1000 AD) — {selected_hearth}
+            </div>
+            <div style={{ display: "flex", gap: "4px" }}>
+              {region_keys.map((k) => (
+                <button
+                  className={`linear-btn linear-btn-sm ${selected_hearth === k ? "linear-btn-primary" : ""}`}
+                  key={k}
+                  onClick={() => setSelectedHearth(k)}
+                  type="button"
+                >
+                  {k}
+                </button>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </div>
+          <div className="linear-table-container">
+            <table className="linear-table">
+              <thead>
+                <tr>
+                  <SortHeader label="Epoch" onSort={() => requestTrajSort("year")} sortConfig={trajSortCfg} sortKey="year" />
+                  <SortHeader label="Stage" onSort={() => requestTrajSort("stage")} sortConfig={trajSortCfg} sortKey="stage" />
+                  <SortHeader isNum={true} label="Stadestér pop" onSort={() => requestTrajSort("pop_stadester")} sortConfig={trajSortCfg} sortKey="pop_stadester" />
+                  <SortHeader isNum={true} label="HYDE pop" onSort={() => requestTrajSort("pop_hyde")} sortConfig={trajSortCfg} sortKey="pop_hyde" />
+                  <SortHeader isNum={true} label="Growth (%/yr)" onSort={() => requestTrajSort("growth_rate_pct")} sortConfig={trajSortCfg} sortKey="growth_rate_pct" />
+                  <SortHeader isNum={true} label="Cropland (km²)" onSort={() => requestTrajSort("cropland_km2")} sortConfig={trajSortCfg} sortKey="cropland_km2" />
+                  <SortHeader isNum={true} label="Under-5 share" onSort={() => requestTrajSort("p_under5_pct")} sortConfig={trajSortCfg} sortKey="p_under5_pct" />
+                  <SortHeader isNum={true} label="15P5 index" onSort={() => requestTrajSort("p_5_19_bocquet_pct")} sortConfig={trajSortCfg} sortKey="p_5_19_bocquet_pct" />
+                </tr>
+              </thead>
+              <tbody>
+                {traj_items.map((r) => (
+                  <tr key={r.year}>
+                    <td><strong>{formatYearBCAD(r.year)}</strong></td>
+                    <td><span className="linear-badge">{r.stage}</span></td>
+                    <td className="num">{formatEuroNumber(r.pop_stadester, { use_abbreviation: true })}</td>
+                    <td className="num">{formatEuroNumber(r.pop_hyde, { use_abbreviation: true })}</td>
+                    <td className="num">
+                      {(r.growth_rate_pct !== null)
+                        ? formatEuroNumber(r.growth_rate_pct, { decimals: 3, is_already_percent: true, is_signed: true })
+                        : "—"}
+                    </td>
+                    <td className="num">{formatEuroNumber(r.cropland_km2, { use_abbreviation: true })}</td>
+                    <td className="num">{formatEuroNumber(r.p_under5_pct, { is_already_percent: true })}</td>
+                    <td className="num">{formatEuroNumber(r.p_5_19_bocquet_pct, { is_already_percent: true })}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      {/* Table 2.2: Regional Trajectory Table */}
-      <div>
-        <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-          <div style={{ fontSize: "13px", fontWeight: 700 }}>
-            Table 2.2 — Paleodemographic trajectory (10000 BC–1000 AD) — {selected_hearth}
-          </div>
-          <div style={{ display: "flex", gap: "4px" }}>
-            {region_keys.map((k) => (
-              <button
-                className={`linear-btn linear-btn-sm ${selected_hearth === k ? "linear-btn-primary" : ""}`}
-                key={k}
-                onClick={() => setSelectedHearth(k)}
-                type="button"
-              >
-                {k}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="linear-table-container">
-          <table className="linear-table">
-            <thead>
-              <tr>
-                <SortHeader label="Epoch" onSort={() => requestTrajSort("year")} sortConfig={trajSortCfg} sortKey="year" />
-                <SortHeader label="Stage" onSort={() => requestTrajSort("stage")} sortConfig={trajSortCfg} sortKey="stage" />
-                <SortHeader isNum={true} label="Stadestér pop" onSort={() => requestTrajSort("pop_stadester")} sortConfig={trajSortCfg} sortKey="pop_stadester" />
-                <SortHeader isNum={true} label="HYDE pop" onSort={() => requestTrajSort("pop_hyde")} sortConfig={trajSortCfg} sortKey="pop_hyde" />
-                <SortHeader isNum={true} label="Growth (%/yr)" onSort={() => requestTrajSort("growth_rate_pct")} sortConfig={trajSortCfg} sortKey="growth_rate_pct" />
-                <SortHeader isNum={true} label="Cropland (km²)" onSort={() => requestTrajSort("cropland_km2")} sortConfig={trajSortCfg} sortKey="cropland_km2" />
-                <SortHeader isNum={true} label="Under-5 share" onSort={() => requestTrajSort("p_under5_pct")} sortConfig={trajSortCfg} sortKey="p_under5_pct" />
-                <SortHeader isNum={true} label="15P5 index" onSort={() => requestTrajSort("p_5_19_bocquet_pct")} sortConfig={trajSortCfg} sortKey="p_5_19_bocquet_pct" />
-              </tr>
-            </thead>
-            <tbody>
-              {traj_items.map((r) => (
-                <tr key={r.year}>
-                  <td><strong>{formatYearBCAD(r.year)}</strong></td>
-                  <td><span className="linear-badge">{r.stage}</span></td>
-                  <td className="num">{formatEuroNumber(r.pop_stadester, { use_abbreviation: true })}</td>
-                  <td className="num">{formatEuroNumber(r.pop_hyde, { use_abbreviation: true })}</td>
-                  <td className="num">
-                    {(r.growth_rate_pct !== null)
-                      ? formatEuroNumber(r.growth_rate_pct, { decimals: 3, is_already_percent: true, is_signed: true })
-                      : "—"}
-                  </td>
-                  <td className="num">{formatEuroNumber(r.cropland_km2, { use_abbreviation: true })}</td>
-                  <td className="num">{formatEuroNumber(r.p_under5_pct, { is_already_percent: true })}</td>
-                  <td className="num">{formatEuroNumber(r.p_5_19_bocquet_pct, { is_already_percent: true })}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Table 2.3: Geocodes Audit */}
-      <div>
-        <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "8px" }}>
+      {/* Bottom Pane: Table 2.3 Geocodes Audit */}
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0, overflowY: "auto", paddingRight: "4px" }}>
+        <div style={{ flexShrink: 0, fontSize: "13px", fontWeight: 700, marginBottom: "8px" }}>
           Table 2.3 — Anchor geocode audit (6000 BC, 2000 BC, 0 AD)
         </div>
-        <div className="linear-table-container">
+        <div className="linear-table-container" style={{ flex: 1, overflowY: "auto" }}>
           <table className="linear-table">
             <thead>
               <tr>
@@ -189,9 +198,8 @@ export function NDTValidationView (arg0_props) {
           </table>
         </div>
       </div>
-    </div>
+    </FlexPartition>
   );
 }
 
 export default NDTValidationView;
-

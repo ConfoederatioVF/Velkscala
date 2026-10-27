@@ -4,6 +4,7 @@ export {
   Box,
   BoxRenderable,
   createCliRenderer,
+  FlexPartition,
   OpenTUIProvider,
   ScrollBox,
   Select,
@@ -32,6 +33,5 @@ export {
 } from "./ui_helpers.js";
 
 export {
-  MarkdownHTMLRenderer
-} from "./MarkdownHTMLRenderer.jsx";
-
+  MarkdownRenderer
+} from "./MarkdownRenderer.jsx";

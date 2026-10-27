@@ -271,7 +271,7 @@ function parseGitHubMarkdownBlocks (arg0_markdown) {
  *
  * @returns {React.ReactElement}
  */
-export function MarkdownHTMLRenderer (arg0_props) {
+export function MarkdownRenderer (arg0_props) {
   //Convert from parameters
   let props = (arg0_props) ? arg0_props : {};
 
@@ -399,5 +399,5 @@ export function MarkdownHTMLRenderer (arg0_props) {
   );
 }
 
-export default MarkdownHTMLRenderer;
+export default MarkdownRenderer;
 

@@ -169,12 +169,15 @@ cdt_2x2_dashboard <- (p1_raw | p3_births) / (p2_clamped | p4_deaths) +
     )
   )
 
-# 6. Export Visualisation to outputs/ and test_cdt/ ---------------------------
+# 6. Export Visualisation to outputs/ and test_cdt/ (Atomic write) ------------
+out_path_tmp     <- file.path(outputs_dir, "cdt_proxy_vs_empirical.tmp.png")
 out_path_outputs <- file.path(outputs_dir, "cdt_proxy_vs_empirical.png")
 out_path_local   <- file.path(tests_dir, "cdt_proxy_vs_empirical.png")
 
-ggsave(out_path_outputs, plot = cdt_2x2_dashboard, width = 16, height = 10, dpi = 200)
+ggsave(out_path_tmp, plot = cdt_2x2_dashboard, width = 16, height = 10, dpi = 200)
+file.copy(out_path_tmp, out_path_outputs, overwrite = TRUE)
 if (dir.exists(tests_dir)) {
-  file.copy(out_path_outputs, out_path_local, overwrite = TRUE)
+  file.copy(out_path_tmp, out_path_local, overwrite = TRUE)
 }
+unlink(out_path_tmp)
 message(sprintf("✔ Final CDT dashboard saved to: %s", out_path_outputs))

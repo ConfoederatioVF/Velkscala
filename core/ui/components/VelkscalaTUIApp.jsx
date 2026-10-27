@@ -1,10 +1,11 @@
 //Import React hooks, core/framework library, and validation views
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   buildExplorerTree,
   findTreeNodeById,
+  FlexPartition,
   formatEuroNumber,
-  MarkdownHTMLRenderer,
+  MarkdownRenderer,
   SortHeader,
   TreeExplorer,
   useBridgeAPI,
@@ -77,7 +78,7 @@ function ReportsView (arg0_props) {
       </div>
 
       {is_markdown_doc && !show_raw_md ? (
-        <MarkdownHTMLRenderer content={active_markdown} />
+        <MarkdownRenderer content={active_markdown} />
       ) : (
         <pre className="linear-doc-viewer">
           {is_markdown_doc
@@ -254,68 +255,87 @@ export function VelkscalaTUIApp () {
         </div>
       </div>
 
-      {/* Main Split Layout: Nested File-Explorer Sidebar | Tabbed Content */}
-      <div className="linear-split-layout">
-        {/* Left Sidebar: Nested Tree Explorer & Process Log (white outline on selection) */}
-        <aside className="linear-panel">
-          <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between" }}>
-            <span className="linear-panel-title">Figure &amp; config explorer</span>
-            <button
-              className="linear-btn linear-btn-sm"
-              onClick={() => refreshState()}
-              type="button"
-            >
-              Refresh
-            </button>
-          </div>
-
-          <TreeExplorer
-            nodes={explorer_tree}
-            onSelect={handleTreeSelect}
-            selectedId={selected_node_id}
-          />
-
-          {selected_node ? (
-            <div className="linear-selected-node-meta">
-              <div className="linear-selected-node-title">{selected_node.label}</div>
-              {selected_node.description ? (
-                <div className="linear-selected-node-desc">{selected_node.description}</div>
-              ) : null}
-            </div>
-          ) : null}
-
-          <button
-            className="linear-btn linear-btn-primary"
-            onClick={handleExecuteSelected}
-            style={{ justifyContent: "center", width: "100%" }}
-            type="button"
+      {/* Main Resizable Horizontal Partition: Left Sidebar (Data Explorer) | Right Main Panel */}
+      <FlexPartition
+        className="linear-workspace-partition"
+        direction="horizontal"
+        initialRatio={0.25}
+        maxFirstPct={55}
+        minFirstPct={15}
+      >
+        {/* Left Sidebar: Data Explorer & Process Stream split vertically */}
+        <aside className="linear-panel" style={{ height: "100%", width: "100%" }}>
+          <FlexPartition
+            direction="vertical"
+            initialRatio={0.58}
+            maxFirstPct={85}
+            minFirstPct={25}
           >
-            {selected_node?.stage_id
-              ? `Run ${selected_node.label}`
-              : `Execute ${selected_node?.number || selected_node?.id || "selected"}`}
-          </button>
+            {/* Top Pane: Data Explorer */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", height: "100%", minHeight: 0 }}>
+              <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between" }}>
+                <span className="linear-panel-title">Data Explorer</span>
+                <button
+                  className="linear-btn linear-btn-sm"
+                  onClick={() => refreshState()}
+                  type="button"
+                >
+                  Refresh
+                </button>
+              </div>
 
-          <span className="linear-panel-title" style={{ marginTop: "4px" }}>Process stream</span>
-          <div className="linear-log-box">
-            {(!state_data?.logs || state_data.logs.length === 0) ? (
-              <div style={{ color: "rgba(255, 255, 255, 0.45)" }}>Ready. Select a figure or pipeline node above.</div>
-            ) : (
-              state_data.logs.map((entry, idx) => {
-                let msg = (typeof entry === "object" && entry !== null)
-                  ? `[${entry.time}] ${entry.text}`
-                  : String(entry);
-                return (
-                  <div className="linear-log-line" key={idx}>
-                    {msg}
-                  </div>
-                );
-              })
-            )}
-          </div>
+              <TreeExplorer
+                nodes={explorer_tree}
+                onSelect={handleTreeSelect}
+                selectedId={selected_node_id}
+              />
+
+              {selected_node ? (
+                <div className="linear-selected-node-meta">
+                  <div className="linear-selected-node-title">{selected_node.label}</div>
+                  {selected_node.description ? (
+                    <div className="linear-selected-node-desc">{selected_node.description}</div>
+                  ) : null}
+                </div>
+              ) : null}
+
+              <button
+                className="linear-btn linear-btn-primary"
+                onClick={handleExecuteSelected}
+                style={{ flexShrink: 0, justifyContent: "center", width: "100%" }}
+                type="button"
+              >
+                {selected_node?.stage_id
+                  ? `Run ${selected_node.label}`
+                  : `Execute ${selected_node?.number || selected_node?.id || "selected"}`}
+              </button>
+            </div>
+
+            {/* Bottom Pane: Process Stream */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", height: "100%", minHeight: 0 }}>
+              <span className="linear-panel-title">Process stream</span>
+              <div className="linear-log-box">
+                {(!state_data?.logs || state_data.logs.length === 0) ? (
+                  <div style={{ color: "rgba(255, 255, 255, 0.45)" }}>Ready. Select a figure or pipeline node above.</div>
+                ) : (
+                  state_data.logs.map((entry, idx) => {
+                    let msg = (typeof entry === "object" && entry !== null)
+                      ? `[${entry.time}] ${entry.text}`
+                      : String(entry);
+                    return (
+                      <div className="linear-log-line" key={idx}>
+                        {msg}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </FlexPartition>
         </aside>
 
         {/* Right Main Panel: Tabs and Sortable Data Viewers */}
-        <main className="linear-panel">
+        <main className="linear-panel" style={{ height: "100%", width: "100%" }}>
           <nav className="linear-tabs-nav">
             {tabs.map((tab_title, idx) => (
               <button
@@ -329,7 +349,7 @@ export function VelkscalaTUIApp () {
             ))}
           </nav>
 
-          <div style={{ flex: 1, minHeight: 0, overflowY: "auto", paddingRight: "4px" }}>
+          <div style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: 0, overflowY: "auto", paddingRight: "4px" }}>
             {is_loading ? (
               <div style={{ color: "rgba(255, 255, 255, 0.45)", padding: "16px 0" }}>Loading validation data...</div>
             ) : active_tab === 0 ? (
@@ -342,8 +362,11 @@ export function VelkscalaTUIApp () {
             ) : active_tab === 2 ? (
               <VisualisationsView
                 figuresConfig={state_data?.defines?.figures}
+                jobsObj={state_data?.jobs}
+                onRefreshState={refreshState}
                 onRunPipeline={triggerPipeline}
                 outputsFiles={outputs_files}
+                renderVersion={state_data?.render_version}
                 selectedNode={selected_node}
               />
             ) : (
@@ -355,19 +378,22 @@ export function VelkscalaTUIApp () {
             )}
           </div>
         </main>
-      </div>
+      </FlexPartition>
     </div>
   );
 }
 
 
 /**
- * Tab 3: Numbered R Render Pipelines & Plot Visualisations (Sortable files, non-bold cells outside col 1).
+ * Tab 3: Numbered R Render Pipelines & Plot Visualisations with resizable flex partitions.
  *
  * @param {Object} arg0_props
  *  @param {Array} arg0_props.figuresConfig
+ *  @param {Object} arg0_props.jobsObj
+ *  @param {Function} arg0_props.onRefreshState
  *  @param {Function} arg0_props.onRunPipeline
  *  @param {Array} arg0_props.outputsFiles
+ *  @param {number} arg0_props.renderVersion
  *  @param {Object} arg0_props.selectedNode
  *
  * @returns {React.ReactElement}
@@ -375,38 +401,71 @@ export function VelkscalaTUIApp () {
 function VisualisationsView (arg0_props) {
   //Convert from parameters
   let figures_cfg = arg0_props.figuresConfig || [];
+  let jobs_obj = arg0_props.jobsObj || {};
+  let on_refresh = arg0_props.onRefreshState;
   let on_run = arg0_props.onRunPipeline;
   let files = arg0_props.outputsFiles || [];
+  let render_version = arg0_props.renderVersion || 1;
   let selected_node = arg0_props.selectedNode;
 
   //Declare local instance variables
   let cdt_fig = figures_cfg.find((f) => f.suite === "cdt") || {
-    children: [],
     file_name: "cdt_proxy_vs_empirical.png",
     name: "CDT 2x2 Proxy vs Empirical Validation",
     number: "Fig. 1",
     pipeline_id: "render_cdt_r"
   };
   let cdt_img = files.find((f) => f.name === cdt_fig.file_name);
+  let cdt_status = jobs_obj?.[cdt_fig.pipeline_id]?.status || "idle";
+  let cdt_completed_at = jobs_obj?.[cdt_fig.pipeline_id]?.completed_at || "";
+
+  let [img_nonce, setImgNonce] = useState(() => Date.now());
+
   let ndt_fig = figures_cfg.find((f) => f.suite === "ndt") || {
-    children: [],
     file_name: "ndt_paleodemographic_dashboard.png",
     name: "NDT Paleodemographic Dashboard",
     number: "Fig. 2",
     pipeline_id: "render_ndt_r"
   };
   let ndt_img = files.find((f) => f.name === ndt_fig.file_name);
+  let ndt_status = jobs_obj?.[ndt_fig.pipeline_id]?.status || "idle";
+  let ndt_completed_at = jobs_obj?.[ndt_fig.pipeline_id]?.completed_at || "";
+
+  //Force fresh cache-busted image reload whenever a plot render job finishes
+  useEffect(() => {
+    setImgNonce(Date.now());
+    let timer_handle = setTimeout(() => {
+      setImgNonce(Date.now());
+    }, 450);
+    return () => clearTimeout(timer_handle);
+  }, [cdt_status, cdt_completed_at, ndt_status, ndt_completed_at, render_version, cdt_img?.mtime, ndt_img?.mtime]);
+
+  let handleRerender = async function (arg0_pipeline_id) {
+    let pipeline_id = arg0_pipeline_id;
+    await on_run(pipeline_id);
+    setImgNonce(Date.now());
+  };
+
+  let handleImageError = function () {
+    setTimeout(() => {
+      setImgNonce(Date.now());
+      if (typeof on_refresh === "function") on_refresh();
+    }, 600);
+  };
 
   let { items: sorted_files, requestSort: requestFileSort, sortConfig: fileSortCfg } = useSortableData(
     files,
     { direction: "asc", key: "name" }
   );
 
+  let cdt_src = cdt_img ? `${cdt_img.url}&v=${img_nonce}` : "";
+  let ndt_src = ndt_img ? `${ndt_img.url}&v=${img_nonce}` : "";
+
   //Return statement
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: "10px", height: "100%", minHeight: 0 }}>
       {selected_node && selected_node.category === "visualisation" ? (
-        <div className="linear-selected-figure-banner">
+        <div className="linear-selected-figure-banner" style={{ flexShrink: 0 }}>
           <div>
             <strong>{selected_node.label}</strong>
             {selected_node.description ? (
@@ -418,121 +477,134 @@ function VisualisationsView (arg0_props) {
           {selected_node.pipeline_id ? (
             <button
               className="linear-btn linear-btn-sm"
-              onClick={() => on_run(selected_node.pipeline_id)}
+              onClick={() => handleRerender(selected_node.pipeline_id)}
               type="button"
             >
-              Re-render {selected_node.number || "figure"}
+              {jobs_obj?.[selected_node.pipeline_id]?.status === "running"
+                ? "Rendering..."
+                : `Re-render ${selected_node.number || "figure"}`}
             </button>
           ) : null}
         </div>
       ) : null}
 
-      <div style={{ display: "grid", gap: "14px", gridTemplateColumns: "1fr 1fr" }}>
-        <div className="linear-plot-card">
-          <div className="linear-plot-header">
-            <div>
-              <div className="linear-plot-title">{cdt_fig.number} — {cdt_fig.name}</div>
-              <div className="linear-plot-meta">
-                outputs/{cdt_fig.file_name} {cdt_img ? `(${formatEuroNumber(cdt_img.size_kb, { decimals: 1 })} kB)` : ""}
+      {/* Vertical Flex Partition: Main Figure Display Area (Top) vs Output Files Table (Bottom) */}
+      <FlexPartition
+        direction="vertical"
+        initialRatio={0.68}
+        maxFirstPct={92}
+        minFirstPct={25}
+        style={{ flex: 1, minHeight: 0 }}
+      >
+        {/* Horizontal Flex Partition: Fig. 1 (Left) vs Fig. 2 (Right) */}
+        <FlexPartition
+          direction="horizontal"
+          initialRatio={0.5}
+          maxFirstPct={82}
+          minFirstPct={18}
+          style={{ height: "100%", width: "100%" }}
+        >
+          <div className="linear-plot-card" style={{ height: "100%", width: "100%" }}>
+            <div className="linear-plot-header">
+              <div>
+                <div className="linear-plot-title">{cdt_fig.number} — {cdt_fig.name}</div>
+                <div className="linear-plot-meta">
+                  outputs/{cdt_fig.file_name} {cdt_img ? `(${formatEuroNumber(cdt_img.size_kb, { decimals: 1 })} kB)` : ""}
+                </div>
               </div>
+              <button
+                className="linear-btn linear-btn-sm"
+                onClick={() => handleRerender(cdt_fig.pipeline_id)}
+                type="button"
+              >
+                {cdt_status === "running" ? "Rendering..." : `Re-render ${cdt_fig.number}`}
+              </button>
             </div>
-            <button
-              className="linear-btn linear-btn-sm"
-              onClick={() => on_run(cdt_fig.pipeline_id)}
-              type="button"
-            >
-              Re-render {cdt_fig.number}
-            </button>
-          </div>
-          <div className="linear-plot-image-wrap">
-            {cdt_img ? (
-              <img alt={cdt_fig.name} className="linear-plot-image" src={cdt_img.url} />
-            ) : (
-              <span style={{ color: "rgba(255, 255, 255, 0.45)" }}>Plot not generated yet.</span>
-            )}
-          </div>
-          {Array.isArray(cdt_fig.children) && cdt_fig.children.length > 0 ? (
-            <div className="linear-subfigures-list">
-              {cdt_fig.children.map((sub) => (
-                <span className="linear-badge" key={sub.id} title={sub.description}>
-                  {sub.number}: {sub.name}
-                </span>
-              ))}
+            <div className="linear-plot-image-wrap">
+              {cdt_img ? (
+                <img
+                  alt={cdt_fig.name}
+                  className="linear-plot-image"
+                  key={cdt_src}
+                  onError={handleImageError}
+                  src={cdt_src}
+                />
+              ) : (
+                <span style={{ color: "rgba(255, 255, 255, 0.45)" }}>Plot not generated yet.</span>
+              )}
             </div>
-          ) : null}
-        </div>
+          </div>
 
-        <div className="linear-plot-card">
-          <div className="linear-plot-header">
-            <div>
-              <div className="linear-plot-title">{ndt_fig.number} — {ndt_fig.name}</div>
-              <div className="linear-plot-meta">
-                outputs/{ndt_fig.file_name} {ndt_img ? `(${formatEuroNumber(ndt_img.size_kb, { decimals: 1 })} kB)` : ""}
+          <div className="linear-plot-card" style={{ height: "100%", width: "100%" }}>
+            <div className="linear-plot-header">
+              <div>
+                <div className="linear-plot-title">{ndt_fig.number} — {ndt_fig.name}</div>
+                <div className="linear-plot-meta">
+                  outputs/{ndt_fig.file_name} {ndt_img ? `(${formatEuroNumber(ndt_img.size_kb, { decimals: 1 })} kB)` : ""}
+                </div>
               </div>
+              <button
+                className="linear-btn linear-btn-sm"
+                onClick={() => handleRerender(ndt_fig.pipeline_id)}
+                type="button"
+              >
+                {ndt_status === "running" ? "Rendering..." : `Re-render ${ndt_fig.number}`}
+              </button>
             </div>
-            <button
-              className="linear-btn linear-btn-sm"
-              onClick={() => on_run(ndt_fig.pipeline_id)}
-              type="button"
-            >
-              Re-render {ndt_fig.number}
-            </button>
-          </div>
-          <div className="linear-plot-image-wrap">
-            {ndt_img ? (
-              <img alt={ndt_fig.name} className="linear-plot-image" src={ndt_img.url} />
-            ) : (
-              <span style={{ color: "rgba(255, 255, 255, 0.45)" }}>Plot not generated yet.</span>
-            )}
-          </div>
-          {Array.isArray(ndt_fig.children) && ndt_fig.children.length > 0 ? (
-            <div className="linear-subfigures-list">
-              {ndt_fig.children.map((sub) => (
-                <span className="linear-badge" key={sub.id} title={sub.description}>
-                  {sub.number}: {sub.name}
-                </span>
-              ))}
+            <div className="linear-plot-image-wrap">
+              {ndt_img ? (
+                <img
+                  alt={ndt_fig.name}
+                  className="linear-plot-image"
+                  key={ndt_src}
+                  onError={handleImageError}
+                  src={ndt_src}
+                />
+              ) : (
+                <span style={{ color: "rgba(255, 255, 255, 0.45)" }}>Plot not generated yet.</span>
+              )}
             </div>
-          ) : null}
-        </div>
-      </div>
+          </div>
+        </FlexPartition>
 
-      <div>
-        <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "8px" }}>
-          Output files ({files.length})
-        </div>
-        <div className="linear-table-container">
-          <table className="linear-table">
-            <thead>
-              <tr>
-                <SortHeader label="File" onSort={() => requestFileSort("name")} sortConfig={fileSortCfg} sortKey="name" />
-                <SortHeader isNum={true} label="Size" onSort={() => requestFileSort("size_kb")} sortConfig={fileSortCfg} sortKey="size_kb" />
-                <SortHeader label="Last modified" onSort={() => requestFileSort("mtime")} sortConfig={fileSortCfg} sortKey="mtime" />
-                <th>Link</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted_files.map((f) => (
-                <tr key={f.name}>
-                  <td><strong>{f.name}</strong></td>
-                  <td className="num">{formatEuroNumber(f.size_kb, { decimals: 1 })} kB</td>
-                  <td>{f.mtime.replace("T", " ").slice(0, 19)}</td>
-                  <td>
-                    <a
-                      href={f.url}
-                      rel="noreferrer"
-                      style={{ color: "var(--text-primary)", textDecoration: "underline" }}
-                      target="_blank"
-                    >
-                      Open
-                    </a>
-                  </td>
+        {/* Bottom Pane: Output Files Table */}
+        <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0, overflowY: "auto" }}>
+          <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "6px" }}>
+            Output files ({files.length})
+          </div>
+          <div className="linear-table-container" style={{ flex: 1, overflowY: "auto" }}>
+            <table className="linear-table">
+              <thead>
+                <tr>
+                  <SortHeader label="File" onSort={() => requestFileSort("name")} sortConfig={fileSortCfg} sortKey="name" />
+                  <SortHeader isNum={true} label="Size" onSort={() => requestFileSort("size_kb")} sortConfig={fileSortCfg} sortKey="size_kb" />
+                  <SortHeader label="Last modified" onSort={() => requestFileSort("mtime")} sortConfig={fileSortCfg} sortKey="mtime" />
+                  <th>Link</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {sorted_files.map((f) => (
+                  <tr key={f.name}>
+                    <td><strong>{f.name}</strong></td>
+                    <td className="num">{formatEuroNumber(f.size_kb, { decimals: 1 })} kB</td>
+                    <td>{f.mtime.replace("T", " ").slice(0, 19)}</td>
+                    <td>
+                      <a
+                        href={f.url}
+                        rel="noreferrer"
+                        style={{ color: "var(--text-primary)", textDecoration: "underline" }}
+                        target="_blank"
+                      >
+                        Open
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      </FlexPartition>
     </div>
   );
 }

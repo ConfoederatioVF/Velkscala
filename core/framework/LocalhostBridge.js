@@ -168,11 +168,13 @@ class LocalhostBridge {
         } else if (ext === ".md") {
           mime = "text/markdown; charset=utf-8";
         }
+        let buf = fs.readFileSync(full_file);
         res.writeHead(200, {
-          "Cache-Control": "no-store",
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+          "Content-Length": buf.length,
           "Content-Type": mime
         });
-        fs.createReadStream(full_file).pipe(res);
+        res.end(buf);
         return;
       }
     }

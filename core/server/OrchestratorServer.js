@@ -13,6 +13,7 @@ class OrchestratorServer {
   static active_processes = new Map();
   static jobs = {};
   static log_lines = [];
+  static render_version = 1;
 
 
   /**
@@ -108,14 +109,15 @@ class OrchestratorServer {
     if (fs.existsSync(outputs_dir)) {
       let names = fs.readdirSync(outputs_dir);
       for (let i = 0; i < names.length; i++) {
+        if (names[i].includes(".tmp.")) continue;
         let f_path = path.join(outputs_dir, names[i]);
         let stat = fs.statSync(f_path);
-        if (stat.isFile()) {
+        if (stat.isFile() && stat.size > 0) {
           outputs_files.push({
             mtime: stat.mtime.toISOString(),
             name: names[i],
             size_kb: +(stat.size/1024).toFixed(1),
-            url: `/outputs/${names[i]}?t=${Math.floor(stat.mtimeMs)}`
+            url: `/outputs/${names[i]}?t=${Math.floor(stat.mtimeMs)}_${stat.size}_${OrchestratorServer.render_version}`
           });
         }
       }
@@ -132,6 +134,7 @@ class OrchestratorServer {
       ndt_md: ndt_md,
       ndt_results: ndt_results,
       outputs_files: outputs_files,
+      render_version: OrchestratorServer.render_version,
       rscript_path: env_defines.rscript_path,
       svea_status: {
         exists: fs.existsSync(env_defines.svea_dir),
@@ -222,6 +225,7 @@ class OrchestratorServer {
 
     child_proc.on("close", (code) => {
       OrchestratorServer.active_processes.delete(pipeline_id);
+      OrchestratorServer.render_version++;
       job_obj.completed_at = new Date().toISOString();
       job_obj.exit_code = code;
       job_obj.status = (code === 0) ? "completed" : "failed";

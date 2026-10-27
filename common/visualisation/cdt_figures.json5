@@ -36,50 +36,7 @@
       output_path: "$OUTPUTS_DIR/cdt_proxy_vs_empirical.png",
       script_path: "$TEST_CDT_DIR/plot_cdt_validation.R",
       tab_index: 2,
-      description: "Composite 2x2 validation figure comparing Raw MNL vs Stadestér-clamped R² and normalised country vital flow residuals (1850–2019).",
-      children: [
-        {
-          id: "fig_1_1_age_sex_trajectory",
-          number: "Fig. 1.1",
-          name: "Age/Sex Geomean R² Trajectory (1850–2019)",
-          pipeline_id: "render_cdt_r",
-          file_name: "cdt_proxy_vs_empirical.png",
-          source_json: "$OUTPUTS_DIR/validation_age_sex_cdt.json",
-          tab_index: 2,
-          description: "Panel A: Historical progression of geometric mean R² across HMD and UNWPP epochs."
-        },
-        {
-          id: "fig_1_2_vital_flows_median",
-          number: "Fig. 1.2",
-          name: "Median Country Birth & Death Error Trend",
-          pipeline_id: "render_cdt_r",
-          file_name: "cdt_proxy_vs_empirical.png",
-          source_json: "$OUTPUTS_DIR/validation_births_deaths_cdt.json",
-          tab_index: 2,
-          description: "Panel B: Normalised median relative country error for inferred proxy births and deaths."
-        },
-        {
-          id: "fig_1_3_country_r2_distribution",
-          number: "Fig. 1.3",
-          name: "Country-Level R² Gain Distribution",
-          pipeline_id: "render_cdt_r",
-          file_name: "cdt_proxy_vs_empirical.png",
-          source_json: "$OUTPUTS_DIR/validation_age_sex_cdt.json",
-          tab_index: 2,
-          description: "Panel C: Violin/boxplot distribution of country-level R² gains from PAVA/Whittaker graduation."
-        },
-        {
-          id: "fig_1_4_vital_error_density",
-          number: "Fig. 1.4",
-          name: "Country Vital Flow Residual Density",
-          pipeline_id: "render_cdt_r",
-          file_name: "cdt_proxy_vs_empirical.png",
-          source_json: "$OUTPUTS_DIR/validation_births_deaths_cdt.json",
-          tab_index: 2,
-          description: "Panel D: Cross-sectional distribution of relative birth and death residuals across 189 countries."
-        }
-      ]
+      description: "Composite 2x2 validation figure comparing Raw MNL vs Stadestér-clamped R² and normalised country vital flow residuals (1850–2019)."
     }
   ]
 }
-

@@ -163,13 +163,84 @@ body,
   margin-top: 2px;
 }
 
-/* -- Workspace split layout -- */
-.linear-split-layout {
-  display: grid;
+/* -- Workspace split layout & Resizable Flex Partitions -- */
+.linear-workspace-partition {
   flex: 1;
-  gap: 12px;
-  grid-template-columns: 335px 1fr;
   min-height: 0;
+  width: 100%;
+}
+
+.linear-flex-partition {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+}
+
+.linear-flex-partition.partition-horizontal {
+  flex-direction: row;
+}
+
+.linear-flex-partition.partition-vertical {
+  flex-direction: column;
+}
+
+.linear-flex-partition.is-dragging {
+  user-select: none;
+}
+
+.linear-partition-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.linear-partition-sash {
+  align-items: center;
+  background-color: transparent;
+  display: flex;
+  flex-shrink: 0;
+  justify-content: center;
+  transition: background-color 0.12s ease;
+  z-index: 5;
+}
+
+.linear-partition-sash.sash-horizontal {
+  cursor: col-resize;
+  height: 100%;
+  margin: 0 3px;
+  width: 6px;
+}
+
+.linear-partition-sash.sash-vertical {
+  cursor: row-resize;
+  height: 6px;
+  margin: 3px 0;
+  width: 100%;
+}
+
+.linear-partition-grip {
+  background-color: rgba(255, 255, 255, 0.14);
+  border-radius: 2px;
+  transition: background-color 0.12s ease;
+}
+
+.sash-horizontal .linear-partition-grip {
+  height: 32px;
+  width: 2px;
+}
+
+.sash-vertical .linear-partition-grip {
+  height: 2px;
+  width: 32px;
+}
+
+.linear-partition-sash:hover .linear-partition-grip,
+.linear-partition-sash.active .linear-partition-grip {
+  background-color: #ffffff;
 }
 
 .linear-panel {
@@ -199,8 +270,7 @@ body,
   flex: 1;
   flex-direction: column;
   gap: 2px;
-  max-height: 290px;
-  min-height: 160px;
+  min-height: 0;
   overflow-y: auto;
   padding: 6px;
 }
@@ -532,16 +602,20 @@ body,
   border: 1px solid var(--border-subtle);
   border-radius: 4px;
   display: flex;
+  flex: 1;
   justify-content: center;
+  min-height: 180px;
   overflow: hidden;
   padding: 8px;
 }
 
 .linear-plot-image {
+  display: block;
   height: auto;
-  max-height: 480px;
+  max-height: 100%;
   max-width: 100%;
   object-fit: contain;
+  width: auto;
 }
 
 .linear-subfigures-list {

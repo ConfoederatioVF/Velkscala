@@ -224,7 +224,7 @@ class OpenTUITerminal {
     lines.push("");
 
     lines.push(
-      `  ${ANSI.bold}Figure & Pipeline Explorer${ANSI.reset} ${ANSI.dim}(↑/↓ select, Enter execute node, G/T/F stages, Tab view, S sort, Q quit)${ANSI.reset}`
+      `  ${ANSI.bold}Data Explorer${ANSI.reset} ${ANSI.dim}(↑/↓ select, Enter execute node, G/T/F stages, Tab view, S sort, Q quit)${ANSI.reset}`
     );
 
     for (let i = 0; i < this.explorer_items.length; i++) {

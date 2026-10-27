@@ -102,6 +102,102 @@ export function Box (arg0_props) {
 
 
 /**
+ * Interactive draggable flex partition container (horizontal or vertical split).
+ * Double-clicking the sash resets the partition to its initial ratio.
+ *
+ * @param {Object} arg0_props
+ *  @param {Array<React.ReactNode>} arg0_props.children
+ *  @param {string} [arg0_props.className]
+ *  @param {string} [arg0_props.direction="horizontal"]
+ *  @param {number} [arg0_props.initialRatio=0.5]
+ *  @param {number} [arg0_props.maxFirstPct=85]
+ *  @param {number} [arg0_props.minFirstPct=15]
+ *  @param {Object} [arg0_props.style]
+ *
+ * @returns {React.ReactElement}
+ */
+export function FlexPartition (arg0_props) {
+  //Convert from parameters
+  let props = (arg0_props) ? arg0_props : {};
+
+  //Declare local instance variables
+  let children_arr = React.Children.toArray(props.children);
+  let container_ref = useRef(null);
+  let direction = props.direction || "horizontal";
+  let initial_pct = (props.initialRatio !== undefined) ? props.initialRatio*100 : 50;
+  let [is_dragging, setIsDragging] = useState(false);
+  let is_horizontal = (direction === "horizontal");
+  let max_pct = (props.maxFirstPct !== undefined) ? props.maxFirstPct : 85;
+  let min_pct = (props.minFirstPct !== undefined) ? props.minFirstPct : 15;
+  let [split_pct, setSplitPct] = useState(initial_pct);
+
+  useEffect(() => {
+    if (!is_dragging) return;
+
+    let onMouseMove = (e) => {
+      if (!container_ref.current) return;
+      let rect = container_ref.current.getBoundingClientRect();
+      let raw_pct = is_horizontal
+        ? ((e.clientX - rect.left)/Math.max(1, rect.width))*100
+        : ((e.clientY - rect.top)/Math.max(1, rect.height))*100;
+      let clamped_pct = Math.max(min_pct, Math.min(max_pct, raw_pct));
+      setSplitPct(clamped_pct);
+    };
+
+    let onMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [is_dragging, is_horizontal, max_pct, min_pct]);
+
+  //Return statement
+  return (
+    <div
+      className={`linear-flex-partition ${is_horizontal ? "partition-horizontal" : "partition-vertical"} ${is_dragging ? "is-dragging" : ""} ${props.className || ""}`}
+      ref={container_ref}
+      style={props.style}
+    >
+      <div
+        className="linear-partition-pane linear-partition-first"
+        style={is_horizontal
+          ? { flexBasis: `${split_pct}%`, width: `${split_pct}%` }
+          : { flexBasis: `${split_pct}%`, height: `${split_pct}%` }}
+      >
+        {children_arr[0]}
+      </div>
+
+      <div
+        className={`linear-partition-sash ${is_horizontal ? "sash-horizontal" : "sash-vertical"} ${is_dragging ? "active" : ""}`}
+        onDoubleClick={() => setSplitPct(initial_pct)}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        title="Drag to resize partition (double-click to reset)"
+      >
+        <span className="linear-partition-grip" />
+      </div>
+
+      <div
+        className="linear-partition-pane linear-partition-second"
+        style={is_horizontal
+          ? { flexBasis: `${100 - split_pct}%`, width: `${100 - split_pct}%` }
+          : { flexBasis: `${100 - split_pct}%`, height: `${100 - split_pct}%` }}
+      >
+        {children_arr[1]}
+      </div>
+    </div>
+  );
+}
+
+
+/**
  * Provides the root OpenTUI context and terminal surface in the browser DOM.
  *
  * @param {Object} arg0_props
