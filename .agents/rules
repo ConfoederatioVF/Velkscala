@@ -10,11 +10,12 @@
   - Canvas & Backgrounds: Main workspace `#111113`, Panels/Surfaces `#18181b`, Cards `#202024`, Hover `#27272c`.
   - Typography Scale: Primary text `#ffffff`, Secondary/Muted text `rgba(255, 255, 255, 0.65)`, Dim text `rgba(255, 255, 255, 0.45)`.
 - **Button vs Outline Rules**:
-  - **Only actual interactive buttons** (e.g. "Run CDT", "Render R plots", "Execute selected pipeline") may have the red button look (`background-color: var(--accent-primary)`).
-  - **List item selection outlines** (such as the pipeline selector list on the left-hand side) must be **white** (`#ffffff`) for contrast, never red.
-- **Terminal TUI Color Rule**:
-  - The terminal TUI is unrestricted in using the terminal's natural ANSI colours (cyan, green, yellow, red, magenta, white, dim) because terminal environments naturally constrain colour palettes and prevent visual bloat.
-  - The web UI strictly enforces the Dataview palette and avoids extraneous rainbow accents.
+  - **Only actual interactive buttons** (e.g. "Generate Data", "Run Tests", "Generate Figures") may have the red button look (`background-color: var(--accent-primary)`).
+  - **List item selection outlines** (such as the Data Explorer tree items on the left-hand side) must be **white** (`#ffffff`) for contrast, never red.
+- **Web App Architecture (React + shadcn/ui)**:
+  - Uses a single unified web app on port 16000 (`React + shadcn/ui` with the Dataview colour palette) rather than separate terminal TUIs.
+  - **Data Explorer**: Contains a searchbar and the 3 top-level folders (`Tabulation`, `Tests`, and `Figures`) with inline stage buttons (`Generate Data`, `Run Tests`, `Generate Figures`). Clicking any item in the Data Explorer displays that artefact in the main scene like a true file explorer.
+  - **Main Scene**: Includes an Expand/Collapse toggle to view the active artefact in full-screen mode.
 
 ## 2. Typography & Table Standards
 
@@ -23,25 +24,19 @@
     ```css
     font-family: "Karla", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     ```
-  - Monospace (strictly code & logs):
+  - Monospace (strictly code & raw documents):
     ```css
     font-family: "Fira Code", monospace;
     ```
 - **Monospace Restriction**:
-  - Monospace is **strictly reserved for actual code snippets/blocks and raw process logs**.
+  - Monospace is **strictly reserved for actual code snippets/blocks and raw JSON/Markdown source**.
   - It must **never** be used for data tables, statistics, KPI numbers, geocodes, table headers, or badges.
   - Numbers and figures use the primary sans-serif font (`Karla`) with `font-variant-numeric: tabular-nums` for precise alignment.
 - **Table Interactivity & Bolding Rule**:
   - All tables must be **sortable** (ascending `▲` and descending `▼`) by clicking column headers.
   - **Cells outside the first column must NOT be bolded**. Only the entity/epoch in the first column (`col-entity`) is bolded for identification. All other cells (figures, ratios, errors, rates) must use standard regular weight (`font-weight: 400`).
 
-## 3. Terminal Rendering & Ghosting Prevention
-
-- Full-screen TUI renderers must enter the **Alternate Screen Buffer** (`\x1b[?1049h`) on startup and exit cleanly (`\x1b[?1049l`) on shutdown to prevent scrollback buffer ghosting.
-- Total rendered lines must be clamped to `(process.stdout.rows - 1)` without a trailing newline on the bottom row to prevent terminal scrolling artifacts.
-- Window resize events (`process.stdout.on("resize")`) must trigger a clean screen clear and re-render.
-
-## 4. Writing & Research Norms
+## 3. Writing & Research Norms
 
 - **Minimal and Human Prose**:
   - Write plain, direct, human English. Explain clearly what each view or metric shows.

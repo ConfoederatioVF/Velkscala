@@ -1,7 +1,6 @@
 let ConfigLoader = require("./ConfigLoader.js");
 let DefinesLoader = require("./defines_loader.js");
 let LocalhostBridge = require("./LocalhostBridge.js");
-let OpenTUITerminal = require("./OpenTUITerminal.js");
 
 
 /**
@@ -10,7 +9,5 @@ let OpenTUITerminal = require("./OpenTUITerminal.js");
 module.exports = {
   ConfigLoader: ConfigLoader,
   DefinesLoader: DefinesLoader,
-  LocalhostBridge: LocalhostBridge,
-  OpenTUITerminal: OpenTUITerminal
+  LocalhostBridge: LocalhostBridge
 };
-

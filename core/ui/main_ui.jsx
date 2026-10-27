@@ -1,12 +1,11 @@
 //Import libraries and components
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { OpenTUIProvider } from "../framework/index_ui.js";
 import { VelkscalaTUIApp } from "./components/VelkscalaTUIApp.jsx";
 
 
 /**
- * Initialises and mounts the OpenTUI React frontend on port 16000.
+ * Initialises and mounts the Velkscala React frontend on port 16000.
  */
 function initVelkscalaUI () {
   //Declare local instance variables
@@ -20,11 +19,7 @@ function initVelkscalaUI () {
   }
 
   root_instance = createRoot(container_el);
-  root_instance.render(
-    <OpenTUIProvider>
-      <VelkscalaTUIApp />
-    </OpenTUIProvider>
-  );
+  root_instance.render(<VelkscalaTUIApp />);
 }
 
 initVelkscalaUI();

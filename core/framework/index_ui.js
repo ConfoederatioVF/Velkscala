@@ -1,22 +1,19 @@
 //Browser / ESM barrel entry point for the Velkscala core/framework library
 export {
-  AsciiFont,
-  Box,
-  BoxRenderable,
-  createCliRenderer,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   FlexPartition,
-  OpenTUIProvider,
-  ScrollBox,
-  Select,
+  Input,
+  ShadcnUI,
   SortHeader,
-  TabSelect,
-  Text,
-  TextRenderable,
-  TreeExplorer,
-  useKeyboard,
-  useRenderer,
-  useTerminalDimensions
-} from "./OpenTUIWrapper.jsx";
+  Table,
+  TreeExplorer
+} from "../ui/components/ShadcnUI.jsx";
 
 export {
   BridgeClient,
@@ -25,6 +22,7 @@ export {
 
 export {
   buildExplorerTree,
+  filterExplorerTree,
   findTreeNodeById,
   formatEuroNumber,
   formatYearBCAD,

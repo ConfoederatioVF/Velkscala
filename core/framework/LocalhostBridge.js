@@ -261,8 +261,6 @@ class LocalhostBridge {
         ],
         resolve: {
           alias: {
-            "@opentui/core": path.resolve(project_root, "core/framework/OpenTUIWrapper.jsx"),
-            "@opentui/react": path.resolve(project_root, "core/framework/OpenTUIWrapper.jsx"),
             "@velkscala/framework": path.resolve(project_root, "core/framework/index_ui.js")
           }
         },
@@ -274,7 +272,7 @@ class LocalhostBridge {
         }
       });
       await vite_server.listen();
-      orchestrator.appendLog(`Vite OpenTUI bridge server active at ${vite_url}`, "vite");
+      orchestrator.appendLog(`Vite web bridge server active at ${vite_url}`, "vite");
     } catch (err) {
       vite_status = "EXTERNAL INSTANCE ON :16000";
       orchestrator.appendLog(`Vite port ${port} note: ${err.message}`, "vite");

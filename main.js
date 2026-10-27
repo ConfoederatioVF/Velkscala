@@ -1,24 +1,21 @@
-//Suppress Vite CJS Node API notice so stdout remains clean for the local TUI
+//Suppress Vite CJS Node API notice
 process.env.VITE_CJS_IGNORE_WARNING = "true";
 
 //Import framework library and backend orchestrator
-let { ConfigLoader, LocalhostBridge, OpenTUITerminal } = require("./core/framework/index.js");
+let { ConfigLoader, LocalhostBridge } = require("./core/framework/index.js");
 let OrchestratorServer = require("./core/server/OrchestratorServer.js");
 
 
 /**
- * Starts both the Vite Dev Server on port 16000 via LocalhostBridge and the local OpenTUI terminal interface.
+ * Starts the Velkscala React web application server on port 16000 via LocalhostBridge.
  */
 async function startVelkscalaOrchestrator () {
   //Declare local instance variables
-  let args = process.argv.slice(2);
   let bridge_info;
   let env_defines = ConfigLoader.loadDefines();
-  let is_headless = args.includes("--headless") || args.includes("--no-tui");
-  let tui_terminal;
 
   OrchestratorServer.appendLog(
-    `Initialising Velkscala OpenTUI Orchestrator (SVEA: ${env_defines.svea_dir})`,
+    `Initialising Velkscala Web Orchestrator (SVEA: ${env_defines.svea_dir})`,
     "startup"
   );
 
@@ -27,12 +24,7 @@ async function startVelkscalaOrchestrator () {
     project_root: __dirname
   });
 
-  tui_terminal = new OpenTUITerminal({
-    headless: is_headless,
-    vite_status: bridge_info.status,
-    vite_url: bridge_info.url
-  });
-  tui_terminal.start();
+  console.log(`[Velkscala] Web application listening at ${bridge_info.url} (${bridge_info.status})`);
 }
 
 process.on("uncaughtException", (err) => {

@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-title Velkscala - OpenTUI Orchestrator (Port 16000)
+title Velkscala - Web Orchestrator (Port 16000)
 cd /d "%~dp0"
 
 if not exist "node_modules\" (

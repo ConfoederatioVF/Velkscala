@@ -3,8 +3,8 @@ import { useMemo, useState } from "react";
 
 
 /**
- * Builds the nested file-explorer tree structure from common/visualisation/,
- * common/tabulation/, and common/testing/ definitions, attaching live job statuses and output files.
+ * Builds the nested file-explorer tree structure for the 3 top-level folders:
+ * Tabulation, Tests, and Figures, with inline stage and pipeline triggers.
  *
  * @param {Object} arg0_defines
  * @param {Object} [arg1_jobs]
@@ -20,14 +20,13 @@ export function buildExplorerTree (arg0_defines, arg1_jobs, arg2_outputs) {
 
   //Declare local instance variables
   let figures_array = defines_obj.figures || [];
-  let figure_suite_groups = {};
   let pipelines_obj = defines_obj.pipelines || {};
   let root_nodes = [];
-  let tables_array = defines_obj.tables || [];
+  let tab_children = [];
   let table_suite_groups = {};
+  let tables_array = defines_obj.tables || [];
   let test_children = [];
   let vis_children = [];
-  let tab_children = [];
 
   let getJobStatus = function (arg0_pipeline_id, arg1_file_name) {
     let p_id = arg0_pipeline_id;
@@ -41,68 +40,41 @@ export function buildExplorerTree (arg0_defines, arg1_jobs, arg2_outputs) {
     return "idle";
   };
 
-  //1. Build common/visualisation/ nested figure explorer tree
-  for (let i = 0; i < figures_array.length; i++) {
-    let fig = figures_array[i];
-    let suite_key = fig.suite || "general";
-    if (!figure_suite_groups[suite_key]) {
-      figure_suite_groups[suite_key] = {
-        children: [],
-        id: `folder_vis_${suite_key}`,
-        is_folder: true,
-        label: fig.suite_title || suite_key.toUpperCase(),
-        path_label: `common/visualisation/${suite_key}_figures.json5`
-      };
+  let getStageStatus = function (arg0_stage_id) {
+    let stage_id = arg0_stage_id;
+    let stage_pids = defines_obj.stages?.[stage_id]?.pipeline_ids || [];
+    for (let i = 0; i < stage_pids.length; i++) {
+      if (jobs_obj[stage_pids[i]]?.status === "running") return "running";
     }
+    return "idle";
+  };
 
-    figure_suite_groups[suite_key].children.push({
-      category: "visualisation",
-      description: fig.description || "",
-      file_name: fig.file_name,
-      id: fig.id,
-      is_folder: false,
-      label: `${fig.number} — ${fig.name}`,
-      number: fig.number,
-      output_path: fig.output_path,
-      pipeline_id: fig.pipeline_id,
-      script_path: fig.script_path,
-      status: getJobStatus(fig.pipeline_id, fig.file_name),
-      suite: suite_key,
-      tab_index: (fig.tab_index !== undefined) ? fig.tab_index : 2
-    });
-  }
-
-  let vis_suite_keys = Object.keys(figure_suite_groups);
-  for (let i = 0; i < vis_suite_keys.length; i++) {
-    vis_children.push(figure_suite_groups[vis_suite_keys[i]]);
-  }
-
-  root_nodes.push({
-    category: "visualisation",
-    children: vis_children,
-    id: "root_visualisation",
-    is_folder: true,
-    label: "common/visualisation/",
-    stage_id: "generate_figures"
-  });
-
-  //2. Build common/tabulation/ nested table compilation tree
+  //1. Build Tabulation top-level folder (inline button: Generate Data)
   for (let i = 0; i < tables_array.length; i++) {
     let tbl = tables_array[i];
     let suite_key = tbl.suite || "general";
     if (!table_suite_groups[suite_key]) {
       table_suite_groups[suite_key] = {
+        action_label: "Compile",
+        artefact_type: "folder",
+        category: "tabulation",
         children: [],
+        description: (suite_key === "cdt")
+          ? "Contemporary Demographic Transition (1850–2019) binned validation tables and Markdown audit report."
+          : "Neolithic Demographic Transition (10000 BC–1000 AD) regional trajectories, scorecard, and geocode audit.",
         id: `folder_tab_${suite_key}`,
         is_folder: true,
         label: tbl.suite_title || suite_key.toUpperCase(),
         path_label: `common/tabulation/${suite_key}_tabulation.json5`,
-        pipeline_id: tbl.pipeline_id
+        pipeline_id: tbl.pipeline_id,
+        status: jobs_obj[tbl.pipeline_id]?.status || "idle",
+        suite: suite_key
       };
     }
 
     let base_file = (tbl.source_file) ? tbl.source_file.split(/[\\/]/).pop() : "";
     table_suite_groups[suite_key].children.push({
+      artefact_type: "table",
       category: "tabulation",
       description: tbl.description || "",
       file_name: base_file,
@@ -110,12 +82,46 @@ export function buildExplorerTree (arg0_defines, arg1_jobs, arg2_outputs) {
       is_folder: false,
       label: `${tbl.number} — ${tbl.name}`,
       number: tbl.number,
+      path_label: `outputs/${base_file}`,
       pipeline_id: tbl.pipeline_id,
       report_file: tbl.report_file,
       source_file: tbl.source_file,
       status: getJobStatus(tbl.pipeline_id, base_file),
-      suite: suite_key,
-      tab_index: (tbl.tab_index !== undefined) ? tbl.tab_index : 0
+      suite: suite_key
+    });
+  }
+
+  if (table_suite_groups.cdt) {
+    table_suite_groups.cdt.children.push({
+      artefact_type: "markdown",
+      category: "tabulation",
+      description: "Compiled GitHub-Flavored Markdown validation report for the Contemporary Demographic Transition (1850–2019).",
+      file_name: "cdt.md",
+      id: "doc_cdt_md",
+      is_folder: false,
+      label: "cdt.md — CDT Validation Report",
+      number: "cdt.md",
+      path_label: "outputs/cdt.md",
+      pipeline_id: "tab_cdt",
+      status: getJobStatus("tab_cdt", "cdt.md"),
+      suite: "cdt"
+    });
+  }
+
+  if (table_suite_groups.ndt) {
+    table_suite_groups.ndt.children.push({
+      artefact_type: "markdown",
+      category: "tabulation",
+      description: "Compiled GitHub-Flavored Markdown validation report for the Neolithic Demographic Transition (10000 BC–1000 AD).",
+      file_name: "ndt.md",
+      id: "doc_ndt_md",
+      is_folder: false,
+      label: "ndt.md — NDT Validation Report",
+      number: "ndt.md",
+      path_label: "outputs/ndt.md",
+      pipeline_id: "tab_ndt",
+      status: getJobStatus("tab_ndt", "ndt.md"),
+      suite: "ndt"
     });
   }
 
@@ -125,44 +131,154 @@ export function buildExplorerTree (arg0_defines, arg1_jobs, arg2_outputs) {
   }
 
   root_nodes.push({
+    action_label: "Generate Data",
+    artefact_type: "folder",
     category: "tabulation",
     children: tab_children,
+    description: defines_obj.stages?.generate_data?.description || "Compiles and bins demographic validation data into .json and .md files in outputs/ from common/tabulation/.",
     id: "root_tabulation",
     is_folder: true,
-    label: "common/tabulation/",
-    stage_id: "generate_data"
+    label: "Tabulation",
+    path_label: "common/tabulation/",
+    stage_id: "generate_data",
+    status: getStageStatus("generate_data")
   });
 
-  //3. Build common/testing/ validation suites tree
+  //2. Build Tests top-level folder (inline button: Run Tests)
   let all_p_keys = Object.keys(pipelines_obj);
   for (let i = 0; i < all_p_keys.length; i++) {
     let p_key = all_p_keys[i];
     let p_def = pipelines_obj[p_key];
     if (p_def.category === "testing" || p_def.category === "validation") {
+      let suite_Guess = p_key.includes("ndt") ? "ndt" : "cdt";
+      let out_list = Array.isArray(p_def.outputs) ? p_def.outputs : [];
+      let primary_out = (out_list.length > 0) ? out_list[0].split(/[\\/]/).pop() : "";
       test_children.push({
+        action_label: "Run",
+        artefact_type: "test",
+        args: p_def.args || [],
         category: "testing",
+        command: p_def.command || "node",
         description: p_def.description || "",
+        file_name: primary_out,
         id: p_def.id || p_key,
         is_folder: false,
         label: p_def.name || p_key,
+        outputs: out_list,
+        path_label: `common/testing/${suite_Guess}_testing.json5`,
         pipeline_id: p_def.id || p_key,
-        status: jobs_obj[p_key]?.status || "idle",
-        tab_index: (p_def.tab_index !== undefined) ? p_def.tab_index : 0
+        status: getJobStatus(p_key, primary_out),
+        suite: suite_Guess
       });
     }
   }
 
   root_nodes.push({
+    action_label: "Run Tests",
+    artefact_type: "folder",
     category: "testing",
     children: test_children,
+    description: defines_obj.stages?.run_tests?.description || "Executes Contemporary (CDT) and Neolithic (NDT) validation and model verification suites from common/testing/.",
     id: "root_testing",
     is_folder: true,
-    label: "common/testing/",
-    stage_id: "run_tests"
+    label: "Tests",
+    path_label: "common/testing/",
+    stage_id: "run_tests",
+    status: getStageStatus("run_tests")
+  });
+
+  //3. Build Figures top-level folder (inline button: Generate Figures)
+  for (let i = 0; i < figures_array.length; i++) {
+    let fig = figures_array[i];
+    let suite_key = fig.suite || "general";
+    vis_children.push({
+      action_label: "Render",
+      artefact_type: "figure",
+      category: "visualisation",
+      description: fig.description || "",
+      file_name: fig.file_name,
+      id: fig.id,
+      is_folder: false,
+      label: `${fig.number} — ${fig.name}`,
+      number: fig.number,
+      output_path: fig.output_path,
+      path_label: `outputs/${fig.file_name}`,
+      pipeline_id: fig.pipeline_id,
+      script_path: fig.script_path,
+      status: getJobStatus(fig.pipeline_id, fig.file_name),
+      suite: suite_key
+    });
+  }
+
+  root_nodes.push({
+    action_label: "Generate Figures",
+    artefact_type: "folder",
+    category: "visualisation",
+    children: vis_children,
+    description: defines_obj.stages?.generate_figures?.description || "Renders numbered R ggplot2 validation figures from compiled .json datasets via common/visualisation/.",
+    id: "root_visualisation",
+    is_folder: true,
+    label: "Figures",
+    path_label: "common/visualisation/",
+    stage_id: "generate_figures",
+    status: getStageStatus("generate_figures")
   });
 
   //Return statement
   return root_nodes;
+}
+
+
+/**
+ * Filters a nested explorer tree by a search query string, preserving parent branches
+ * for any matching child nodes.
+ *
+ * @param {Array<Object>} arg0_nodes
+ * @param {string} arg1_query
+ *
+ * @returns {Array<Object>}
+ */
+export function filterExplorerTree (arg0_nodes, arg1_query) {
+  //Convert from parameters
+  let nodes = (arg0_nodes) ? arg0_nodes : [];
+  let query = (arg1_query) ? String(arg1_query).trim().toLowerCase() : "";
+
+  //Declare local instance variables
+  let filtered_nodes = [];
+
+  //Guard clauses
+  if (!query) return nodes;
+
+  for (let i = 0; i < nodes.length; i++) {
+    let local_node = nodes[i];
+    let hay = [
+      local_node.label,
+      local_node.number,
+      local_node.description,
+      local_node.file_name,
+      local_node.id,
+      local_node.path_label,
+      local_node.category
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    let self_matches = hay.includes(query);
+
+    if (Array.isArray(local_node.children) && local_node.children.length > 0) {
+      let matching_children = filterExplorerTree(local_node.children, query);
+      if (self_matches || matching_children.length > 0) {
+        filtered_nodes.push(Object.assign({}, local_node, {
+          children: (matching_children.length > 0) ? matching_children : local_node.children
+        }));
+      }
+    } else if (self_matches) {
+      filtered_nodes.push(local_node);
+    }
+  }
+
+  //Return statement
+  return filtered_nodes;
 }
 
 
@@ -173,7 +289,7 @@ export function buildExplorerTree (arg0_defines, arg1_jobs, arg2_outputs) {
  * @param {string} arg1_node_id
  *
  * @returns {Object|null}
-   */
+ */
 export function findTreeNodeById (arg0_nodes, arg1_node_id) {
   //Convert from parameters
   let nodes = (arg0_nodes) ? arg0_nodes : [];
@@ -341,9 +457,9 @@ export function useSortableData (arg0_items, arg1_initial_config) {
  */
 export let UIHelpers = {
   buildExplorerTree: buildExplorerTree,
+  filterExplorerTree: filterExplorerTree,
   findTreeNodeById: findTreeNodeById,
   formatEuroNumber: formatEuroNumber,
   formatYearBCAD: formatYearBCAD,
   useSortableData: useSortableData
 };
-

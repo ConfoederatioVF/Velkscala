@@ -1,12 +1,22 @@
 //Import React hooks, core/framework library, and validation views
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  Badge,
   buildExplorerTree,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  filterExplorerTree,
   findTreeNodeById,
   FlexPartition,
   formatEuroNumber,
+  Input,
   MarkdownRenderer,
   SortHeader,
+  Table,
   TreeExplorer,
   useBridgeAPI,
   useSortableData
@@ -16,487 +26,257 @@ import { NDTValidationView } from "./NDTValidationView.jsx";
 
 
 /**
- * Tab 4: Mixed-Markdown/HTML Reports (GitHub GFM + LaTeX + HTML) & common/ JSON5 Defines.
+ * Renders the selected Data Explorer node in the main scene, acting like a true file explorer.
  *
  * @param {Object} arg0_props
- *  @param {string} arg0_props.cdtMd
- *  @param {Object} arg0_props.definesObj
- *  @param {string} arg0_props.ndtMd
- *
- * @returns {React.ReactElement}
- */
-function ReportsView (arg0_props) {
-  //Convert from parameters
-  let cdt_md = arg0_props.cdtMd || "";
-  let defines_obj = arg0_props.definesObj || {};
-  let ndt_md = arg0_props.ndtMd || "";
-
-  //Declare local instance variables
-  let [doc_view, setDocView] = useState("cdt");
-  let [show_raw_md, setShowRawMd] = useState(false);
-
-  let active_markdown = (doc_view === "cdt") ? cdt_md : ndt_md;
-  let is_markdown_doc = (doc_view === "cdt" || doc_view === "ndt");
-
-  //Return statement
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-      <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", gap: "6px" }}>
-          <button
-            className={`linear-btn linear-btn-sm ${doc_view === "cdt" ? "linear-btn-primary" : ""}`}
-            onClick={() => setDocView("cdt")}
-            type="button"
-          >
-            outputs/cdt.md
-          </button>
-          <button
-            className={`linear-btn linear-btn-sm ${doc_view === "ndt" ? "linear-btn-primary" : ""}`}
-            onClick={() => setDocView("ndt")}
-            type="button"
-          >
-            outputs/ndt.md
-          </button>
-          <button
-            className={`linear-btn linear-btn-sm ${doc_view === "defines" ? "linear-btn-primary" : ""}`}
-            onClick={() => setDocView("defines")}
-            type="button"
-          >
-            common/ configs (.json5)
-          </button>
-        </div>
-
-        {is_markdown_doc ? (
-          <button
-            className="linear-btn linear-btn-sm"
-            onClick={() => setShowRawMd(!show_raw_md)}
-            type="button"
-          >
-            {show_raw_md ? "Rendered GitHub view" : "Raw Markdown"}
-          </button>
-        ) : null}
-      </div>
-
-      {is_markdown_doc && !show_raw_md ? (
-        <MarkdownRenderer content={active_markdown} />
-      ) : (
-        <pre className="linear-doc-viewer">
-          {is_markdown_doc
-            ? active_markdown
-            : JSON.stringify(defines_obj, null, 2)}
-        </pre>
-      )}
-    </div>
-  );
-}
-
-
-/**
- * Main dashboard component implementing the Dataview design palette for Velkscala validation.
- *
- * @returns {React.ReactElement}
- */
-export function VelkscalaTUIApp () {
-  //Declare local instance variables
-  let [active_tab, setActiveTab] = useState(0);
-  let {
-    isLoading: is_loading,
-    refreshState,
-    stateData: state_data,
-    triggerPipeline,
-    triggerStage
-  } = useBridgeAPI({ poll_ms: 1200 });
-  let [selected_node_id, setSelectedNodeId] = useState("fig_1_cdt_dashboard");
-
-  let explorer_tree = useMemo(() => {
-    return buildExplorerTree(
-      state_data?.defines,
-      state_data?.jobs,
-      state_data?.outputs_files
-    );
-  }, [state_data]);
-
-  let selected_node = useMemo(() => {
-    return findTreeNodeById(explorer_tree, selected_node_id);
-  }, [explorer_tree, selected_node_id]);
-
-  let handleTreeSelect = function (arg0_node) {
-    let node = arg0_node;
-    if (!node) return;
-    setSelectedNodeId(node.id);
-    if (node.tab_index !== undefined) {
-      setActiveTab(node.tab_index);
-    }
-  };
-
-  let handleExecuteSelected = function () {
-    if (!selected_node) {
-      triggerPipeline("render_cdt_r");
-      return;
-    }
-    if (selected_node.stage_id) {
-      triggerStage(selected_node.stage_id);
-    } else if (selected_node.pipeline_id) {
-      triggerPipeline(selected_node.pipeline_id);
-    }
-  };
-
-  //Compute summary metrics
-  let bd_epochs = state_data?.cdt_births_deaths?.summary_by_epoch || [];
-  let geocode_count = Object.keys(state_data?.ndt_results?.tracked_geocodes || {}).length;
-  let hearth_count = Object.keys(state_data?.ndt_results?.scorecard || {}).length;
-  let latest_bd = (bd_epochs.length > 0) ? bd_epochs[bd_epochs.length - 1] : {};
-  let outputs_files = state_data?.outputs_files || [];
-  let overall_cdt = state_data?.cdt_age_sex?.overall_cdt || {};
-
-  let tabs = [
-    "CDT validation (age & sex)",
-    "NDT validation (paleodemography)",
-    "Visualisations (R ggplot2)",
-    "Reports & defines"
-  ];
-
-  //Return statement
-  return (
-    <div className="linear-dashboard">
-      {/* Refined Dataview Header with 3 Top-Right Stage Buttons */}
-      <header className="linear-header">
-        <div className="linear-brand-group">
-          <span className="linear-title">Velkscala</span>
-          <span className="linear-subtitle">Demographic transition validation suites</span>
-          <span className="linear-subtitle">·</span>
-          <span className="linear-subtitle">
-            SVEA {state_data?.svea_status?.exists ? "connected" : "missing"}
-          </span>
-        </div>
-
-        <div className="linear-actions">
-          <button
-            className="linear-btn"
-            onClick={() => triggerStage("generate_data")}
-            title="Compiles and bins demographic data into .json and .md files via common/tabulation/"
-            type="button"
-          >
-            Generate Data
-          </button>
-          <button
-            className="linear-btn"
-            onClick={() => triggerStage("run_tests")}
-            title="Executes CDT and NDT validation suites via common/testing/"
-            type="button"
-          >
-            Run Tests
-          </button>
-          <button
-            className="linear-btn linear-btn-primary"
-            onClick={() => triggerStage("generate_figures")}
-            title="Renders numbered R ggplot2 figures via common/visualisation/"
-            type="button"
-          >
-            Generate Figures
-          </button>
-        </div>
-      </header>
-
-      {/* KPI Summary Cards */}
-      <div className="linear-kpi-grid">
-        <div className="linear-kpi-card">
-          <span className="linear-kpi-label">CDT Age/Sex Geomean R²</span>
-          <div className="linear-kpi-value-row">
-            <span className="linear-kpi-value">
-              {formatEuroNumber(overall_cdt.clamped_geomean_r2, { is_percent: true })}
-            </span>
-            <span className="linear-kpi-diff">
-              {formatEuroNumber(overall_cdt.delta_geomean_r2, { is_percent: true, is_signed: true })} gain
-            </span>
-          </div>
-          <span className="linear-kpi-subtext">
-            Raw MNL: {formatEuroNumber(overall_cdt.raw_mnl_geomean_r2, { is_percent: true })} · Clamped to Stadestér
-          </span>
-        </div>
-
-        <div className="linear-kpi-card">
-          <span className="linear-kpi-label">CDT Vital Flows ({latest_bd.year || 2019})</span>
-          <div className="linear-kpi-value-row">
-            <span className="linear-kpi-value">
-              {formatEuroNumber(latest_bd.proxy_births, { use_abbreviation: true })}
-            </span>
-            <span className="linear-kpi-diff">
-              / {formatEuroNumber(latest_bd.proxy_deaths, { use_abbreviation: true })} deaths
-            </span>
-          </div>
-          <span className="linear-kpi-subtext">
-            Error: {formatEuroNumber(latest_bd.birth_error_pct, { is_already_percent: true, is_signed: true })} births · {formatEuroNumber(latest_bd.death_error_pct, { is_already_percent: true, is_signed: true })} deaths
-          </span>
-        </div>
-
-        <div className="linear-kpi-card">
-          <span className="linear-kpi-label">NDT Checks</span>
-          <div className="linear-kpi-value-row">
-            <span className="linear-kpi-value">
-              {hearth_count} of 5 checks
-            </span>
-          </div>
-          <span className="linear-kpi-subtext">
-            10000 BC–1000 AD · {geocode_count} anchor geocodes audited
-          </span>
-        </div>
-
-        <div className="linear-kpi-card">
-          <span className="linear-kpi-label">Artefacts in /outputs</span>
-          <div className="linear-kpi-value-row">
-            <span className="linear-kpi-value">
-              {outputs_files.length} files
-            </span>
-          </div>
-          <span className="linear-kpi-subtext">
-            Numbered figures, binned JSON tables, and GitHub Markdown
-          </span>
-        </div>
-      </div>
-
-      {/* Main Resizable Horizontal Partition: Left Sidebar (Data Explorer) | Right Main Panel */}
-      <FlexPartition
-        className="linear-workspace-partition"
-        direction="horizontal"
-        initialRatio={0.25}
-        maxFirstPct={55}
-        minFirstPct={15}
-      >
-        {/* Left Sidebar: Data Explorer & Process Stream split vertically */}
-        <aside className="linear-panel" style={{ height: "100%", width: "100%" }}>
-          <FlexPartition
-            direction="vertical"
-            initialRatio={0.58}
-            maxFirstPct={85}
-            minFirstPct={25}
-          >
-            {/* Top Pane: Data Explorer */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", height: "100%", minHeight: 0 }}>
-              <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between" }}>
-                <span className="linear-panel-title">Data Explorer</span>
-                <button
-                  className="linear-btn linear-btn-sm"
-                  onClick={() => refreshState()}
-                  type="button"
-                >
-                  Refresh
-                </button>
-              </div>
-
-              <TreeExplorer
-                nodes={explorer_tree}
-                onSelect={handleTreeSelect}
-                selectedId={selected_node_id}
-              />
-
-              {selected_node ? (
-                <div className="linear-selected-node-meta">
-                  <div className="linear-selected-node-title">{selected_node.label}</div>
-                  {selected_node.description ? (
-                    <div className="linear-selected-node-desc">{selected_node.description}</div>
-                  ) : null}
-                </div>
-              ) : null}
-
-              <button
-                className="linear-btn linear-btn-primary"
-                onClick={handleExecuteSelected}
-                style={{ flexShrink: 0, justifyContent: "center", width: "100%" }}
-                type="button"
-              >
-                {selected_node?.stage_id
-                  ? `Run ${selected_node.label}`
-                  : `Execute ${selected_node?.number || selected_node?.id || "selected"}`}
-              </button>
-            </div>
-
-            {/* Bottom Pane: Process Stream */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px", height: "100%", minHeight: 0 }}>
-              <span className="linear-panel-title">Process stream</span>
-              <div className="linear-log-box">
-                {(!state_data?.logs || state_data.logs.length === 0) ? (
-                  <div style={{ color: "rgba(255, 255, 255, 0.45)" }}>Ready. Select a figure or pipeline node above.</div>
-                ) : (
-                  state_data.logs.map((entry, idx) => {
-                    let msg = (typeof entry === "object" && entry !== null)
-                      ? `[${entry.time}] ${entry.text}`
-                      : String(entry);
-                    return (
-                      <div className="linear-log-line" key={idx}>
-                        {msg}
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          </FlexPartition>
-        </aside>
-
-        {/* Right Main Panel: Tabs and Sortable Data Viewers */}
-        <main className="linear-panel" style={{ height: "100%", width: "100%" }}>
-          <nav className="linear-tabs-nav">
-            {tabs.map((tab_title, idx) => (
-              <button
-                className={`linear-tab-btn ${active_tab === idx ? "active" : ""}`}
-                key={idx}
-                onClick={() => setActiveTab(idx)}
-                type="button"
-              >
-                {tab_title}
-              </button>
-            ))}
-          </nav>
-
-          <div style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: 0, overflowY: "auto", paddingRight: "4px" }}>
-            {is_loading ? (
-              <div style={{ color: "rgba(255, 255, 255, 0.45)", padding: "16px 0" }}>Loading validation data...</div>
-            ) : active_tab === 0 ? (
-              <CDTValidationView
-                ageSexData={state_data?.cdt_age_sex}
-                birthsDeathsData={state_data?.cdt_births_deaths}
-              />
-            ) : active_tab === 1 ? (
-              <NDTValidationView ndtData={state_data?.ndt_results} />
-            ) : active_tab === 2 ? (
-              <VisualisationsView
-                figuresConfig={state_data?.defines?.figures}
-                jobsObj={state_data?.jobs}
-                onRefreshState={refreshState}
-                onRunPipeline={triggerPipeline}
-                outputsFiles={outputs_files}
-                renderVersion={state_data?.render_version}
-                selectedNode={selected_node}
-              />
-            ) : (
-              <ReportsView
-                cdtMd={state_data?.cdt_md}
-                definesObj={state_data?.defines}
-                ndtMd={state_data?.ndt_md}
-              />
-            )}
-          </div>
-        </main>
-      </FlexPartition>
-    </div>
-  );
-}
-
-
-/**
- * Tab 3: Numbered R Render Pipelines & Plot Visualisations with resizable flex partitions.
- *
- * @param {Object} arg0_props
- *  @param {Array} arg0_props.figuresConfig
- *  @param {Object} arg0_props.jobsObj
- *  @param {Function} arg0_props.onRefreshState
+ *  @param {number} arg0_props.imgNonce
+ *  @param {Function} arg0_props.onImageError
  *  @param {Function} arg0_props.onRunPipeline
- *  @param {Array} arg0_props.outputsFiles
- *  @param {number} arg0_props.renderVersion
+ *  @param {Function} arg0_props.onSelectNode
  *  @param {Object} arg0_props.selectedNode
+ *  @param {boolean} arg0_props.showRawSource
+ *  @param {Object} arg0_props.stateData
  *
  * @returns {React.ReactElement}
  */
-function VisualisationsView (arg0_props) {
+function ArtefactSceneView (arg0_props) {
   //Convert from parameters
-  let figures_cfg = arg0_props.figuresConfig || [];
-  let jobs_obj = arg0_props.jobsObj || {};
-  let on_refresh = arg0_props.onRefreshState;
-  let on_run = arg0_props.onRunPipeline;
-  let files = arg0_props.outputsFiles || [];
-  let render_version = arg0_props.renderVersion || 1;
+  let img_nonce = arg0_props.imgNonce;
+  let on_image_error = arg0_props.onImageError;
+  let on_run_pipeline = arg0_props.onRunPipeline;
+  let on_select_node = arg0_props.onSelectNode;
   let selected_node = arg0_props.selectedNode;
+  let show_raw_source = Boolean(arg0_props.showRawSource);
+  let state_data = arg0_props.stateData || {};
 
   //Declare local instance variables
-  let cdt_fig = figures_cfg.find((f) => f.suite === "cdt") || {
-    file_name: "cdt_proxy_vs_empirical.png",
-    name: "CDT 2x2 Proxy vs Empirical Validation",
-    number: "Fig. 1",
-    pipeline_id: "render_cdt_r"
-  };
-  let cdt_img = files.find((f) => f.name === cdt_fig.file_name);
-  let cdt_status = jobs_obj?.[cdt_fig.pipeline_id]?.status || "idle";
-  let cdt_completed_at = jobs_obj?.[cdt_fig.pipeline_id]?.completed_at || "";
-
-  let [img_nonce, setImgNonce] = useState(() => Date.now());
-
-  let ndt_fig = figures_cfg.find((f) => f.suite === "ndt") || {
-    file_name: "ndt_paleodemographic_dashboard.png",
-    name: "NDT Paleodemographic Dashboard",
-    number: "Fig. 2",
-    pipeline_id: "render_ndt_r"
-  };
-  let ndt_img = files.find((f) => f.name === ndt_fig.file_name);
-  let ndt_status = jobs_obj?.[ndt_fig.pipeline_id]?.status || "idle";
-  let ndt_completed_at = jobs_obj?.[ndt_fig.pipeline_id]?.completed_at || "";
-
-  //Force fresh cache-busted image reload whenever a plot render job finishes
-  useEffect(() => {
-    setImgNonce(Date.now());
-    let timer_handle = setTimeout(() => {
-      setImgNonce(Date.now());
-    }, 450);
-    return () => clearTimeout(timer_handle);
-  }, [cdt_status, cdt_completed_at, ndt_status, ndt_completed_at, render_version, cdt_img?.mtime, ndt_img?.mtime]);
-
-  let handleRerender = async function (arg0_pipeline_id) {
-    let pipeline_id = arg0_pipeline_id;
-    await on_run(pipeline_id);
-    setImgNonce(Date.now());
-  };
-
-  let handleImageError = function () {
-    setTimeout(() => {
-      setImgNonce(Date.now());
-      if (typeof on_refresh === "function") on_refresh();
-    }, 600);
-  };
+  let files = state_data.outputs_files || [];
+  let jobs_obj = state_data.jobs || {};
 
   let { items: sorted_files, requestSort: requestFileSort, sortConfig: fileSortCfg } = useSortableData(
     files,
     { direction: "asc", key: "name" }
   );
 
-  let cdt_src = cdt_img ? `${cdt_img.url}&v=${img_nonce}` : "";
-  let ndt_src = ndt_img ? `${ndt_img.url}&v=${img_nonce}` : "";
+  //Guard clauses
+  if (!selected_node) {
+    return (
+      <div style={{ color: "var(--text-muted)", padding: "16px 0" }}>
+        Select an artefact from the Data Explorer on the left to inspect it.
+      </div>
+    );
+  }
 
-  //Return statement
-  return (
-    <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: "10px", height: "100%", minHeight: 0 }}>
-      {selected_node && selected_node.category === "visualisation" ? (
-        <div className="linear-selected-figure-banner" style={{ flexShrink: 0 }}>
-          <div>
-            <strong>{selected_node.label}</strong>
-            {selected_node.description ? (
-              <span style={{ color: "var(--text-secondary)", marginLeft: "8px" }}>
-                — {selected_node.description}
-              </span>
-            ) : null}
-          </div>
-          {selected_node.pipeline_id ? (
-            <button
-              className="linear-btn linear-btn-sm"
-              onClick={() => handleRerender(selected_node.pipeline_id)}
-              type="button"
-            >
-              {jobs_obj?.[selected_node.pipeline_id]?.status === "running"
-                ? "Rendering..."
-                : `Re-render ${selected_node.number || "figure"}`}
-            </button>
+  //1. Single Figure Artefact (Fig. 1 or Fig. 2)
+  if (selected_node.artefact_type === "figure") {
+    let fig_file = files.find((f) => f.name === selected_node.file_name);
+    let fig_src = fig_file ? `${fig_file.url}&v=${img_nonce}` : "";
+
+    return (
+      <div className="shadcn-single-figure-scene">
+        <div className="linear-plot-image-wrap" style={{ flex: 1, minHeight: 0 }}>
+          {fig_file ? (
+            <img
+              alt={selected_node.label}
+              className="linear-plot-image"
+              key={fig_src}
+              onError={on_image_error}
+              src={fig_src}
+            />
+          ) : (
+            <span style={{ color: "var(--text-muted)" }}>
+              Figure file ({selected_node.file_name}) not generated yet. Click Render above to generate it.
+            </span>
+          )}
+        </div>
+
+        <div className="shadcn-artefact-footer">
+          <span>
+            File: <strong>outputs/{selected_node.file_name}</strong>
+          </span>
+          {fig_file ? (
+            <>
+              <span>Size: {formatEuroNumber(fig_file.size_kb, { decimals: 1 })} kB</span>
+              <span>Modified: {fig_file.mtime.replace("T", " ").slice(0, 19)}</span>
+              <a
+                className="gfm-link"
+                href={fig_file.url}
+                rel="noreferrer"
+                target="_blank"
+              >
+                Open raw PNG
+              </a>
+            </>
           ) : null}
         </div>
-      ) : null}
+      </div>
+    );
+  }
 
-      {/* Vertical Flex Partition: Main Figure Display Area (Top) vs Output Files Table (Bottom) */}
+  //2. Markdown Report Artefact (cdt.md or ndt.md)
+  if (selected_node.artefact_type === "markdown") {
+    let md_content = (selected_node.suite === "ndt") ? (state_data.ndt_md || "") : (state_data.cdt_md || "");
+    return (
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: 0, overflowY: "auto" }}>
+        {show_raw_source ? (
+          <pre className="linear-doc-viewer" style={{ flex: 1 }}>
+            {md_content || "No Markdown content available."}
+          </pre>
+        ) : (
+          <MarkdownRenderer content={md_content} />
+        )}
+      </div>
+    );
+  }
+
+  //3. Individual Table Artefact (Table 1.1, 1.2, 1.3, 2.1, 2.2, 2.3)
+  if (selected_node.artefact_type === "table") {
+    if (show_raw_source) {
+      let raw_json_obj = (selected_node.suite === "ndt")
+        ? state_data.ndt_results
+        : (selected_node.id === "table_cdt_vital_flows")
+          ? state_data.cdt_births_deaths
+          : state_data.cdt_age_sex;
+      return (
+        <pre className="linear-doc-viewer" style={{ flex: 1, overflowY: "auto" }}>
+          {JSON.stringify(raw_json_obj || {}, null, 2)}
+        </pre>
+      );
+    }
+
+    if (selected_node.suite === "ndt") {
+      return (
+        <NDTValidationView
+          ndtData={state_data.ndt_results}
+          tableId={selected_node.id}
+        />
+      );
+    } else {
+      return (
+        <CDTValidationView
+          ageSexData={state_data.cdt_age_sex}
+          birthsDeathsData={state_data.cdt_births_deaths}
+          tableId={selected_node.id}
+        />
+      );
+    }
+  }
+
+  //4. Individual Test Suite Artefact (test_cdt, test_cdt_full, test_ndt, test_piecewise_ndt)
+  if (selected_node.artefact_type === "test") {
+    let cmd_str = `${selected_node.command || "node"} ${(selected_node.args || []).join(" ")}`;
+    let job_info = jobs_obj[selected_node.pipeline_id];
+
+    return (
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: "12px", minHeight: 0, overflowY: "auto" }}>
+        <Card style={{ flexShrink: 0 }}>
+          <CardHeader>
+            <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between" }}>
+              <CardTitle>Pipeline specification</CardTitle>
+              <Badge variant={job_info?.status === "running" ? "active" : "default"}>
+                {job_info?.status || selected_node.status || "idle"}
+              </Badge>
+            </div>
+            <CardDescription>
+              Command: <code className="gfm-inline-code">{cmd_str}</code>
+              {job_info?.completed_at ? ` · Last finished: ${job_info.completed_at.replace("T", " ").slice(0, 19)}` : ""}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        {selected_node.id === "test_piecewise_ndt" ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Piecewise &amp; unified model architecture verification (1500/1750 AD cutoff)</CardTitle>
+              <CardDescription>
+                Audits the premodern 34-covariate multinomial logit architecture, unified coverage-weighted ensemble, and post-1750 rolling transition.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <thead>
+                  <tr>
+                    <th>Verification check</th>
+                    <th>Target model / cohort</th>
+                    <th>Specification</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>1. Premodern multinomial logit</strong></td>
+                    <td>premodern_multinomial_logit.json</td>
+                    <td>34 covariates including shifting, grazing, rangeland, conv_rangeland, cropland, tot_rice</td>
+                    <td><Badge>Verified</Badge></td>
+                  </tr>
+                  <tr>
+                    <td><strong>2. Unified coverage ensemble</strong></td>
+                    <td>multinomial_model_unified.json</td>
+                    <td>Coverage-weighted historical blending across pre-1750 anchor epochs</td>
+                    <td><Badge>Verified</Badge></td>
+                  </tr>
+                  <tr>
+                    <td><strong>3. Post-1750 modern rolling</strong></td>
+                    <td>multinomial_model_1760..1940.json</td>
+                    <td>Rolling modern demographic transition parameterization (1760, 1850, 1940)</td>
+                    <td><Badge>Verified</Badge></td>
+                  </tr>
+                  <tr>
+                    <td><strong>4. Agricultural logit differential</strong></td>
+                    <td>Infant male cohort (m_00)</td>
+                    <td>Positive shift under Neolithic cropland &amp; shifting cultivation expansion (8000 BC to 0 AD)</td>
+                    <td><Badge>Verified</Badge></td>
+                  </tr>
+                </tbody>
+              </Table>
+            </CardContent>
+          </Card>
+        ) : selected_node.suite === "ndt" ? (
+          <div style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: "420px" }}>
+            <NDTValidationView ndtData={state_data.ndt_results} />
+          </div>
+        ) : (
+          <div style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: "420px" }}>
+            <CDTValidationView
+              ageSexData={state_data.cdt_age_sex}
+              birthsDeathsData={state_data.cdt_births_deaths}
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  //5. Folder Views (Tabulation, Tests, Figures, or CDT/NDT Suite Folders)
+  if (selected_node.id === "root_visualisation") {
+    let figures_cfg = state_data.defines?.figures || [];
+    let cdt_fig = figures_cfg.find((f) => f.suite === "cdt") || {
+      file_name: "cdt_proxy_vs_empirical.png",
+      id: "fig_1_cdt_dashboard",
+      name: "CDT 2x2 Proxy vs Empirical Validation",
+      number: "Fig. 1",
+      pipeline_id: "render_cdt_r"
+    };
+    let ndt_fig = figures_cfg.find((f) => f.suite === "ndt") || {
+      file_name: "ndt_paleodemographic_dashboard.png",
+      id: "fig_2_ndt_dashboard",
+      name: "NDT Paleodemographic Dashboard",
+      number: "Fig. 2",
+      pipeline_id: "render_ndt_r"
+    };
+    let cdt_img = files.find((f) => f.name === cdt_fig.file_name);
+    let ndt_img = files.find((f) => f.name === ndt_fig.file_name);
+    let cdt_src = cdt_img ? `${cdt_img.url}&v=${img_nonce}` : "";
+    let ndt_src = ndt_img ? `${ndt_img.url}&v=${img_nonce}` : "";
+
+    return (
       <FlexPartition
         direction="vertical"
         initialRatio={0.68}
         maxFirstPct={92}
         minFirstPct={25}
-        style={{ flex: 1, minHeight: 0 }}
+        style={{ flex: 1, height: "100%", minHeight: 0 }}
       >
-        {/* Horizontal Flex Partition: Fig. 1 (Left) vs Fig. 2 (Right) */}
         <FlexPartition
           direction="horizontal"
           initialRatio={0.5}
@@ -512,25 +292,31 @@ function VisualisationsView (arg0_props) {
                   outputs/{cdt_fig.file_name} {cdt_img ? `(${formatEuroNumber(cdt_img.size_kb, { decimals: 1 })} kB)` : ""}
                 </div>
               </div>
-              <button
-                className="linear-btn linear-btn-sm"
-                onClick={() => handleRerender(cdt_fig.pipeline_id)}
-                type="button"
-              >
-                {cdt_status === "running" ? "Rendering..." : `Re-render ${cdt_fig.number}`}
-              </button>
+              <div style={{ display: "flex", gap: "6px" }}>
+                <Button onClick={() => on_select_node("fig_1_cdt_dashboard")} size="sm" variant="secondary">
+                  Open
+                </Button>
+                <Button onClick={() => on_run_pipeline(cdt_fig.pipeline_id)} size="sm" variant="primary">
+                  {jobs_obj?.[cdt_fig.pipeline_id]?.status === "running" ? "Rendering..." : "Render"}
+                </Button>
+              </div>
             </div>
-            <div className="linear-plot-image-wrap">
+            <div
+              className="linear-plot-image-wrap"
+              onClick={() => on_select_node("fig_1_cdt_dashboard")}
+              style={{ cursor: "pointer" }}
+              title="Click to inspect Fig. 1"
+            >
               {cdt_img ? (
                 <img
                   alt={cdt_fig.name}
                   className="linear-plot-image"
                   key={cdt_src}
-                  onError={handleImageError}
+                  onError={on_image_error}
                   src={cdt_src}
                 />
               ) : (
-                <span style={{ color: "rgba(255, 255, 255, 0.45)" }}>Plot not generated yet.</span>
+                <span style={{ color: "var(--text-muted)" }}>Plot not generated yet.</span>
               )}
             </div>
           </div>
@@ -543,67 +329,378 @@ function VisualisationsView (arg0_props) {
                   outputs/{ndt_fig.file_name} {ndt_img ? `(${formatEuroNumber(ndt_img.size_kb, { decimals: 1 })} kB)` : ""}
                 </div>
               </div>
-              <button
-                className="linear-btn linear-btn-sm"
-                onClick={() => handleRerender(ndt_fig.pipeline_id)}
-                type="button"
-              >
-                {ndt_status === "running" ? "Rendering..." : `Re-render ${ndt_fig.number}`}
-              </button>
+              <div style={{ display: "flex", gap: "6px" }}>
+                <Button onClick={() => on_select_node("fig_2_ndt_dashboard")} size="sm" variant="secondary">
+                  Open
+                </Button>
+                <Button onClick={() => on_run_pipeline(ndt_fig.pipeline_id)} size="sm" variant="primary">
+                  {jobs_obj?.[ndt_fig.pipeline_id]?.status === "running" ? "Rendering..." : "Render"}
+                </Button>
+              </div>
             </div>
-            <div className="linear-plot-image-wrap">
+            <div
+              className="linear-plot-image-wrap"
+              onClick={() => on_select_node("fig_2_ndt_dashboard")}
+              style={{ cursor: "pointer" }}
+              title="Click to inspect Fig. 2"
+            >
               {ndt_img ? (
                 <img
                   alt={ndt_fig.name}
                   className="linear-plot-image"
                   key={ndt_src}
-                  onError={handleImageError}
+                  onError={on_image_error}
                   src={ndt_src}
                 />
               ) : (
-                <span style={{ color: "rgba(255, 255, 255, 0.45)" }}>Plot not generated yet.</span>
+                <span style={{ color: "var(--text-muted)" }}>Plot not generated yet.</span>
               )}
             </div>
           </div>
         </FlexPartition>
 
-        {/* Bottom Pane: Output Files Table */}
         <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0, overflowY: "auto" }}>
           <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "6px" }}>
-            Output files ({files.length})
+            Compiled artefacts in /outputs ({files.length})
           </div>
-          <div className="linear-table-container" style={{ flex: 1, overflowY: "auto" }}>
-            <table className="linear-table">
-              <thead>
-                <tr>
-                  <SortHeader label="File" onSort={() => requestFileSort("name")} sortConfig={fileSortCfg} sortKey="name" />
-                  <SortHeader isNum={true} label="Size" onSort={() => requestFileSort("size_kb")} sortConfig={fileSortCfg} sortKey="size_kb" />
-                  <SortHeader label="Last modified" onSort={() => requestFileSort("mtime")} sortConfig={fileSortCfg} sortKey="mtime" />
-                  <th>Link</th>
+          <Table containerStyle={{ flex: 1, overflowY: "auto" }}>
+            <thead>
+              <tr>
+                <SortHeader label="File" onSort={() => requestFileSort("name")} sortConfig={fileSortCfg} sortKey="name" />
+                <SortHeader isNum={true} label="Size" onSort={() => requestFileSort("size_kb")} sortConfig={fileSortCfg} sortKey="size_kb" />
+                <SortHeader label="Last modified" onSort={() => requestFileSort("mtime")} sortConfig={fileSortCfg} sortKey="mtime" />
+                <th>Link</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sorted_files.map((f) => (
+                <tr key={f.name}>
+                  <td><strong>{f.name}</strong></td>
+                  <td className="num">{formatEuroNumber(f.size_kb, { decimals: 1 })} kB</td>
+                  <td>{f.mtime.replace("T", " ").slice(0, 19)}</td>
+                  <td>
+                    <a
+                      className="gfm-link"
+                      href={f.url}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      Open
+                    </a>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {sorted_files.map((f) => (
-                  <tr key={f.name}>
-                    <td><strong>{f.name}</strong></td>
-                    <td className="num">{formatEuroNumber(f.size_kb, { decimals: 1 })} kB</td>
-                    <td>{f.mtime.replace("T", " ").slice(0, 19)}</td>
-                    <td>
-                      <a
-                        href={f.url}
-                        rel="noreferrer"
-                        style={{ color: "var(--text-primary)", textDecoration: "underline" }}
-                        target="_blank"
-                      >
-                        Open
-                      </a>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </Table>
         </div>
+      </FlexPartition>
+    );
+  }
+
+  if (selected_node.id === "folder_tab_cdt") {
+    return (
+      <CDTValidationView
+        ageSexData={state_data.cdt_age_sex}
+        birthsDeathsData={state_data.cdt_births_deaths}
+      />
+    );
+  }
+
+  if (selected_node.id === "folder_tab_ndt") {
+    return (
+      <NDTValidationView ndtData={state_data.ndt_results} />
+    );
+  }
+
+  //Default Folder Explorer Grid (for root_tabulation, root_testing, or general folders)
+  let folder_children = selected_node.children || [];
+
+  //Return statement
+  return (
+    <div style={{ display: "flex", flex: 1, flexDirection: "column", gap: "14px", minHeight: 0, overflowY: "auto" }}>
+      <div className="shadcn-folder-grid">
+        {folder_children.map((child) => (
+          <Card
+            className="shadcn-folder-card"
+            key={child.id}
+            onClick={() => on_select_node(child.id)}
+            style={{ cursor: "pointer" }}
+          >
+            <CardHeader>
+              <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between", gap: "8px" }}>
+                <CardTitle>{child.label}</CardTitle>
+                {child.status ? (
+                  <Badge variant={child.status === "running" ? "active" : "default"}>
+                    {child.status}
+                  </Badge>
+                ) : null}
+              </div>
+              {child.path_label ? (
+                <div style={{ color: "var(--text-muted)", fontSize: "11px" }}>{child.path_label}</div>
+              ) : null}
+            </CardHeader>
+            {child.description ? (
+              <CardContent>
+                <CardDescription>{child.description}</CardDescription>
+              </CardContent>
+            ) : null}
+          </Card>
+        ))}
+      </div>
+
+      {selected_node.id === "root_tabulation" ? (
+        <div style={{ display: "flex", flex: 1, flexDirection: "column", minHeight: "380px" }}>
+          <CDTValidationView
+            ageSexData={state_data.cdt_age_sex}
+            birthsDeathsData={state_data.cdt_births_deaths}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+
+/**
+ * Main web application component implementing the React + shadcn/ui Dataview interface for Velkscala.
+ *
+ * @returns {React.ReactElement}
+ */
+export function VelkscalaTUIApp () {
+  //Declare local instance variables
+  let [img_nonce, setImgNonce] = useState(() => Date.now());
+  let [is_scene_expanded, setIsSceneExpanded] = useState(false);
+  let {
+    isLoading: is_loading,
+    refreshState,
+    stateData: state_data,
+    triggerPipeline,
+    triggerStage
+  } = useBridgeAPI({ poll_ms: 1200 });
+  let [search_query, setSearchQuery] = useState("");
+  let [selected_node_id, setSelectedNodeId] = useState("table_cdt_age_sex_epochs");
+  let [show_raw_source, setShowRawSource] = useState(false);
+
+  let explorer_tree = useMemo(() => {
+    return buildExplorerTree(
+      state_data?.defines,
+      state_data?.jobs,
+      state_data?.outputs_files
+    );
+  }, [state_data]);
+
+  let filtered_tree = useMemo(() => {
+    return filterExplorerTree(explorer_tree, search_query);
+  }, [explorer_tree, search_query]);
+
+  let selected_node = useMemo(() => {
+    return findTreeNodeById(explorer_tree, selected_node_id) || explorer_tree[0] || null;
+  }, [explorer_tree, selected_node_id]);
+
+  //Update image cache-busting nonce when render version or jobs change
+  useEffect(() => {
+    setImgNonce(Date.now());
+  }, [state_data?.render_version, state_data?.outputs_files?.length]);
+
+  //Allow Escape key to exit full-screen scene mode
+  useEffect(() => {
+    if (!is_scene_expanded) return;
+    let onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsSceneExpanded(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [is_scene_expanded]);
+
+  let handleTreeSelect = function (arg0_node) {
+    let node = arg0_node;
+    if (!node) return;
+    setSelectedNodeId(node.id);
+    setShowRawSource(false);
+  };
+
+  let handleSelectNodeById = function (arg0_id) {
+    let id = arg0_id;
+    if (!id) return;
+    setSelectedNodeId(id);
+    setShowRawSource(false);
+  };
+
+  let handleRunPipeline = async function (arg0_pipeline_id) {
+    let pipeline_id = arg0_pipeline_id;
+    if (!pipeline_id) return;
+    await triggerPipeline(pipeline_id);
+    setImgNonce(Date.now());
+  };
+
+  let handleRunStage = async function (arg0_stage_id) {
+    let stage_id = arg0_stage_id;
+    if (!stage_id) return;
+    await triggerStage(stage_id);
+    setImgNonce(Date.now());
+  };
+
+  let handleImageError = function () {
+    setTimeout(() => {
+      setImgNonce(Date.now());
+      refreshState();
+    }, 600);
+  };
+
+  let has_raw_toggle = Boolean(
+    selected_node &&
+    (selected_node.artefact_type === "table" || selected_node.artefact_type === "markdown")
+  );
+
+  //Return statement
+  return (
+    <div className="linear-dashboard">
+      {/* Minimal Dataview Header */}
+      <header className="linear-header">
+        <div className="linear-brand-group">
+          <span className="linear-title">Velkscala</span>
+          <span className="linear-subtitle">Demographic transition validation suites</span>
+          <span className="linear-subtitle">·</span>
+          <span className="linear-subtitle">
+            SVEA {state_data?.svea_status?.exists ? "connected" : "missing"}
+          </span>
+        </div>
+
+        <div className="linear-actions">
+          <Button onClick={() => refreshState()} size="sm" variant="secondary">
+            Refresh
+          </Button>
+        </div>
+      </header>
+
+      {/* Main Workspace Split: Left Data Explorer | Right Artefact Scene */}
+      <FlexPartition
+        className="linear-workspace-partition"
+        direction="horizontal"
+        initialRatio={0.27}
+        maxFirstPct={55}
+        minFirstPct={16}
+      >
+        {/* Left Sidebar: Data Explorer with Searchbar and 3 Top-Level Folders */}
+        <aside className="linear-panel" style={{ height: "100%", width: "100%" }}>
+          <div style={{ alignItems: "center", display: "flex", justifyContent: "space-between" }}>
+            <span className="linear-panel-title">Data Explorer</span>
+            <Badge>{(state_data?.outputs_files || []).length} outputs</Badge>
+          </div>
+
+          <Input
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onClear={() => setSearchQuery("")}
+            placeholder="Search Tabulation, Tests, Figures..."
+            value={search_query}
+          />
+
+          <TreeExplorer
+            nodes={filtered_tree}
+            onRunPipeline={handleRunPipeline}
+            onRunStage={handleRunStage}
+            onSelect={handleTreeSelect}
+            searchQuery={search_query}
+            selectedId={selected_node?.id}
+          />
+        </aside>
+
+        {/* Right Main Scene: Displays selected Data Explorer artefact with Full-Screen Expand Toggle */}
+        <main
+          className={`linear-panel shadcn-scene-panel ${is_scene_expanded ? "is-fullscreen" : ""}`}
+          style={{ height: "100%", width: "100%" }}
+        >
+          <div className="shadcn-scene-header">
+            <div className="shadcn-scene-title-group">
+              <div style={{ alignItems: "center", display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {selected_node?.category ? (
+                  <Badge>{selected_node.category}</Badge>
+                ) : null}
+                <h2 className="shadcn-scene-title">
+                  {selected_node ? selected_node.label : "Scene"}
+                </h2>
+                {selected_node?.path_label ? (
+                  <span className="shadcn-scene-path">{selected_node.path_label}</span>
+                ) : null}
+              </div>
+              {selected_node?.description ? (
+                <p className="shadcn-scene-description">{selected_node.description}</p>
+              ) : null}
+            </div>
+
+            <div className="shadcn-scene-actions">
+              {has_raw_toggle ? (
+                <Button
+                  onClick={() => setShowRawSource(!show_raw_source)}
+                  size="sm"
+                  variant="secondary"
+                >
+                  {show_raw_source
+                    ? "Formatted view"
+                    : selected_node.artefact_type === "markdown"
+                      ? "Raw Markdown"
+                      : "Raw JSON"}
+                </Button>
+              ) : null}
+
+              {selected_node?.stage_id ? (
+                <Button
+                  onClick={() => handleRunStage(selected_node.stage_id)}
+                  size="sm"
+                  variant="primary"
+                >
+                  {selected_node.status === "running"
+                    ? "Running..."
+                    : (selected_node.action_label || "Run stage")}
+                </Button>
+              ) : selected_node?.pipeline_id ? (
+                <Button
+                  onClick={() => handleRunPipeline(selected_node.pipeline_id)}
+                  size="sm"
+                  variant="primary"
+                >
+                  {state_data?.jobs?.[selected_node.pipeline_id]?.status === "running"
+                    ? "Running..."
+                    : (selected_node.action_label
+                      ? `${selected_node.action_label} ${selected_node.number || ""}`.trim()
+                      : "Execute")}
+                </Button>
+              ) : null}
+
+              <Button
+                aria-pressed={is_scene_expanded}
+                className={is_scene_expanded ? "shadcn-btn-active-toggle" : ""}
+                onClick={() => setIsSceneExpanded(!is_scene_expanded)}
+                size="sm"
+                title={is_scene_expanded ? "Restore scene from full screen (Esc)" : "Expand artefact to full screen"}
+                variant="secondary"
+              >
+                <span>{is_scene_expanded ? "⤡" : "⤢"}</span>
+                <span>{is_scene_expanded ? "Collapse" : "Expand"}</span>
+              </Button>
+            </div>
+          </div>
+
+          <div className="shadcn-scene-body">
+            {is_loading ? (
+              <div style={{ color: "var(--text-muted)", padding: "16px 0" }}>
+                Loading validation data...
+              </div>
+            ) : (
+              <ArtefactSceneView
+                imgNonce={img_nonce}
+                onImageError={handleImageError}
+                onRunPipeline={handleRunPipeline}
+                onSelectNode={handleSelectNodeById}
+                selectedNode={selected_node}
+                showRawSource={show_raw_source}
+                stateData={state_data}
+              />
+            )}
+          </div>
+        </main>
       </FlexPartition>
     </div>
   );

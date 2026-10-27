@@ -61,9 +61,9 @@ body,
 .linear-dashboard {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   height: 100vh;
-  padding: 14px 18px;
+  padding: 12px 16px;
   width: 100vw;
 }
 
@@ -74,14 +74,15 @@ body,
   border: 1px solid var(--border-subtle);
   border-radius: 6px;
   display: flex;
+  flex-shrink: 0;
   justify-content: space-between;
-  padding: 10px 16px;
+  padding: 8px 14px;
 }
 
 .linear-brand-group {
   align-items: baseline;
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
 .linear-title {
@@ -101,66 +102,6 @@ body,
   align-items: center;
   display: flex;
   gap: 8px;
-}
-
-/* -- KPI Cards -- */
-.linear-kpi-grid {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.linear-kpi-card {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px 14px;
-  transition: border-color 0.15s ease;
-}
-
-.linear-kpi-card:hover {
-  border-color: var(--border-strong);
-}
-
-.linear-kpi-label {
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-.linear-kpi-value-row {
-  align-items: baseline;
-  display: flex;
-  gap: 8px;
-}
-
-.linear-kpi-value {
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 19px;
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.linear-kpi-diff {
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-}
-
-.linear-kpi-subtext {
-  color: var(--text-muted);
-  font-size: 11px;
-  font-weight: 400;
-  margin-top: 2px;
 }
 
 /* -- Workspace split layout & Resizable Flex Partitions -- */
@@ -256,16 +197,75 @@ body,
 
 .linear-panel-title {
   color: var(--text-primary);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
+}
+
+/* -- Shadcn Search Input -- */
+.shadcn-input-wrapper {
+  align-items: center;
+  background-color: #141417;
+  border: 1px solid var(--border-subtle);
+  border-radius: 5px;
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+  padding: 4px 8px;
+  transition: border-color 0.12s ease;
+}
+
+.shadcn-input-wrapper:focus-within {
+  border-color: #ffffff;
+}
+
+.shadcn-input-icon {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1;
+  user-select: none;
+}
+
+.shadcn-input {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  flex: 1;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  min-width: 0;
+  outline: none;
+}
+
+.shadcn-input::placeholder {
+  color: var(--text-muted);
+}
+
+.shadcn-input-clear {
+  align-items: center;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 14px;
+  height: 18px;
+  justify-content: center;
+  line-height: 1;
+  width: 18px;
+}
+
+.shadcn-input-clear:hover {
+  background-color: var(--bg-card-hover);
+  color: var(--text-primary);
 }
 
 /* -- Nested File-Explorer Tree (white outline on selection for contrast, never red) -- */
 .linear-tree-explorer {
   background-color: #141417;
   border: 1px solid var(--border-subtle);
-  border-radius: 4px;
+  border-radius: 5px;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -273,6 +273,13 @@ body,
   min-height: 0;
   overflow-y: auto;
   padding: 6px;
+}
+
+.shadcn-tree-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 12px 8px;
+  text-align: center;
 }
 
 .linear-tree-branch {
@@ -297,10 +304,14 @@ body,
   display: flex;
   font-family: inherit;
   font-size: 12px;
+  gap: 8px;
   justify-content: space-between;
-  padding: 5px 8px;
+  min-height: 28px;
+  outline: none;
+  padding: 4px 8px;
   text-align: left;
   transition: all 0.12s ease;
+  user-select: none;
   width: 100%;
 }
 
@@ -317,24 +328,38 @@ body,
 .linear-tree-node-left {
   align-items: center;
   display: flex;
+  flex: 1;
   gap: 6px;
   min-width: 0;
   overflow: hidden;
 }
 
+.linear-tree-node-right {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+}
+
 .linear-tree-caret {
   color: var(--text-secondary);
   display: inline-block;
+  flex-shrink: 0;
   font-size: 11px;
   text-align: center;
-  width: 12px;
+  width: 14px;
+}
+
+.linear-tree-caret:hover {
+  color: #ffffff;
 }
 
 .linear-tree-leaf-bullet {
   color: var(--text-muted);
   display: inline-block;
+  flex-shrink: 0;
   text-align: center;
-  width: 12px;
+  width: 14px;
 }
 
 .linear-tree-label {
@@ -343,62 +368,157 @@ body,
   white-space: nowrap;
 }
 
-.linear-selected-node-meta {
+/* -- Main Scene & Full-Screen Expand Mode -- */
+.shadcn-scene-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.shadcn-scene-panel.is-fullscreen {
+  background-color: var(--bg-canvas);
+  border: none;
+  border-radius: 0;
+  bottom: 0;
+  height: 100vh !important;
+  left: 0;
+  padding: 16px 20px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 100vw !important;
+  z-index: 100;
+}
+
+.shadcn-scene-header {
+  align-items: flex-start;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  flex-shrink: 0;
+  gap: 12px;
+  justify-content: space-between;
+  padding-bottom: 10px;
+}
+
+.shadcn-scene-title-group {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.shadcn-scene-title {
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.shadcn-scene-path {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.shadcn-scene-description {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.shadcn-scene-actions {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.shadcn-scene-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.shadcn-single-figure-scene {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+
+.shadcn-artefact-footer {
+  align-items: center;
   background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: 4px;
-  padding: 7px 10px;
-}
-
-.linear-selected-node-title {
-  color: var(--text-primary);
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.linear-selected-node-desc {
-  color: var(--text-muted);
-  font-size: 11px;
-  margin-top: 2px;
-}
-
-/* -- Tabs -- */
-.linear-tabs-nav {
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  gap: 4px;
-  padding-bottom: 6px;
-}
-
-.linear-tab-btn {
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 4px;
   color: var(--text-secondary);
-  cursor: pointer;
-  font-family: inherit;
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
   font-size: 12px;
-  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  gap: 16px;
   padding: 6px 12px;
-  transition: all 0.12s ease;
 }
 
-.linear-tab-btn:hover {
-  background-color: var(--bg-card);
-  color: var(--text-primary);
+/* -- Shadcn Cards & Folder Explorer Grid -- */
+.shadcn-folder-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 }
 
-.linear-tab-btn.active {
+.shadcn-card {
   background-color: var(--bg-card);
-  border-color: var(--border-strong);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.shadcn-folder-card:hover {
+  background-color: var(--bg-card-hover);
+  border-color: #ffffff;
+}
+
+.shadcn-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.shadcn-card-title {
   color: var(--text-primary);
+  font-size: 13px;
   font-weight: 700;
+}
+
+.shadcn-card-description {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.shadcn-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 /* -- Tables (Sortable headers, non-bold cells outside first column) -- */
 .linear-table-container {
   border: 1px solid var(--border-subtle);
-  border-radius: 4px;
+  border-radius: 5px;
   overflow: hidden;
 }
 
@@ -417,11 +537,10 @@ body,
   font-family: inherit;
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   padding: 8px 10px;
   position: sticky;
   text-align: left;
-  text-transform: uppercase;
   top: 0;
   transition: color 0.12s ease;
   user-select: none;
@@ -473,7 +592,8 @@ body,
   text-align: right;
 }
 
-/* -- Buttons & Badges (Only actual buttons have red styling) -- */
+/* -- Shadcn Buttons & Badges (Only actual primary buttons have red styling) -- */
+.shadcn-btn,
 .linear-btn {
   align-items: center;
   background-color: var(--bg-card);
@@ -486,16 +606,20 @@ body,
   font-size: 12px;
   font-weight: 500;
   gap: 6px;
+  justify-content: center;
   padding: 5px 12px;
   transition: all 0.12s ease;
+  white-space: nowrap;
 }
 
+.shadcn-btn:hover:not(:disabled),
 .linear-btn:hover:not(:disabled) {
   background-color: var(--bg-card-hover);
   border-color: var(--border-strong);
 }
 
-/* Primary buttons have the red button look */
+/* Primary interactive buttons have the Dataview Crimson Red look */
+.shadcn-btn-primary,
 .linear-btn-primary {
   background-color: var(--accent-primary);
   border-color: var(--accent-secondary);
@@ -503,30 +627,58 @@ body,
   font-weight: 700;
 }
 
+.shadcn-btn-primary:hover:not(:disabled),
 .linear-btn-primary:hover:not(:disabled) {
   background-color: var(--accent-secondary);
   border-color: var(--accent-secondary);
 }
 
-.linear-btn-sm {
-  font-size: 11px;
-  padding: 3px 8px;
+.shadcn-btn-outline {
+  background-color: transparent;
+  border-color: var(--border-strong);
 }
 
+.shadcn-btn-ghost {
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.shadcn-btn-active-toggle {
+  border-color: #ffffff !important;
+  font-weight: 700;
+}
+
+.shadcn-btn-sm,
+.linear-btn-sm {
+  font-size: 11px;
+  padding: 3px 9px;
+}
+
+.shadcn-btn-xs {
+  font-size: 11px;
+  padding: 2px 7px;
+}
+
+.shadcn-btn-icon {
+  height: 26px;
+  padding: 0;
+  width: 26px;
+}
+
+.shadcn-badge,
 .linear-badge {
   background-color: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--border-subtle);
-  border-radius: 3px;
+  border-radius: 4px;
   color: var(--text-secondary);
   display: inline-block;
   font-family: inherit;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.02em;
   padding: 1px 6px;
-  text-transform: uppercase;
 }
 
+.shadcn-badge-active,
 .linear-badge-active {
   background-color: rgba(255, 255, 255, 0.12);
   border-color: #ffffff;
@@ -534,39 +686,7 @@ body,
   font-weight: 600;
 }
 
-/* -- Log console (Monospace strictly reserved for raw logs via Fira Code) -- */
-.linear-log-box {
-  background-color: #0d0d0f;
-  border: 1px solid var(--border-subtle);
-  border-radius: 4px;
-  color: rgba(255, 255, 255, 0.7);
-  flex: 1;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  line-height: 1.5;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 8px 10px;
-}
-
-.linear-log-line {
-  font-family: var(--font-mono);
-  margin-bottom: 2px;
-  word-break: break-all;
-}
-
 /* -- Visualisation plot cards -- */
-.linear-selected-figure-banner {
-  align-items: center;
-  background-color: var(--bg-card);
-  border: 1px solid #ffffff;
-  border-radius: 4px;
-  display: flex;
-  font-size: 12px;
-  justify-content: space-between;
-  padding: 8px 12px;
-}
-
 .linear-plot-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -616,12 +736,6 @@ body,
   max-width: 100%;
   object-fit: contain;
   width: auto;
-}
-
-.linear-subfigures-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
 }
 
 /* -- Preformatted document viewer (Monospace strictly reserved for actual code/docs via Fira Code) -- */
@@ -715,11 +829,9 @@ body,
 
 .gfm-alert-title {
   color: var(--text-primary);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.03em;
   margin-bottom: 4px;
-  text-transform: uppercase;
 }
 
 .gfm-alert-body {
