@@ -1,20 +1,22 @@
 # PROJECT RULES & RESEARCH NORMS
 
-## 1. Design System: Project 1436 Dataview Palette
+## 1. Design System: Project 1431/1436 Dataview Palette
 
-- **Theme**: Dark workspace styling borrowed directly from Project 1436 (Dataview).
+- **Theme**: Dark workspace styling borrowed directly from Project 1431/1436 (Dataview).
 - **Colour Palette**:
   - Core Accent Primary: Dataview Crimson Red `rgb(200, 40, 40)` (`#c82828`).
   - Core Accent Secondary: Vibrant Red `rgb(240, 60, 60)` (`#f03c3c`).
   - Accent Tertiary / Dividers: Translucent white `rgba(255, 255, 255, 0.15)`.
   - Canvas & Backgrounds: Main workspace `#111113`, Panels/Surfaces `#18181b`, Cards `#202024`, Hover `#27272c`.
   - Typography Scale: Primary text `#ffffff`, Secondary/Muted text `rgba(255, 255, 255, 0.65)`, Dim text `rgba(255, 255, 255, 0.45)`.
-- **Accent Colour Restriction**:
-  - The accent is strictly the Dataview Crimson/Vibrant Red palette.
-  - Do NOT use Indigo, cyan, purple, or a rainbow of random accent colours in the web UI.
-  - Use **font weights** (`600`, `500`, `400`) and the neutral scale (`#ffffff` vs `rgba(255, 255, 255, 0.65)`) for metric emphasis and visual hierarchy.
+- **Button vs Outline Rules**:
+  - **Only actual interactive buttons** (e.g. "Run CDT", "Render R plots", "Execute selected pipeline") may have the red button look (`background-color: var(--accent-primary)`).
+  - **List item selection outlines** (such as the pipeline selector list on the left-hand side) must be **white** (`#ffffff`) for contrast, never red.
+- **Terminal TUI Color Rule**:
+  - The terminal TUI is unrestricted in using the terminal's natural ANSI colours (cyan, green, yellow, red, magenta, white, dim) because terminal environments naturally constrain colour palettes and prevent visual bloat.
+  - The web UI strictly enforces the Dataview palette and avoids extraneous rainbow accents.
 
-## 2. Typography & Font Consistency
+## 2. Typography & Table Standards
 
 - **Font Families (from Dataview)**:
   - Primary UI & Headings:
@@ -29,12 +31,17 @@
   - Monospace is **strictly reserved for actual code snippets/blocks and raw process logs**.
   - It must **never** be used for data tables, statistics, KPI numbers, geocodes, table headers, or badges.
   - Numbers and figures use the primary sans-serif font (`Karla`) with `font-variant-numeric: tabular-nums` for precise alignment.
-- **Visual Weight**:
-  - `font-weight: 700` / `600` for headings, key metrics, and clamped results.
-  - `font-weight: 500` for sub-metrics, column headers, and active buttons.
-  - `font-weight: 400` with muted tone for baseline comparisons and notes.
+- **Table Interactivity & Bolding Rule**:
+  - All tables must be **sortable** (ascending `▲` and descending `▼`) by clicking column headers.
+  - **Cells outside the first column must NOT be bolded**. Only the entity/epoch in the first column (`col-entity`) is bolded for identification. All other cells (figures, ratios, errors, rates) must use standard regular weight (`font-weight: 400`).
 
-## 3. Writing & Research Norms
+## 3. Terminal Rendering & Ghosting Prevention
+
+- Full-screen TUI renderers must enter the **Alternate Screen Buffer** (`\x1b[?1049h`) on startup and exit cleanly (`\x1b[?1049l`) on shutdown to prevent scrollback buffer ghosting.
+- Total rendered lines must be clamped to `(process.stdout.rows - 1)` without a trailing newline on the bottom row to prevent terminal scrolling artifacts.
+- Window resize events (`process.stdout.on("resize")`) must trigger a clean screen clear and re-render.
+
+## 4. Writing & Research Norms
 
 - **Minimal and Human Prose**:
   - Write plain, direct, human English. Explain clearly what each view or metric shows.

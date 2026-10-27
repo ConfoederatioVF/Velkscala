@@ -1,5 +1,5 @@
 //Import libraries and React hooks
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 
 
 /**
@@ -89,7 +89,89 @@ function formatYearBCAD (arg0_year) {
 
 
 /**
- * Main dashboard component implementing the Linear design palette for Velkscala validation.
+ * Reusable column header component with sort direction indicators.
+ *
+ * @param {Object} arg0_props
+ * @returns {React.ReactElement}
+ */
+function SortHeader (arg0_props) {
+  //Convert from parameters
+  let is_num = arg0_props.isNum;
+  let label = arg0_props.label;
+  let on_sort = arg0_props.onSort;
+  let sort_config = arg0_props.sortConfig;
+  let sort_key = arg0_props.sortKey;
+
+  //Declare local instance variables
+  let is_active = (sort_config?.key === sort_key);
+  let indicator = is_active ? (sort_config.direction === "asc" ? " ▲" : " ▼") : "";
+
+  //Return statement
+  return (
+    <th
+      className={is_num ? "num" : ""}
+      onClick={on_sort}
+      style={{ cursor: "pointer", userSelect: "none" }}
+      title={`Click to sort by ${label}`}
+    >
+      {label}
+      {indicator && <span className="sort-indicator">{indicator}</span>}
+    </th>
+  );
+}
+
+
+/**
+ * Custom hook to sort arrays ascending or descending by key or selector function.
+ *
+ * @param {Array} arg0_items
+ * @param {Object} [arg1_initial_config]
+ * @returns {Object}
+ */
+function useSortableData (arg0_items, arg1_initial_config) {
+  //Convert from parameters
+  let items = arg0_items;
+  let initial_config = arg1_initial_config;
+
+  //Declare local instance variables
+  let [sort_config, setSortConfig] = useState(initial_config || { direction: "asc", key: null });
+
+  let sorted_items = useMemo(() => {
+    let sortable = (items || []).slice();
+    if (sort_config?.key) {
+      sortable.sort((a, b) => {
+        let val_a = (typeof sort_config.selector === "function") ? sort_config.selector(a) : a[sort_config.key];
+        let val_b = (typeof sort_config.selector === "function") ? sort_config.selector(b) : b[sort_config.key];
+        if (val_a === null || val_a === undefined) return 1;
+        if (val_b === null || val_b === undefined) return -1;
+        if (typeof val_a === "string") {
+          return (sort_config.direction === "asc")
+            ? val_a.localeCompare(val_b)
+            : val_b.localeCompare(val_a);
+        }
+        return (sort_config.direction === "asc") ? (val_a - val_b) : (val_b - val_a);
+      });
+    }
+    return sortable;
+  }, [items, sort_config]);
+
+  let requestSort = function (arg0_key, arg1_selector) {
+    let key = arg0_key;
+    let selector = arg1_selector;
+    let direction = "asc";
+    if (sort_config?.key === key && sort_config.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ direction: direction, key: key, selector: selector });
+  };
+
+  //Return statement
+  return { items: sorted_items, requestSort: requestSort, sortConfig: sort_config };
+}
+
+
+/**
+ * Main dashboard component implementing the Dataview design palette for Velkscala validation.
  *
  * @returns {React.ReactElement}
  */
@@ -175,7 +257,7 @@ export function VelkscalaTUIApp () {
   //Return statement
   return (
     <div className="linear-dashboard">
-      {/* Refined Linear Header */}
+      {/* Refined Dataview Header */}
       <header className="linear-header">
         <div className="linear-brand-group">
           <span className="linear-title">Velkscala</span>
@@ -234,7 +316,7 @@ export function VelkscalaTUIApp () {
             <span className="linear-kpi-value">
               {formatEuroNumber(latest_bd.proxy_births, { use_abbreviation: true })}
             </span>
-            <span className="linear-kpi-diff" style={{ fontWeight: 400, color: "var(--text-secondary)" }}>
+            <span className="linear-kpi-diff">
               / {formatEuroNumber(latest_bd.proxy_deaths, { use_abbreviation: true })} deaths
             </span>
           </div>
@@ -244,10 +326,10 @@ export function VelkscalaTUIApp () {
         </div>
 
         <div className="linear-kpi-card">
-          <span className="linear-kpi-label">NDT Agricultural Hearths</span>
+          <span className="linear-kpi-label">NDT Checks</span>
           <div className="linear-kpi-value-row">
             <span className="linear-kpi-value">
-              {hearth_count} of 5 hearths
+              {hearth_count} of 5 checks
             </span>
           </div>
           <span className="linear-kpi-subtext">
@@ -270,7 +352,7 @@ export function VelkscalaTUIApp () {
 
       {/* Main Split Layout: Pipelines + Logs | Tabbed Content */}
       <div className="linear-split-layout">
-        {/* Left Sidebar: Pipelines & Process Log */}
+        {/* Left Sidebar: Pipelines & Process Log (white outline on selection for contrast) */}
         <aside className="linear-panel">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span className="linear-panel-title">Pipelines</span>
@@ -294,7 +376,7 @@ export function VelkscalaTUIApp () {
                   onClick={() => setSelectedPipelineId(p.id)}
                 >
                   <div>
-                    <div className="linear-pipeline-name" style={{ fontWeight: is_active ? 600 : 500 }}>
+                    <div className="linear-pipeline-name" style={{ fontWeight: is_active ? 700 : 500 }}>
                       {p.name}
                     </div>
                     <div className="linear-pipeline-desc">{p.description}</div>
@@ -318,7 +400,7 @@ export function VelkscalaTUIApp () {
           <span className="linear-panel-title" style={{ marginTop: "4px" }}>Process stream</span>
           <div className="linear-log-box">
             {(!state_data?.logs || state_data.logs.length === 0) ? (
-              <div style={{ color: "#6b7280" }}>Ready. Select a pipeline to run.</div>
+              <div style={{ color: "rgba(255, 255, 255, 0.45)" }}>Ready. Select a pipeline to run.</div>
             ) : (
               state_data.logs.map((entry, idx) => {
                 let msg = (typeof entry === "object" && entry !== null)
@@ -334,7 +416,7 @@ export function VelkscalaTUIApp () {
           </div>
         </aside>
 
-        {/* Right Main Panel: Tabs and Data Viewers */}
+        {/* Right Main Panel: Tabs and Sortable Data Viewers */}
         <main className="linear-panel">
           <nav className="linear-tabs-nav">
             {tabs.map((tab_title, idx) => (
@@ -350,7 +432,7 @@ export function VelkscalaTUIApp () {
 
           <div style={{ flex: 1, minHeight: 0, overflowY: "auto", paddingRight: "4px" }}>
             {is_loading ? (
-              <div style={{ color: "#6b7280", padding: "16px 0" }}>Loading validation data...</div>
+              <div style={{ color: "rgba(255, 255, 255, 0.45)", padding: "16px 0" }}>Loading validation data...</div>
             ) : active_tab === 0 ? (
               <CDTView
                 ageSexData={state_data?.cdt_age_sex}
@@ -379,7 +461,7 @@ export function VelkscalaTUIApp () {
 
 
 /**
- * Tab 1: Contemporary Demographic Transition (CDT) Validation.
+ * Tab 1: Contemporary Demographic Transition (CDT) Validation (Sortable, non-bold cells outside col 1).
  *
  * @param {Object} arg0_props
  * @returns {React.ReactElement}
@@ -390,67 +472,83 @@ function CDTView (arg0_props) {
   let births_deaths_data = arg0_props.birthsDeathsData;
 
   //Declare local instance variables
-  let age_sex_epochs = age_sex_data?.summary_by_epoch || [];
-  let bd_epochs = births_deaths_data?.summary_by_epoch || [];
+  let age_sex_epochs_raw = age_sex_data?.summary_by_epoch || [];
+  let bd_epochs_raw = births_deaths_data?.summary_by_epoch || [];
   let years_list = age_sex_data?.per_country ? Object.keys(age_sex_data.per_country) : [];
   let [country_year, setCountryYear] = useState("2019");
 
-  let country_entries = [];
-  let yr_bucket = age_sex_data?.per_country?.[country_year] || {};
-  let iso_keys = Object.keys(yr_bucket);
-  for (let i = 0; i < iso_keys.length; i++) {
-    let iso3 = iso_keys[i];
-    let row = yr_bucket[iso3];
-    let raw = row?.raw_mnl?.r2_country ?? 0;
-    let clp = row?.clamped?.r2_country ?? 0;
-    country_entries.push({
-      clamped: clp,
-      clamped_female: row?.clamped?.r2_female,
-      clamped_male: row?.clamped?.r2_male,
-      delta: clp - raw,
-      iso3: iso3,
-      raw: raw
-    });
-  }
-  country_entries.sort((a, b) => b.delta - a.delta);
+  //Sortable hook for Epoch Bracket table
+  let { items: epoch_items, requestSort: requestEpochSort, sortConfig: epochSortCfg } = useSortableData(
+    age_sex_epochs_raw,
+    { direction: "asc", key: "year" }
+  );
+
+  //Sortable hook for Vital Flows table
+  let { items: bd_items, requestSort: requestBdSort, sortConfig: bdSortCfg } = useSortableData(
+    bd_epochs_raw,
+    { direction: "asc", key: "year" }
+  );
+
+  //Prepare country breakdown entries
+  let country_entries_raw = useMemo(() => {
+    let yr_bucket = age_sex_data?.per_country?.[country_year] || {};
+    let iso_keys = Object.keys(yr_bucket);
+    let rows = [];
+    for (let i = 0; i < iso_keys.length; i++) {
+      let iso3 = iso_keys[i];
+      let row = yr_bucket[iso3];
+      let raw = row?.raw_mnl?.r2_country ?? 0;
+      let clp = row?.clamped?.r2_country ?? 0;
+      rows.push({
+        clamped: clp,
+        clamped_female: row?.clamped?.r2_female ?? 0,
+        clamped_male: row?.clamped?.r2_male ?? 0,
+        delta: clp - raw,
+        iso3: iso3,
+        raw: raw
+      });
+    }
+    return rows;
+  }, [age_sex_data, country_year]);
+
+  //Sortable hook for Country table
+  let { items: country_items, requestSort: requestCountrySort, sortConfig: countrySortCfg } = useSortableData(
+    country_entries_raw,
+    { direction: "desc", key: "delta" }
+  );
 
   //Return statement
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      {/* Epoch Comparison */}
+      {/* Epoch Comparison (Sortable, non-bold cells outside col 1) */}
       <div>
-        <div style={{ fontWeight: 600, fontSize: "13px", marginBottom: "8px" }}>
+        <div style={{ fontWeight: 700, fontSize: "13px", marginBottom: "8px" }}>
           Age and sex bracket fit by historical epoch
         </div>
         <div className="linear-table-container">
           <table className="linear-table">
             <thead>
               <tr>
-                <th>Epoch</th>
-                <th>Source</th>
-                <th className="num">Countries</th>
-                <th className="num">Raw MNL R²</th>
-                <th className="num">Clamped R²</th>
-                <th className="num">Gain (Δ)</th>
-                <th className="num">Male R²</th>
-                <th className="num">Female R²</th>
+                <SortHeader label="Epoch" onSort={() => requestEpochSort("year")} sortConfig={epochSortCfg} sortKey="year" />
+                <SortHeader label="Source" onSort={() => requestEpochSort("domain")} sortConfig={epochSortCfg} sortKey="domain" />
+                <SortHeader isNum={true} label="Countries" onSort={() => requestEpochSort("num_countries")} sortConfig={epochSortCfg} sortKey="num_countries" />
+                <SortHeader isNum={true} label="Raw MNL R²" onSort={() => requestEpochSort("raw_r2", (r) => r.raw_mnl?.geomean_r2 ?? 0)} sortConfig={epochSortCfg} sortKey="raw_r2" />
+                <SortHeader isNum={true} label="Clamped R²" onSort={() => requestEpochSort("clamped_r2", (r) => r.clamped?.geomean_r2 ?? 0)} sortConfig={epochSortCfg} sortKey="clamped_r2" />
+                <SortHeader isNum={true} label="Gain (Δ)" onSort={() => requestEpochSort("delta_geomean")} sortConfig={epochSortCfg} sortKey="delta_geomean" />
+                <SortHeader isNum={true} label="Male R²" onSort={() => requestEpochSort("male_r2", (r) => r.clamped?.male_r2 ?? 0)} sortConfig={epochSortCfg} sortKey="male_r2" />
+                <SortHeader isNum={true} label="Female R²" onSort={() => requestEpochSort("female_r2", (r) => r.clamped?.female_r2 ?? 0)} sortConfig={epochSortCfg} sortKey="female_r2" />
               </tr>
             </thead>
             <tbody>
-              {age_sex_epochs.map((row) => (
+              {epoch_items.map((row) => (
                 <tr key={row.year}>
+                  {/* Only the first column is bolded per user instructions */}
                   <td><strong>{row.year}</strong></td>
                   <td><span className="linear-badge">{row.domain}</span></td>
                   <td className="num">{row.num_countries}</td>
-                  <td className="num" style={{ color: "var(--text-secondary)" }}>
-                    {formatEuroNumber(row.raw_mnl?.geomean_r2, { is_percent: true })}
-                  </td>
-                  <td className="num" style={{ fontWeight: 600 }}>
-                    {formatEuroNumber(row.clamped?.geomean_r2, { is_percent: true })}
-                  </td>
-                  <td className="num" style={{ fontWeight: 600 }}>
-                    {formatEuroNumber(row.delta_geomean, { is_percent: true, is_signed: true })}
-                  </td>
+                  <td className="num">{formatEuroNumber(row.raw_mnl?.geomean_r2, { is_percent: true })}</td>
+                  <td className="num">{formatEuroNumber(row.clamped?.geomean_r2, { is_percent: true })}</td>
+                  <td className="num">{formatEuroNumber(row.delta_geomean, { is_percent: true, is_signed: true })}</td>
                   <td className="num">{formatEuroNumber(row.clamped?.male_r2, { is_percent: true })}</td>
                   <td className="num">{formatEuroNumber(row.clamped?.female_r2, { is_percent: true })}</td>
                 </tr>
@@ -460,46 +558,39 @@ function CDTView (arg0_props) {
         </div>
       </div>
 
-      {/* Vital Flows Comparison */}
+      {/* Vital Flows Comparison (Sortable, non-bold cells outside col 1) */}
       <div>
-        <div style={{ fontWeight: 600, fontSize: "13px", marginBottom: "8px" }}>
+        <div style={{ fontWeight: 700, fontSize: "13px", marginBottom: "8px" }}>
           Global vital flows (empirical vs proxy births and deaths)
         </div>
         <div className="linear-table-container">
           <table className="linear-table">
             <thead>
               <tr>
-                <th>Epoch</th>
-                <th>Source</th>
-                <th className="num">Countries</th>
-                <th className="num">Empirical births</th>
-                <th className="num">Proxy births</th>
-                <th className="num">Birth error</th>
-                <th className="num">Empirical deaths</th>
-                <th className="num">Proxy deaths</th>
-                <th className="num">Death error</th>
+                <SortHeader label="Epoch" onSort={() => requestBdSort("year")} sortConfig={bdSortCfg} sortKey="year" />
+                <SortHeader label="Source" onSort={() => requestBdSort("source")} sortConfig={bdSortCfg} sortKey="source" />
+                <SortHeader isNum={true} label="Countries" onSort={() => requestBdSort("num_countries")} sortConfig={bdSortCfg} sortKey="num_countries" />
+                <SortHeader isNum={true} label="Empirical births" onSort={() => requestBdSort("empirical_births")} sortConfig={bdSortCfg} sortKey="empirical_births" />
+                <SortHeader isNum={true} label="Proxy births" onSort={() => requestBdSort("proxy_births")} sortConfig={bdSortCfg} sortKey="proxy_births" />
+                <SortHeader isNum={true} label="Birth error" onSort={() => requestBdSort("birth_error_pct")} sortConfig={bdSortCfg} sortKey="birth_error_pct" />
+                <SortHeader isNum={true} label="Empirical deaths" onSort={() => requestBdSort("empirical_deaths")} sortConfig={bdSortCfg} sortKey="empirical_deaths" />
+                <SortHeader isNum={true} label="Proxy deaths" onSort={() => requestBdSort("proxy_deaths")} sortConfig={bdSortCfg} sortKey="proxy_deaths" />
+                <SortHeader isNum={true} label="Death error" onSort={() => requestBdSort("death_error_pct")} sortConfig={bdSortCfg} sortKey="death_error_pct" />
               </tr>
             </thead>
             <tbody>
-              {bd_epochs.map((row) => (
+              {bd_items.map((row) => (
                 <tr key={row.year}>
+                  {/* Only the first column is bolded */}
                   <td><strong>{row.year}</strong></td>
                   <td>{row.source}</td>
                   <td className="num">{row.num_countries}</td>
                   <td className="num">{formatEuroNumber(row.empirical_births, { use_abbreviation: true })}</td>
-                  <td className="num" style={{ fontWeight: 500 }}>
-                    {formatEuroNumber(row.proxy_births, { use_abbreviation: true })}
-                  </td>
-                  <td className="num" style={{ fontWeight: 500 }}>
-                    {formatEuroNumber(row.birth_error_pct, { is_already_percent: true, is_signed: true })}
-                  </td>
+                  <td className="num">{formatEuroNumber(row.proxy_births, { use_abbreviation: true })}</td>
+                  <td className="num">{formatEuroNumber(row.birth_error_pct, { is_already_percent: true, is_signed: true })}</td>
                   <td className="num">{formatEuroNumber(row.empirical_deaths, { use_abbreviation: true })}</td>
-                  <td className="num" style={{ fontWeight: 500 }}>
-                    {formatEuroNumber(row.proxy_deaths, { use_abbreviation: true })}
-                  </td>
-                  <td className="num" style={{ fontWeight: 500 }}>
-                    {formatEuroNumber(row.death_error_pct, { is_already_percent: true, is_signed: true })}
-                  </td>
+                  <td className="num">{formatEuroNumber(row.proxy_deaths, { use_abbreviation: true })}</td>
+                  <td className="num">{formatEuroNumber(row.death_error_pct, { is_already_percent: true, is_signed: true })}</td>
                 </tr>
               ))}
             </tbody>
@@ -507,11 +598,11 @@ function CDTView (arg0_props) {
         </div>
       </div>
 
-      {/* Country Breakdown */}
+      {/* Country Breakdown (Sortable, non-bold cells outside col 1) */}
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-          <div style={{ fontWeight: 600, fontSize: "13px" }}>
-            Country-level fit in {country_year} (sorted by clamping gain)
+          <div style={{ fontWeight: 700, fontSize: "13px" }}>
+            Country-level fit in {country_year}
           </div>
           <div style={{ display: "flex", gap: "4px" }}>
             {years_list.map((yr) => (
@@ -529,27 +620,22 @@ function CDTView (arg0_props) {
           <table className="linear-table">
             <thead>
               <tr>
-                <th>ISO3</th>
-                <th className="num">Raw MNL R²</th>
-                <th className="num">Clamped R²</th>
-                <th className="num">Gain (Δ)</th>
-                <th className="num">Male R²</th>
-                <th className="num">Female R²</th>
+                <SortHeader label="ISO3" onSort={() => requestCountrySort("iso3")} sortConfig={countrySortCfg} sortKey="iso3" />
+                <SortHeader isNum={true} label="Raw MNL R²" onSort={() => requestCountrySort("raw")} sortConfig={countrySortCfg} sortKey="raw" />
+                <SortHeader isNum={true} label="Clamped R²" onSort={() => requestCountrySort("clamped")} sortConfig={countrySortCfg} sortKey="clamped" />
+                <SortHeader isNum={true} label="Gain (Δ)" onSort={() => requestCountrySort("delta")} sortConfig={countrySortCfg} sortKey="delta" />
+                <SortHeader isNum={true} label="Male R²" onSort={() => requestCountrySort("clamped_male")} sortConfig={countrySortCfg} sortKey="clamped_male" />
+                <SortHeader isNum={true} label="Female R²" onSort={() => requestCountrySort("clamped_female")} sortConfig={countrySortCfg} sortKey="clamped_female" />
               </tr>
             </thead>
             <tbody>
-              {country_entries.slice(0, 30).map((row) => (
+              {country_items.map((row) => (
                 <tr key={row.iso3}>
+                  {/* Only first column bolded */}
                   <td><strong>{row.iso3}</strong></td>
-                  <td className="num" style={{ color: "var(--text-secondary)" }}>
-                    {formatEuroNumber(row.raw, { is_percent: true })}
-                  </td>
-                  <td className="num" style={{ fontWeight: 600 }}>
-                    {formatEuroNumber(row.clamped, { is_percent: true })}
-                  </td>
-                  <td className="num" style={{ fontWeight: 600 }}>
-                    {formatEuroNumber(row.delta, { is_percent: true, is_signed: true })}
-                  </td>
+                  <td className="num">{formatEuroNumber(row.raw, { is_percent: true })}</td>
+                  <td className="num">{formatEuroNumber(row.clamped, { is_percent: true })}</td>
+                  <td className="num">{formatEuroNumber(row.delta, { is_percent: true, is_signed: true })}</td>
                   <td className="num">{formatEuroNumber(row.clamped_male, { is_percent: true })}</td>
                   <td className="num">{formatEuroNumber(row.clamped_female, { is_percent: true })}</td>
                 </tr>
@@ -564,7 +650,7 @@ function CDTView (arg0_props) {
 
 
 /**
- * Tab 2: Neolithic Demographic Transition (NDT) Validation.
+ * Tab 2: Neolithic Demographic Transition (NDT) Validation (Sortable, non-bold cells outside col 1).
  *
  * @param {Object} arg0_props
  * @returns {React.ReactElement}
@@ -574,52 +660,85 @@ function NDTView (arg0_props) {
   let ndt_data = arg0_props.ndtData;
 
   //Declare local instance variables
-  let geocodes = ndt_data?.tracked_geocodes ? Object.entries(ndt_data.tracked_geocodes) : [];
   let region_keys = ndt_data?.regional_data ? Object.keys(ndt_data.regional_data) : [];
-  let scorecard = ndt_data?.scorecard ? Object.entries(ndt_data.scorecard) : [];
   let [selected_hearth, setSelectedHearth] = useState("Southwest Asia");
 
-  let hearth_epochs = ndt_data?.regional_data?.[selected_hearth]?.epochs || [];
+  //Prepare scorecard entries
+  let scorecard_raw = useMemo(() => {
+    let entries = Object.entries(ndt_data?.scorecard || {});
+    return entries.map(([name, sc]) => ({
+      ...sc,
+      name: name
+    }));
+  }, [ndt_data]);
+
+  let { items: sc_items, requestSort: requestScSort, sortConfig: scSortCfg } = useSortableData(
+    scorecard_raw,
+    { direction: "desc", key: "peak_early_growth_rate" }
+  );
+
+  //Prepare regional trajectory epochs
+  let hearth_epochs_raw = ndt_data?.regional_data?.[selected_hearth]?.epochs || [];
+  let { items: traj_items, requestSort: requestTrajSort, sortConfig: trajSortCfg } = useSortableData(
+    hearth_epochs_raw,
+    { direction: "asc", key: "year" }
+  );
+
+  //Prepare geocodes list
+  let geocodes_raw = useMemo(() => {
+    let entries = Object.entries(ndt_data?.tracked_geocodes || {});
+    return entries.map(([code, g]) => ({
+      code: code,
+      name: g.info?.name || code,
+      p0: g.benchmark_epochs?.["0"]?.population ?? 0,
+      p0_15p5: g.benchmark_epochs?.["0"]?.p_5_19_bocquet_pct ?? 0,
+      p2000: g.benchmark_epochs?.["-2000"]?.population ?? 0,
+      p2000_15p5: g.benchmark_epochs?.["-2000"]?.p_5_19_bocquet_pct ?? 0,
+      p6000: g.benchmark_epochs?.["-6000"]?.population ?? 0,
+      p6000_15p5: g.benchmark_epochs?.["-6000"]?.p_5_19_bocquet_pct ?? 0,
+      region: g.info?.region || ""
+    }));
+  }, [ndt_data]);
+
+  let { items: geo_items, requestSort: requestGeoSort, sortConfig: geoSortCfg } = useSortableData(
+    geocodes_raw,
+    { direction: "asc", key: "code" }
+  );
 
   //Return statement
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      {/* Cross-Hearth Scorecard */}
+      {/* Cross-Hearth Scorecard (Sortable, non-bold cells outside col 1) */}
       <div>
-        <div style={{ fontWeight: 600, fontSize: "13px", marginBottom: "8px" }}>
+        <div style={{ fontWeight: 700, fontSize: "13px", marginBottom: "8px" }}>
           Agricultural hearth benchmarks (Bocquet-Appel &amp; Shennan priors)
         </div>
         <div className="linear-table-container">
           <table className="linear-table">
             <thead>
               <tr>
-                <th>Hearth</th>
-                <th>Neolithic onset</th>
-                <th className="num">Pre-NDT growth</th>
-                <th className="num">Peak boom growth</th>
-                <th>Peak interval</th>
-                <th className="num">Pre 15P5</th>
-                <th className="num">Peak 15P5</th>
-                <th className="num">15P5 gain (Δ)</th>
+                <SortHeader label="Hearth" onSort={() => requestScSort("name")} sortConfig={scSortCfg} sortKey="name" />
+                <SortHeader label="Neolithic onset" onSort={() => requestScSort("onset_label")} sortConfig={scSortCfg} sortKey="onset_label" />
+                <SortHeader isNum={true} label="Pre-NDT growth" onSort={() => requestScSort("pre_growth_rate_clean")} sortConfig={scSortCfg} sortKey="pre_growth_rate_clean" />
+                <SortHeader isNum={true} label="Peak boom growth" onSort={() => requestScSort("peak_early_growth_rate")} sortConfig={scSortCfg} sortKey="peak_early_growth_rate" />
+                <SortHeader label="Peak interval" onSort={() => requestScSort("peak_early_interval")} sortConfig={scSortCfg} sortKey="peak_early_interval" />
+                <SortHeader isNum={true} label="Pre 15P5" onSort={() => requestScSort("ijp_pre_mean")} sortConfig={scSortCfg} sortKey="ijp_pre_mean" />
+                <SortHeader isNum={true} label="Peak 15P5" onSort={() => requestScSort("ijp_boom_peak")} sortConfig={scSortCfg} sortKey="ijp_boom_peak" />
+                <SortHeader isNum={true} label="15P5 gain (Δ)" onSort={() => requestScSort("ijp_delta_pp")} sortConfig={scSortCfg} sortKey="ijp_delta_pp" />
               </tr>
             </thead>
             <tbody>
-              {scorecard.map(([name, sc]) => (
-                <tr key={name}>
-                  <td><strong>{name}</strong></td>
+              {sc_items.map((sc) => (
+                <tr key={sc.name}>
+                  {/* Only first column bolded */}
+                  <td><strong>{sc.name}</strong></td>
                   <td>{sc.onset_label}</td>
                   <td className="num">{formatEuroNumber(sc.pre_growth_rate_clean, { decimals: 3, is_already_percent: true })}</td>
-                  <td className="num" style={{ fontWeight: 600 }}>
-                    {formatEuroNumber(sc.peak_early_growth_rate, { decimals: 3, is_already_percent: true, is_signed: true })}
-                  </td>
+                  <td className="num">{formatEuroNumber(sc.peak_early_growth_rate, { decimals: 3, is_already_percent: true, is_signed: true })}</td>
                   <td>{sc.peak_early_interval}</td>
                   <td className="num">{formatEuroNumber(sc.ijp_pre_mean, { is_already_percent: true })}</td>
-                  <td className="num" style={{ fontWeight: 600 }}>
-                    {formatEuroNumber(sc.ijp_boom_peak, { is_already_percent: true })}
-                  </td>
-                  <td className="num" style={{ fontWeight: 600 }}>
-                    {formatEuroNumber(sc.ijp_delta_pp, { is_signed: true })} pp
-                  </td>
+                  <td className="num">{formatEuroNumber(sc.ijp_boom_peak, { is_already_percent: true })}</td>
+                  <td className="num">{formatEuroNumber(sc.ijp_delta_pp, { is_signed: true })} pp</td>
                 </tr>
               ))}
             </tbody>
@@ -627,10 +746,10 @@ function NDTView (arg0_props) {
         </div>
       </div>
 
-      {/* Trajectory Table */}
+      {/* Trajectory Table (Sortable, non-bold cells outside col 1) */}
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-          <div style={{ fontWeight: 600, fontSize: "13px" }}>
+          <div style={{ fontWeight: 700, fontSize: "13px" }}>
             Paleodemographic trajectory (10000 BC–1000 AD) — {selected_hearth}
           </div>
           <div style={{ display: "flex", gap: "4px" }}>
@@ -649,26 +768,25 @@ function NDTView (arg0_props) {
           <table className="linear-table">
             <thead>
               <tr>
-                <th>Epoch</th>
-                <th>Stage</th>
-                <th className="num">Stadestér pop</th>
-                <th className="num">HYDE pop</th>
-                <th className="num">Growth (%/yr)</th>
-                <th className="num">Cropland (km²)</th>
-                <th className="num">Under-5 share</th>
-                <th className="num">15P5 index</th>
+                <SortHeader label="Epoch" onSort={() => requestTrajSort("year")} sortConfig={trajSortCfg} sortKey="year" />
+                <SortHeader label="Stage" onSort={() => requestTrajSort("stage")} sortConfig={trajSortCfg} sortKey="stage" />
+                <SortHeader isNum={true} label="Stadestér pop" onSort={() => requestTrajSort("pop_stadester")} sortConfig={trajSortCfg} sortKey="pop_stadester" />
+                <SortHeader isNum={true} label="HYDE pop" onSort={() => requestTrajSort("pop_hyde")} sortConfig={trajSortCfg} sortKey="pop_hyde" />
+                <SortHeader isNum={true} label="Growth (%/yr)" onSort={() => requestTrajSort("growth_rate_pct")} sortConfig={trajSortCfg} sortKey="growth_rate_pct" />
+                <SortHeader isNum={true} label="Cropland (km²)" onSort={() => requestTrajSort("cropland_km2")} sortConfig={trajSortCfg} sortKey="cropland_km2" />
+                <SortHeader isNum={true} label="Under-5 share" onSort={() => requestTrajSort("p_under5_pct")} sortConfig={trajSortCfg} sortKey="p_under5_pct" />
+                <SortHeader isNum={true} label="15P5 index" onSort={() => requestTrajSort("p_5_19_bocquet_pct")} sortConfig={trajSortCfg} sortKey="p_5_19_bocquet_pct" />
               </tr>
             </thead>
             <tbody>
-              {hearth_epochs.map((r) => (
+              {traj_items.map((r) => (
                 <tr key={r.year}>
+                  {/* Only first column bolded */}
                   <td><strong>{formatYearBCAD(r.year)}</strong></td>
                   <td><span className="linear-badge">{r.stage}</span></td>
-                  <td className="num" style={{ fontWeight: 600 }}>
-                    {formatEuroNumber(r.pop_stadester, { use_abbreviation: true })}
-                  </td>
+                  <td className="num">{formatEuroNumber(r.pop_stadester, { use_abbreviation: true })}</td>
                   <td className="num">{formatEuroNumber(r.pop_hyde, { use_abbreviation: true })}</td>
-                  <td className="num" style={{ fontWeight: (r.growth_rate_pct && r.growth_rate_pct > 0.05) ? 600 : 400 }}>
+                  <td className="num">
                     {(r.growth_rate_pct !== null)
                       ? formatEuroNumber(r.growth_rate_pct, { decimals: 3, is_already_percent: true, is_signed: true })
                       : "—"}
@@ -683,45 +801,39 @@ function NDTView (arg0_props) {
         </div>
       </div>
 
-      {/* Geocodes Audit */}
+      {/* Geocodes Audit (Sortable, non-bold cells outside col 1) */}
       <div>
-        <div style={{ fontWeight: 600, fontSize: "13px", marginBottom: "8px" }}>
-          Anchor geocode audit (6000 BC, 2000 BC, 0 AD, 600 AD)
+        <div style={{ fontWeight: 700, fontSize: "13px", marginBottom: "8px" }}>
+          Anchor geocode audit (6000 BC, 2000 BC, 0 AD)
         </div>
         <div className="linear-table-container">
           <table className="linear-table">
             <thead>
               <tr>
-                <th>Geocode</th>
-                <th>Region</th>
-                <th className="num">6000 BC Pop</th>
-                <th className="num">6000 BC 15P5</th>
-                <th className="num">2000 BC Pop</th>
-                <th className="num">2000 BC 15P5</th>
-                <th className="num">0 AD Pop</th>
-                <th className="num">0 AD 15P5</th>
+                <SortHeader label="Geocode" onSort={() => requestGeoSort("name")} sortConfig={geoSortCfg} sortKey="name" />
+                <SortHeader label="Region" onSort={() => requestGeoSort("region")} sortConfig={geoSortCfg} sortKey="region" />
+                <SortHeader isNum={true} label="6000 BC Pop" onSort={() => requestGeoSort("p6000")} sortConfig={geoSortCfg} sortKey="p6000" />
+                <SortHeader isNum={true} label="6000 BC 15P5" onSort={() => requestGeoSort("p6000_15p5")} sortConfig={geoSortCfg} sortKey="p6000_15p5" />
+                <SortHeader isNum={true} label="2000 BC Pop" onSort={() => requestGeoSort("p2000")} sortConfig={geoSortCfg} sortKey="p2000" />
+                <SortHeader isNum={true} label="2000 BC 15P5" onSort={() => requestGeoSort("p2000_15p5")} sortConfig={geoSortCfg} sortKey="p2000_15p5" />
+                <SortHeader isNum={true} label="0 AD Pop" onSort={() => requestGeoSort("p0")} sortConfig={geoSortCfg} sortKey="p0" />
+                <SortHeader isNum={true} label="0 AD 15P5" onSort={() => requestGeoSort("p0_15p5")} sortConfig={geoSortCfg} sortKey="p0_15p5" />
               </tr>
             </thead>
             <tbody>
-              {geocodes.map(([code, g]) => {
-                let b6000 = g.benchmark_epochs?.["-6000"] || {};
-                let b2000 = g.benchmark_epochs?.["-2000"] || {};
-                let b0 = g.benchmark_epochs?.["0"] || {};
-                return (
-                  <tr key={code}>
-                    <td><strong>{g.info?.name || code}</strong></td>
-                    <td>{g.info?.region}</td>
-                    <td className="num">{formatEuroNumber(b6000.population, { use_abbreviation: true })}</td>
-                    <td className="num">{formatEuroNumber(b6000.p_5_19_bocquet_pct, { is_already_percent: true })}</td>
-                    <td className="num">{formatEuroNumber(b2000.population, { use_abbreviation: true })}</td>
-                    <td className="num">{formatEuroNumber(b2000.p_5_19_bocquet_pct, { is_already_percent: true })}</td>
-                    <td className="num">{formatEuroNumber(b0.population, { use_abbreviation: true })}</td>
-                    <td className="num" style={{ fontWeight: 600 }}>
-                      {formatEuroNumber(b0.p_5_19_bocquet_pct, { is_already_percent: true })}
-                    </td>
-                  </tr>
-                );
-              })}
+              {geo_items.map((g) => (
+                <tr key={g.code}>
+                  {/* Only first column bolded */}
+                  <td><strong>{g.name}</strong></td>
+                  <td>{g.region}</td>
+                  <td className="num">{formatEuroNumber(g.p6000, { use_abbreviation: true })}</td>
+                  <td className="num">{formatEuroNumber(g.p6000_15p5, { is_already_percent: true })}</td>
+                  <td className="num">{formatEuroNumber(g.p2000, { use_abbreviation: true })}</td>
+                  <td className="num">{formatEuroNumber(g.p2000_15p5, { is_already_percent: true })}</td>
+                  <td className="num">{formatEuroNumber(g.p0, { use_abbreviation: true })}</td>
+                  <td className="num">{formatEuroNumber(g.p0_15p5, { is_already_percent: true })}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -732,7 +844,7 @@ function NDTView (arg0_props) {
 
 
 /**
- * Tab 3: R Render Pipelines & Plot Visualisations.
+ * Tab 3: R Render Pipelines & Plot Visualisations (Sortable files, non-bold cells outside col 1).
  *
  * @param {Object} arg0_props
  * @returns {React.ReactElement}
@@ -745,6 +857,11 @@ function VisualisationsView (arg0_props) {
   //Declare local instance variables
   let cdt_img = files.find((f) => f.name === "cdt_proxy_vs_empirical.png");
   let ndt_img = files.find((f) => f.name === "ndt_paleodemographic_dashboard.png");
+
+  let { items: sorted_files, requestSort: requestFileSort, sortConfig: fileSortCfg } = useSortableData(
+    files,
+    { direction: "asc", key: "name" }
+  );
 
   //Return statement
   return (
@@ -769,7 +886,7 @@ function VisualisationsView (arg0_props) {
             {cdt_img ? (
               <img alt="CDT Validation Plot" className="linear-plot-image" src={cdt_img.url} />
             ) : (
-              <span style={{ color: "#6b7280" }}>Plot not generated yet.</span>
+              <span style={{ color: "rgba(255, 255, 255, 0.45)" }}>Plot not generated yet.</span>
             )}
           </div>
         </div>
@@ -793,29 +910,30 @@ function VisualisationsView (arg0_props) {
             {ndt_img ? (
               <img alt="NDT Validation Plot" className="linear-plot-image" src={ndt_img.url} />
             ) : (
-              <span style={{ color: "#6b7280" }}>Plot not generated yet.</span>
+              <span style={{ color: "rgba(255, 255, 255, 0.45)" }}>Plot not generated yet.</span>
             )}
           </div>
         </div>
       </div>
 
       <div>
-        <div style={{ fontWeight: 600, fontSize: "13px", marginBottom: "8px" }}>
+        <div style={{ fontWeight: 700, fontSize: "13px", marginBottom: "8px" }}>
           Output files ({files.length})
         </div>
         <div className="linear-table-container">
           <table className="linear-table">
             <thead>
               <tr>
-                <th>File</th>
-                <th className="num">Size</th>
-                <th>Last modified</th>
+                <SortHeader label="File" onSort={() => requestFileSort("name")} sortConfig={fileSortCfg} sortKey="name" />
+                <SortHeader isNum={true} label="Size" onSort={() => requestFileSort("size_kb")} sortConfig={fileSortCfg} sortKey="size_kb" />
+                <SortHeader label="Last modified" onSort={() => requestFileSort("mtime")} sortConfig={fileSortCfg} sortKey="mtime" />
                 <th>Link</th>
               </tr>
             </thead>
             <tbody>
-              {files.map((f) => (
+              {sorted_files.map((f) => (
                 <tr key={f.name}>
+                  {/* Only first column bolded */}
                   <td><strong>{f.name}</strong></td>
                   <td className="num">{formatEuroNumber(f.size_kb, { decimals: 1 })} kB</td>
                   <td>{f.mtime.replace("T", " ").slice(0, 19)}</td>
@@ -823,7 +941,7 @@ function VisualisationsView (arg0_props) {
                     <a
                       href={f.url}
                       rel="noreferrer"
-                      style={{ color: "var(--text-primary)", fontWeight: 500, textDecoration: "underline" }}
+                      style={{ color: "var(--text-primary)", textDecoration: "underline" }}
                       target="_blank"
                     >
                       Open
