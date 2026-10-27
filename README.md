@@ -8,6 +8,6 @@
 
 ## Abstract.
 
-This is the testing and validation repository for **Velkscala**, a geospatial database on population and demographics from 10000BC to 2025AD. Figures and methods reports are prepared here. 
+This is the testing and validation repository for **Velkscala**, a geospatial database on population and demographics from 10000BC to 2025AD. Figures and methods reports are prepared here, sorted by version.
 
-If you are looking for the actual data pipelines involved in generating Velkscala data, please check [Collation](https://github.com/ConfoederatioVF/Collation).
+For the actual data pipelines involved in generating Velkscala data, please check [Collation](https://github.com/ConfoederatioVF/Collation).
