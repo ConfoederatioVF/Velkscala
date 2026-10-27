@@ -1,0 +1,51 @@
+# PROJECT RULES & RESEARCH NORMS
+
+## 1. Design System: Project 1436 Dataview Palette
+
+- **Theme**: Dark workspace styling borrowed directly from Project 1436 (Dataview).
+- **Colour Palette**:
+  - Core Accent Primary: Dataview Crimson Red `rgb(200, 40, 40)` (`#c82828`).
+  - Core Accent Secondary: Vibrant Red `rgb(240, 60, 60)` (`#f03c3c`).
+  - Accent Tertiary / Dividers: Translucent white `rgba(255, 255, 255, 0.15)`.
+  - Canvas & Backgrounds: Main workspace `#111113`, Panels/Surfaces `#18181b`, Cards `#202024`, Hover `#27272c`.
+  - Typography Scale: Primary text `#ffffff`, Secondary/Muted text `rgba(255, 255, 255, 0.65)`, Dim text `rgba(255, 255, 255, 0.45)`.
+- **Accent Colour Restriction**:
+  - The accent is strictly the Dataview Crimson/Vibrant Red palette.
+  - Do NOT use Indigo, cyan, purple, or a rainbow of random accent colours in the web UI.
+  - Use **font weights** (`600`, `500`, `400`) and the neutral scale (`#ffffff` vs `rgba(255, 255, 255, 0.65)`) for metric emphasis and visual hierarchy.
+
+## 2. Typography & Font Consistency
+
+- **Font Families (from Dataview)**:
+  - Primary UI & Headings:
+    ```css
+    font-family: "Karla", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    ```
+  - Monospace (strictly code & logs):
+    ```css
+    font-family: "Fira Code", monospace;
+    ```
+- **Monospace Restriction**:
+  - Monospace is **strictly reserved for actual code snippets/blocks and raw process logs**.
+  - It must **never** be used for data tables, statistics, KPI numbers, geocodes, table headers, or badges.
+  - Numbers and figures use the primary sans-serif font (`Karla`) with `font-variant-numeric: tabular-nums` for precise alignment.
+- **Visual Weight**:
+  - `font-weight: 700` / `600` for headings, key metrics, and clamped results.
+  - `font-weight: 500` for sub-metrics, column headers, and active buttons.
+  - `font-weight: 400` with muted tone for baseline comparisons and notes.
+
+## 3. Writing & Research Norms
+
+- **Minimal and Human Prose**:
+  - Write plain, direct, human English. Explain clearly what each view or metric shows.
+  - Eliminate jargon bloat, robotic boilerplate, and excessive technical labelling.
+  - Never use ALLCAPS for component headers, card titles, or navigation.
+  - Omit gratuitous metadata in headers (e.g. do not attach "GMT+0", raw port numbers, or implementation stack tags to titles).
+- **Demographic & Statistical Conventions**:
+  - Use standard academic notation: $R^2$ (coefficient of determination), MAE (mean absolute error), RMSE (root mean square error).
+  - Clearly distinguish demographic stages:
+    - CDT: Contemporary Demographic Transition (1850–2019) comparing empirical vital flows (HMD, UNWPP) against model estimates and Stadestér bounds.
+    - NDT: Neolithic Demographic Transition (10000 BC–1000 AD) assessing agricultural onset timing, early population booms, and immature proportion (15P5) proxies.
+  - State observations ($N$), sample coverage, and unit of analysis explicitly.
+- **European Formatting**:
+  - Use comma for decimal separator (`58,88%`, `0,61`) in display copy.
