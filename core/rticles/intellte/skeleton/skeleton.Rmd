@@ -12,6 +12,7 @@ abstract: |
 
 bibliography: pnas-sample.bib
 csl: crd-mla-numeric.csl
+link-citations: true
 
 output:
   rticles::pnas_article:

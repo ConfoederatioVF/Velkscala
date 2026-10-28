@@ -16,6 +16,7 @@ abstract: |
 
 bibliography: velkscala.bib
 csl: crd-mla-numeric.csl
+link-citations: true
 
 output:
   rticles::pnas_article:
@@ -58,7 +59,7 @@ intro_template <- paste(
   "vital birth and death stocks from Niva et al. [@niva2023]. Second, we audit the",
   "**Neolithic Demographic Transition (NDT)** from 10000 BC to 1000 AD ($£3£$ epochs)",
   "across five independent agricultural hearths and $£4£$ national/subnational geocodes",
-  "against archaeological juvenile mortality priors [@bocquet2002; @bocquet2008] and",
+  "against archaeological juvenile mortality priors [@bocquet2002; @bocquet2008], alongside",
   "Holocene radiocarbon and land-use reconstructions [@shennan2013; @timpson2014; @hyde2017]."
 )
 
@@ -87,8 +88,8 @@ delta_geomean_str <- format_euro_number(cdt_as_data$overall_cdt$delta_geomean_r2
 
 cdt_narrative <- paste(
   "Across the contemporary validation horizon, graduating raw multinomial logit",
-  "age-sex probabilities through isotonic PAVA and Whittaker-Henderson kernels [@ayer1955; @whittaker1923]",
-  "clamped to Stadester total population bounds substantially improves demographic",
+  "age-sex probabilities through isotonic PAVA and Whittaker-Henderson kernels [@ayer1955; @whittaker1923],",
+  "clamped to Stadester total population bounds, substantially improves demographic",
   "fit. Across all evaluated country-epoch pairs, geometric mean $R^2$ rises from",
   "$£raw_r2£$ under raw MNL baseline probabilities to $£clamp_r2£$ post-clamping",
   "(an overall improvement of $\\Delta R^2 = £delta_r2£$; Figure \\ref{fig:cdt-dashboard}",
@@ -99,8 +100,8 @@ cdt_narrative <- paste(
   "exceeds $0.81$, reaching $0.8525$ in 1850 ($N = 8$ HMD countries), $0.8505$ in",
   "1900 ($N = 11$), $0.8736$ in 1920 ($N = 12$), and $0.8140$ in 1940 ($N = 16$).",
   "Post-1950 divergence reflects the expansion of the test sample from high-income",
-  "European HMD registers to $N = 189$ global UNWPP jurisdictions [@hmd2024; @unwpp2024]",
-  "exhibiting heterogeneous fertility transitions and subnational vital schedules [@niva2023];",
+  "European HMD registers to $N = 189$ global UNWPP jurisdictions [@hmd2024; @unwpp2024],",
+  "which exhibit heterogeneous fertility transitions and subnational vital schedules [@niva2023];",
   "in the final Velkscala 1.0 composite, empirical UNWPP records directly replace",
   "proxy estimates from 1950 AD onwards (Table \\ref{tab:cdt_vital_flows})."
 )
@@ -224,7 +225,7 @@ ndt_prose_synthesis <- paste(
       "- **Unique Age Structure Per Geocode (Refuting the 'Global Template' Fallacy)**:",
       "Direct audit of raster cohort buffers confirms that age-structure proportions are",
       "**spatially unique per geocode and per pixel**, driven by local covariates (cropland,",
-      "shifting cultivation, irrigation, population density, and income) [@hyde2017] and graduated via",
+      "shifting cultivation, irrigation, population density, and income) [@hyde2017], and graduated via",
       "isotonic PAVA/Whittaker algorithms [@ayer1955; @whittaker1923]. As shown in Table \\ref{tab:ndt_geocodes},",
       "at $0\\text{ AD}$ under-5 shares ($p(0\\text{--}4)$) range from $12.96\\%$ (South Korea)",
       "to $16.22\\%$ (Syria/Levant), while Bocquet-Appel juvenile ratios range from $30.15\\%$",
@@ -254,9 +255,9 @@ ndt_prose_synthesis <- paste(
     paste(
       "- **HYDE 3.2 Holocene Step Artefacts & Continental Smoothing**:",
       "Between $8000\\text{ BC}$ and $7000\\text{ BC}$, baseline",
-      "population in HYDE [@hyde2017] exhibits a step increase across",
+      "population in HYDE exhibits a step increase across",
       "Eurasia ($+0.071\\%$/yr in Southwest Asia; $+0.080\\%$/yr in",
-      "Europe) tied to Holocene climatic amelioration. Isolating this pre-onset step",
+      "Europe) tied to Holocene climatic amelioration [@hyde2017]. Isolating this pre-onset step",
       "confirms that post-onset agricultural expansion remains distinctly elevated above",
       "homeostatic foraging baselines ($0.01\\text{--}0.03\\%$/yr) [@bocquet2008; @shennan2013], while continental raster",
       "integration naturally smooths micro-site cemetery peaks ($\\sim 0.8\\text{--}1.1\\%$/yr)",

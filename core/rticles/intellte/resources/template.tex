@@ -44,11 +44,11 @@ $if(graphics)$$if(pandoc321)$
 $endif$$endif$
 
 $if(csl-refs)$
-% Pandoc citation processing (Numerical MLA inline [1][2][3] & MLA bibliography)
+% Pandoc citation processing (Numerical MLA inline [1][2][3] hyperlinked to MLA bibliography)
 $if(pandoc318)$
 \NewDocumentCommand\citeproctext{}{}
 \NewDocumentCommand\citeproc{mm}{%
-  \hyperlink{cite.#1}{#2}}
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
 \makeatletter
  \let\@cite@ofmt\@firstofone
  \def\@biblabel#1{}

@@ -344,11 +344,12 @@
   \begin{minipage}{\textwidth}
     \raggedright
     % 1. Top CRD Flag + CONFOEDERATIO, RESEARCH DIVISION (CRD). Banner
+    % CRD 2026 logo aspect ratio is 512x464: control height only so width scales proportionally
     \noindent
     \IfFileExists{\crd@logopath}{%
-      \parbox[c]{35pt}{\includegraphics[width=35pt,height=34pt]{\crd@logopath}}%
+      \raisebox{-0.5\height}{\includegraphics[height=34pt]{\crd@logopath}}%
       \hspace{10pt}%
-      \parbox[c]{0.82\textwidth}{%
+      \parbox[c]{0.80\textwidth}{%
         \crdbannerfont CONFOEDERATIO,\par\vspace{1pt}%
         \crdbannerfont RESEARCH DIVISION (CRD).%
       }\par

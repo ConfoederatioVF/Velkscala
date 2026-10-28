@@ -109,6 +109,7 @@ intellte_article <- function (..., keep_tex = FALSE, latex_engine = "xelatex") {
       ...,
       keep_tex = keep_tex,
       latex_engine = latex_engine,
+      pandoc_args = c("--metadata=link-citations:true"),
       template = template_path
     )
   } else {
@@ -116,6 +117,7 @@ intellte_article <- function (..., keep_tex = FALSE, latex_engine = "xelatex") {
       ...,
       keep_tex = keep_tex,
       latex_engine = latex_engine,
+      pandoc_args = c("--metadata=link-citations:true"),
       template = template_path
     )
   }
