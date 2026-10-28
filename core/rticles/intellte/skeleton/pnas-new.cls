@@ -81,6 +81,16 @@
     BoldFont = *-700-Bold,
     BoldItalicFont = *-700-BoldItalic
   ]
+  \newfontfamily\karlafont{Karla}[
+    Path = \crd@fontpath,
+    Extension = .ttf,
+    UprightFont = *-Regular,
+    ItalicFont = *-Italic,
+    BoldFont = *-Bold,
+    BoldItalicFont = *-BoldItalic
+  ]
+  \newcommand{\karlaregular}{\karlafont\mdseries}
+  \newcommand{\karlabold}{\karlafont\bfseries}
 \else
   \RequirePackage[utf8]{inputenc}
   \RequirePackage[T1]{fontenc}
@@ -89,6 +99,9 @@
   \newcommand{\jostlight}{\sffamily}
   \newcommand{\jostmedium}{\sffamily}
   \newcommand{\jostsemibold}{\sffamily\bfseries}
+  \newcommand{\karlafont}{\sffamily}
+  \newcommand{\karlaregular}{\sffamily\mdseries}
+  \newcommand{\karlabold}{\sffamily\bfseries}
 \fi
 
 \RequirePackage{lettrine}
@@ -132,7 +145,7 @@
   citecolor=crdlinkblue,
   urlcolor=crdlinkblue
 ]{hyperref}
-\renewcommand\UrlFont{\sffamily\color{crdlinkblue}}
+\renewcommand\UrlFont{\karlaregular\color{crdlinkblue}}
 \AtBeginDocument{%
   \let\crd@orig@nolinkurl\nolinkurl
   \renewcommand{\nolinkurl}[1]{\textcolor{crdlinkblue}{\underline{\crd@orig@nolinkurl{#1}}}}%
@@ -147,12 +160,16 @@
 }
 
 %% Font helper macros
-\newcommand{\headerfont}{\normalfont\sffamily\fontsize{8.5pt}{11pt}\selectfont}
-\newcommand{\footerfont}{\normalfont\sffamily\fontsize{8.5pt}{11pt}\selectfont}
-\newcommand{\crdbannerfont}{\normalfont\sffamily\bfseries\fontsize{14pt}{17pt}\selectfont}
+%% - Confoederatio, Research Division (CRD) banner: Karla Bold
+%% - Title & Section headers: Jost*
+%% - Authors/date subtitle line & Figure n. / Table n. / Image n. / Definition n.: Karla
+%% - Body & Abstract: Source Serif 4
+\newcommand{\headerfont}{\normalfont\karlaregular\fontsize{8.5pt}{11pt}\selectfont}
+\newcommand{\footerfont}{\normalfont\karlaregular\fontsize{8.5pt}{11pt}\selectfont}
+\newcommand{\crdbannerfont}{\normalfont\karlabold\fontsize{14pt}{17pt}\selectfont}
 \newcommand{\titlefont}{\normalfont\sffamily\bfseries\fontsize{18.5pt}{22.5pt}\selectfont}
 \newcommand{\subtitlefont}{\normalfont\sffamily\mdseries\fontsize{13pt}{17pt}\selectfont}
-\newcommand{\datesfont}{\normalfont\sffamily\mdseries\fontsize{9.5pt}{13.5pt}\selectfont}
+\newcommand{\datesfont}{\normalfont\karlaregular\fontsize{9.5pt}{13.5pt}\selectfont}
 \newcommand{\absfont}{\normalfont\rmfamily\mdseries\fontsize{10pt}{15pt}\selectfont}
 \newcommand{\dropcapfont}{\normalfont\sffamily\bfseries\fontsize{24pt}{26pt}\selectfont}
 
@@ -173,9 +190,9 @@
 
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
 
-%% Captions: Figure n. and Table n. bolded in Jost* and inline with Source Serif 4 caption
+%% Captions & Numbered Labels: Figure n., Table n., Image n., Definition n. bolded in Karla and inline with Source Serif 4 caption
 \RequirePackage{caption}
-\DeclareCaptionFormat{crdformat}{\normalfont\rmfamily\mdseries\fontsize{9.5pt}{13.5pt}\selectfont{\sffamily\bfseries #1#2}#3\par}
+\DeclareCaptionFormat{crdformat}{\normalfont\rmfamily\mdseries\fontsize{9.5pt}{13.5pt}\selectfont{\karlabold #1#2}#3\par}
 \captionsetup{
   format=crdformat,
   labelsep=period,
@@ -187,6 +204,18 @@
 }
 \captionsetup[figure]{position=below}
 \captionsetup[table]{position=above, singlelinecheck=false, justification=raggedright}
+
+%% Image n. and Definition n. environments using Karla Bold labels inline with Source Serif 4
+\DeclareCaptionType[fileext=loi,placement={!htbp},within=none]{crdimage}[Image][List of Images]
+\captionsetup[crdimage]{position=below,format=crdformat,labelsep=period,name=Image}
+
+\newcounter{crddefinition}
+\newenvironment{definition}[1][]{%
+  \refstepcounter{crddefinition}%
+  \par\vspace{4pt}\noindent
+  {\karlabold Definition \thecrddefinition\ifx&#1&\else\ (#1)\fi.}\hspace{0.4em}%
+  \normalfont\rmfamily\mdseries\ignorespaces
+}{\par\vspace{4pt}}
 
 %% Table rules and typography
 \setlength{\heavyrulewidth}{0.6pt}
@@ -348,7 +377,7 @@
     \noindent
     \begin{minipage}{\textwidth}
       \centering
-      \includegraphics[width=\textwidth,height=0.38\textheight,keepaspectratio]{\@herofigure}%
+      \includegraphics[width=\textwidth,height=0.355\textheight,keepaspectratio]{\@herofigure}%
       \captionsetup{type=figure}%
       \@ifundefined{@herocaption}{}{%
         \expandafter\caption\expandafter{\@herocaption}%

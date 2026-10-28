@@ -89,7 +89,20 @@ for (geo_code in names(ndt_root$tracked_geocodes)) {
 }
 df_geocodes <- do.call(rbind, geocode_rows)
 
-# 3. Theme & Palette -----------------------------------------------------------
+# 3. Theme & Palette (Karla Typography) ----------------------------------------
+fonts_dir <- file.path(velkscala_defines$directories$rticles_intellte_resources, "fonts")
+if (requireNamespace("sysfonts", quietly = TRUE) && requireNamespace("showtext", quietly = TRUE)) {
+  karla_reg <- file.path(fonts_dir, "Karla-Regular.ttf")
+  karla_bold <- file.path(fonts_dir, "Karla-Bold.ttf")
+  karla_it <- file.path(fonts_dir, "Karla-Italic.ttf")
+  karla_bi <- file.path(fonts_dir, "Karla-BoldItalic.ttf")
+  if (file.exists(karla_reg) && !("Karla" %in% sysfonts::font_families())) {
+    sysfonts::font_add("Karla", regular = karla_reg, bold = karla_bold, italic = karla_it, bolditalic = karla_bi)
+  }
+  showtext::showtext_opts(dpi = 220)
+  showtext::showtext_auto(enable = TRUE)
+}
+
 region_palette <- c(
   "Southwest Asia" = "#D97706",
   "Europe" = "#2563EB",
@@ -98,11 +111,14 @@ region_palette <- c(
   "American Southwest" = "#7C3AED"
 )
 
-ndt_theme <- theme_minimal(base_size = 12) +
+ndt_theme <- theme_minimal(base_size = 12, base_family = "Karla") +
   theme(
-    plot.title       = element_text(face = "bold", size = 13, colour = "#1E293B", margin = margin(b = 4)),
-    plot.subtitle    = element_text(size = 10, colour = "#64748B", margin = margin(b = 14)),
-    axis.title       = element_text(face = "bold", size = 10.5, colour = "#334155"),
+    text             = element_text(family = "Karla"),
+    plot.title       = element_text(family = "Karla", face = "bold", size = 13, colour = "#1E293B", margin = margin(b = 4)),
+    plot.subtitle    = element_text(family = "Karla", size = 10, colour = "#64748B", margin = margin(b = 14)),
+    axis.title       = element_text(family = "Karla", face = "bold", size = 10.5, colour = "#334155"),
+    axis.text        = element_text(family = "Karla"),
+    legend.text      = element_text(family = "Karla"),
     panel.grid.major = element_line(colour = "#E2E8F0", linewidth = 0.5),
     panel.background = element_rect(fill = "#FAFAFA", colour = NA),
     plot.background  = element_rect(fill = "#FFFFFF", colour = NA),
@@ -170,9 +186,10 @@ ndt_dashboard <- (p1_ijp | p2_growth) / (p3_cropland | p4_geocodes) +
     subtitle = "10000 BC - 1000 AD | 5 Agricultural Origins & 19 Subnational/National Geocodes",
     caption  = "Priors: Bocquet-Appel (2002, 2008), Shennan et al. (2013), HYDE 3.3 & Stadester/Velkscala 1.0 (2026).",
     theme    = theme(
-      plot.title    = element_text(face = "bold", size = 20, margin = margin(t = 15, b = 8)),
-      plot.subtitle = element_text(size = 14, colour = "#64748B", margin = margin(b = 25)),
-      plot.caption  = element_text(size = 10.5, colour = "#64748B", margin = margin(t = 12)),
+      text          = element_text(family = "Karla"),
+      plot.title    = element_text(family = "Karla", face = "bold", size = 20, margin = margin(t = 15, b = 8)),
+      plot.subtitle = element_text(family = "Karla", size = 14, colour = "#64748B", margin = margin(b = 25)),
+      plot.caption  = element_text(family = "Karla", size = 10.5, colour = "#64748B", margin = margin(t = 12)),
       plot.margin   = margin(t = 12, r = 20, b = 15, l = 12)
     )
   )

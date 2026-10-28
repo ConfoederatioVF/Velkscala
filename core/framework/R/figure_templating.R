@@ -279,8 +279,30 @@ save_dual_plot <- function (arg0_plot, arg1_stem_name, arg2_options = NULL) {
   width <- if (!is.null(options$width)) as.numeric(options$width) else 16.0
 
   #Declare local instance variables
+  fonts_dir <- file.path(defines$directories$rticles_intellte_resources, "fonts")
   images_dir <- defines$directories$data_images
   visuals_dir <- defines$directories$visuals
+
+  #Register Karla font family for ggplot2 rendering (PNG + vector PDF)
+  if (requireNamespace("sysfonts", quietly = TRUE) && requireNamespace("showtext", quietly = TRUE)) {
+    karla_reg <- file.path(fonts_dir, "Karla-Regular.ttf")
+    karla_bold <- file.path(fonts_dir, "Karla-Bold.ttf")
+    karla_it <- file.path(fonts_dir, "Karla-Italic.ttf")
+    karla_bi <- file.path(fonts_dir, "Karla-BoldItalic.ttf")
+    if (file.exists(karla_reg) && !("Karla" %in% sysfonts::font_families())) {
+      tryCatch({
+        sysfonts::font_add(
+          family = "Karla",
+          regular = karla_reg,
+          bold = if (file.exists(karla_bold)) karla_bold else karla_reg,
+          italic = if (file.exists(karla_it)) karla_it else karla_reg,
+          bolditalic = if (file.exists(karla_bi)) karla_bi else karla_reg
+        )
+      }, error = function (e) NULL)
+    }
+    showtext::showtext_opts(dpi = dpi)
+    showtext::showtext_auto(enable = TRUE)
+  }
 
   if (!dir.exists(images_dir)) dir.create(images_dir, recursive = TRUE)
   if (!dir.exists(visuals_dir)) dir.create(visuals_dir, recursive = TRUE)

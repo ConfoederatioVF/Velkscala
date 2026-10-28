@@ -106,12 +106,27 @@ df_bd_summary <- df_bd %>%
     .groups = "drop"
   )
 
-# 3. Theme & Aesthetics --------------------------------------------------------
-cdt_theme <- theme_minimal(base_size = 12) +
+# 3. Theme & Aesthetics (Karla Typography) -------------------------------------
+fonts_dir <- file.path(velkscala_defines$directories$rticles_intellte_resources, "fonts")
+if (requireNamespace("sysfonts", quietly = TRUE) && requireNamespace("showtext", quietly = TRUE)) {
+  karla_reg <- file.path(fonts_dir, "Karla-Regular.ttf")
+  karla_bold <- file.path(fonts_dir, "Karla-Bold.ttf")
+  karla_it <- file.path(fonts_dir, "Karla-Italic.ttf")
+  karla_bi <- file.path(fonts_dir, "Karla-BoldItalic.ttf")
+  if (file.exists(karla_reg) && !("Karla" %in% sysfonts::font_families())) {
+    sysfonts::font_add("Karla", regular = karla_reg, bold = karla_bold, italic = karla_it, bolditalic = karla_bi)
+  }
+  showtext::showtext_opts(dpi = 220)
+  showtext::showtext_auto(enable = TRUE)
+}
+
+cdt_theme <- theme_minimal(base_size = 12, base_family = "Karla") +
   theme(
-    plot.title       = element_text(face = "bold", size = 13, colour = "#1E293B", margin = margin(b = 4)),
-    plot.subtitle    = element_text(size = 10, colour = "#64748B", margin = margin(b = 20)),
-    axis.title       = element_text(face = "bold", size = 10.5, colour = "#334155"),
+    text             = element_text(family = "Karla"),
+    plot.title       = element_text(family = "Karla", face = "bold", size = 13, colour = "#1E293B", margin = margin(b = 4)),
+    plot.subtitle    = element_text(family = "Karla", size = 10, colour = "#64748B", margin = margin(b = 20)),
+    axis.title       = element_text(family = "Karla", face = "bold", size = 10.5, colour = "#334155"),
+    axis.text        = element_text(family = "Karla"),
     panel.grid.major = element_line(colour = "#E2E8F0", linewidth = 0.5),
     panel.background = element_rect(fill = "#FAFAFA", colour = NA),
     plot.background  = element_rect(fill = "#FFFFFF", colour = NA),
@@ -125,7 +140,7 @@ euro_signed_pct_label <- function (x) gsub("\\.", ",", sprintf("%+.1f%%", x * 10
 p1_raw <- ggplot() +
   geom_point(data = df_age_sex, aes(x = year, y = raw_r2), colour = "#3B82F6", alpha = 0.4, position = position_jitter(width = 0.8, seed = 42)) +
   geom_line(data = df_as_summary, aes(x = year, y = raw_geomean), colour = "#3B82F6", linewidth = 1.2) +
-  geom_label(data = df_as_summary, aes(x = year, y = raw_geomean, label = euro_pct_label(raw_geomean)), colour = "black", size = 3, fontface = "bold", vjust = -0.7, label.size = 0) +
+  geom_label(data = df_as_summary, aes(x = year, y = raw_geomean, label = euro_pct_label(raw_geomean)), family = "Karla", colour = "black", size = 3, fontface = "bold", vjust = -0.7, label.size = 0) +
   scale_y_continuous(labels = percent_format(decimal.mark = ","), limits = c(0, 1.05)) +
   coord_cartesian(clip = "off") +
   labs(title = "Multinomial Logit, R^2", x = "Year", y = "R^2") + cdt_theme
@@ -134,7 +149,7 @@ p3_births <- ggplot() +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "#475569") +
   geom_point(data = df_bd, aes(x = year, y = birth_err_pct), colour = "#F59E0B", alpha = 0.4, position = position_jitter(width = 0.8, seed = 42)) +
   geom_line(data = df_bd_summary, aes(x = year, y = median_birth_err), colour = "#F59E0B", linewidth = 1.2) +
-  geom_label(data = df_bd_summary, aes(x = year, y = median_birth_err, label = euro_signed_pct_label(median_birth_err)), colour = "black", size = 3, fontface = "bold", vjust = -0.7, label.size = 0) +
+  geom_label(data = df_bd_summary, aes(x = year, y = median_birth_err, label = euro_signed_pct_label(median_birth_err)), family = "Karla", colour = "black", size = 3, fontface = "bold", vjust = -0.7, label.size = 0) +
   scale_y_continuous(labels = percent_format(decimal.mark = ","), limits = c(-0.6, 0.6), oob = scales::squish) +
   coord_cartesian(clip = "off") +
   labs(title = "Births Relative Error (%)", subtitle = "Median Country Deviation", x = "Year", y = "% Difference") + cdt_theme
@@ -142,7 +157,7 @@ p3_births <- ggplot() +
 p2_clamped <- ggplot() +
   geom_point(data = df_age_sex, aes(x = year, y = clamped_r2), colour = "#10B981", alpha = 0.4, position = position_jitter(width = 0.8, seed = 42)) +
   geom_line(data = df_as_summary, aes(x = year, y = clamped_geomean), colour = "#10B981", linewidth = 1.2) +
-  geom_label(data = df_as_summary, aes(x = year, y = clamped_geomean, label = euro_pct_label(clamped_geomean)), colour = "black", size = 3, fontface = "bold", vjust = -0.7, label.size = 0) +
+  geom_label(data = df_as_summary, aes(x = year, y = clamped_geomean, label = euro_pct_label(clamped_geomean)), family = "Karla", colour = "black", size = 3, fontface = "bold", vjust = -0.7, label.size = 0) +
   scale_y_continuous(labels = percent_format(decimal.mark = ","), limits = c(0, 1.05)) +
   coord_cartesian(clip = "off") +
   labs(title = "MNL Clamping, R^2", subtitle = "PAVA/Whittaker-Henderson (logistic kernel)", x = "Year", y = "R^2") + cdt_theme
@@ -151,7 +166,7 @@ p4_deaths <- ggplot() +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "#475569") +
   geom_point(data = df_bd, aes(x = year, y = death_err_pct), colour = "#8B5CF6", alpha = 0.4, position = position_jitter(width = 0.8, seed = 42)) +
   geom_line(data = df_bd_summary, aes(x = year, y = median_death_err), colour = "#8B5CF6", linewidth = 1.2) +
-  geom_label(data = df_bd_summary, aes(x = year, y = median_death_err, label = euro_signed_pct_label(median_death_err)), colour = "black", size = 3, fontface = "bold", vjust = -0.7, label.size = 0) +
+  geom_label(data = df_bd_summary, aes(x = year, y = median_death_err, label = euro_signed_pct_label(median_death_err)), family = "Karla", colour = "black", size = 3, fontface = "bold", vjust = -0.7, label.size = 0) +
   scale_y_continuous(labels = percent_format(decimal.mark = ","), limits = c(-0.6, 0.6), oob = scales::squish) +
   coord_cartesian(clip = "off") +
   labs(title = "Deaths Relative Error (%)", subtitle = "Median Country Deviation", x = "Year", y = "% Difference") + cdt_theme
@@ -163,9 +178,10 @@ cdt_2x2_dashboard <- (p1_raw | p3_births) / (p2_clamped | p4_deaths) +
     subtitle = "Out-of-sample testing | Age/Sex: 69,2% Acc. | Births: 83,1% Acc. | Deaths: 78,9% Acc.",
     caption  = "CDT: Contemporary Demographic Transition. Data: HMD, UNWPP, Niva et al. (2023); Velkscala 1.0 (2026)\nAccuracy rates reflect R^2 and 1 - MAPE for age/sex vs. births/deaths respectively.\n\nProxy models are discarded after 1950AD in final composites; UN data is used by Velkscala 1.0 after that period.",
     theme    = theme(
-      plot.title    = element_text(face = "bold", size = 22, margin = margin(t = 20, b = 10)),
-      plot.subtitle = element_text(size = 15, colour = "#64748B", margin = margin(b = 40)),
-      plot.caption  = element_text(size = 11, colour = "#64748B", margin = margin(t = 15)),
+      text          = element_text(family = "Karla"),
+      plot.title    = element_text(family = "Karla", face = "bold", size = 22, margin = margin(t = 20, b = 10)),
+      plot.subtitle = element_text(family = "Karla", size = 15, colour = "#64748B", margin = margin(b = 40)),
+      plot.caption  = element_text(family = "Karla", size = 11, colour = "#64748B", margin = margin(t = 15)),
       plot.margin   = margin(t = 15, r = 25, b = 20, l = 15)
     )
   )
