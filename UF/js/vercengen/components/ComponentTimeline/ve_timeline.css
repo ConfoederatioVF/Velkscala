@@ -1,7 +1,0 @@
-[component="ve-timeline-chronology"] {
-    tr:has(#keyframe[data-is-current="true"]) {
-        background-color: var(--body-colour);
-        color: var(--bg-primary-colour);
-        font-weight: 500;
-    }
-}

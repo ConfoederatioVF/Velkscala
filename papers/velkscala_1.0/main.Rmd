@@ -17,14 +17,14 @@ link-citations: true
 
 output:
   pdf_document:
-    template: ../../core/rticles/intellte/resources/template.tex
+    template: ../../../core/rticles/intellte/resources/template.tex
     latex_engine: xelatex
     keep_tex: false
 ---
 
 ```{r setup, include=FALSE}
 # Bootstrap the Velkscala R Framework (paths, table/figure/prose templating, pagination)
-source("../../core/framework/R/framework_init.R")
+source("../../../core/framework/R/framework_init.R")
 
 # Ingest CDT and NDT validation JSON artefacts via filepath_defines.json5
 cdt_as_data <- jsonlite::fromJSON(velkscala_defines$paths$cdt_age_sex_json, simplifyVector = FALSE)

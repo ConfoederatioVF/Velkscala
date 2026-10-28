@@ -10,10 +10,10 @@
 
   directories: {
     common_defines: "common/defines",
-    r_framework: "core/framework/R",
-    rticles_intellte: "core/rticles/intellte",
-    rticles_intellte_resources: "core/rticles/intellte/resources",
-    rticles_intellte_skeleton: "core/rticles/intellte/skeleton",
+    r_framework: "../core/framework/R",
+    rticles_intellte: "../core/rticles/intellte",
+    rticles_intellte_resources: "../core/rticles/intellte/resources",
+    rticles_intellte_skeleton: "../core/rticles/intellte/skeleton",
     data: "data",
     data_cleaning: "data/1.data_cleaning",
     data_testing: "data/2.data_testing",
@@ -23,7 +23,7 @@
     papers: "papers",
     velkscala_1_0: "papers/velkscala_1.0",
     visuals: "visuals",
-    uf: "UF"
+    uf: "../UF"
   },
 
   paths: {

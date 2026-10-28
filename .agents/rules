@@ -3,11 +3,11 @@
 ## 1. Project Architecture & File Structure
 
 - **`common/defines/`**:
-  - `filepath_defines.json5`: Single source of truth for project directories, data pipelines, R framework modules, `rticles` templates, and compiled paper artefacts.
-- **`core/framework/R/`**:
+  - `filepath_defines.json5`: Single source of truth for project directories, data pipelines, hoisted parent R framework modules (`../core/framework/R`), `rticles` templates (`../core/rticles/intellte`), and compiled paper artefacts.
+- **`../core/framework/R/`** (hoisted in `Project 1746 - Intellte/core/framework/R/`):
   - R templating, PDF embedding, and page-splitting frameworks (`framework_init.R`, `filepath_loader.R`, `layout_pagination.R`, `table_templating.R`, `figure_templating.R`, `prose_templating.R`, `intellte_format.R`).
   - Provides frameworks for tables, figures, and Markdown prose that accurately split and pack content across pages without excessive deadspace or two-column `longtable` failures.
-- **`core/rticles/intellte/`**:
+- **`../core/rticles/intellte/`** (hoisted in `Project 1746 - Intellte/core/rticles/intellte/`):
   - Custom RMarkdown journal template (`resources/template.tex` and `skeleton/` assets borrowed from `rticles::pnas_article` for downstream customisation).
 - **`data/`**:
   - `1.data_cleaning/`: Raw raster cleaning and downscaling scripts/datasets (e.g. `WorldPop/`).
@@ -18,7 +18,7 @@
   - `main.Rmd`: Master RMarkdown manuscript inspectable directly in RStudio or compiled via `autorun.bat`.
 - **`visuals/`**:
   - Mirrored publication-ready figures (`.png` and `.pdf`).
-- **`UF/`**:
+- **`../UF/`** (hoisted in `Project 1746 - Intellte/UF/`):
   - Universal Framework library modules.
 
 ## 2. Typography & Table Standards

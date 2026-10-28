@@ -21,16 +21,20 @@ for (pkg in required_packages) {
 find_framework_init <- function () {
   candidates <- c(
     file.path(getwd(), "core", "framework", "R", "framework_init.R"),
+    file.path(getwd(), "..", "core", "framework", "R", "framework_init.R"),
     file.path(getwd(), "..", "..", "core", "framework", "R", "framework_init.R"),
-    file.path(getwd(), "..", "..", "..", "core", "framework", "R", "framework_init.R")
+    file.path(getwd(), "..", "..", "..", "core", "framework", "R", "framework_init.R"),
+    file.path(getwd(), "..", "..", "..", "..", "core", "framework", "R", "framework_init.R")
   )
   if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
     doc_path <- tryCatch(rstudioapi::getActiveDocumentContext()$path, error = function (e) "")
     if (nzchar(doc_path)) {
       d <- dirname(doc_path)
       candidates <- c(
+        file.path(d, "..", "core", "framework", "R", "framework_init.R"),
         file.path(d, "..", "..", "core", "framework", "R", "framework_init.R"),
         file.path(d, "..", "..", "..", "core", "framework", "R", "framework_init.R"),
+        file.path(d, "..", "..", "..", "..", "core", "framework", "R", "framework_init.R"),
         candidates
       )
     }

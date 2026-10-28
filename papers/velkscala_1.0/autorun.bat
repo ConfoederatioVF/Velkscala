@@ -11,7 +11,7 @@ echo ===========================================================================
 echo   Velkscala 1.0 Manuscript Compilation Pipeline (papers/velkscala_1.0)
 echo ============================================================================
 
-"%RSCRIPT_BIN%" -e "source('../../core/framework/R/framework_init.R'); compile_velkscala_paper('main.Rmd', list(run_visualisations = TRUE, clean_staged_cls = TRUE, quiet = FALSE))"
+"%RSCRIPT_BIN%" -e "source('../../../core/framework/R/framework_init.R'); compile_velkscala_paper('main.Rmd', list(run_visualisations = TRUE, clean_staged_cls = TRUE, quiet = FALSE))"
 
 if %ERRORLEVEL% neq 0 (
   echo.
