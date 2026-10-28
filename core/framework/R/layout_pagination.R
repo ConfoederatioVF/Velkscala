@@ -237,6 +237,7 @@ pack_subtables_onto_pages <- function (arg0_tables_list, arg1_options = NULL) {
 
   #Initialise options
   max_rows_per_page <- if (!is.null(options$max_rows_per_page)) as.integer(options$max_rows_per_page) else 34L
+  first_page_max_rows <- if (!is.null(options$first_page_max_rows)) as.integer(options$first_page_max_rows) else max_rows_per_page
   subtable_overhead <- if (!is.null(options$subtable_overhead)) as.integer(options$subtable_overhead) else 2L
 
   #Declare local instance variables
@@ -255,12 +256,14 @@ pack_subtables_onto_pages <- function (arg0_tables_list, arg1_options = NULL) {
     is_cont_part <- FALSE
 
     while (nrow(rem_df) > 0L) {
-      avail_rows <- max_rows_per_page - current_used - subtable_overhead
+      page_cap <- if (length(packed_pages) == 0L) first_page_max_rows else max_rows_per_page
+      avail_rows <- page_cap - current_used - subtable_overhead
       if (length(current_page) > 0L && avail_rows < 6L) {
         packed_pages[[length(packed_pages) + 1L]] <- current_page
         current_page <- list()
         current_used <- 0L
-        avail_rows <- max_rows_per_page - subtable_overhead
+        page_cap <- if (length(packed_pages) == 0L) first_page_max_rows else max_rows_per_page
+        avail_rows <- page_cap - subtable_overhead
       }
 
       take_n <- min(nrow(rem_df), max(6L, avail_rows))

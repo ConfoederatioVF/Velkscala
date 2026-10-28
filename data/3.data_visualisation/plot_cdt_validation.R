@@ -186,7 +186,7 @@ cdt_2x2_dashboard <- (p1_raw | p3_births) / (p2_clamped | p4_deaths) +
     )
   )
 
-# 6. Export Dual PNG + Vector PDF to data/3.data_visualisation/images & visuals -
+# 6. Export High-DPI PNG to data/3.data_visualisation/images & visuals ---------
 saved_cdt <- save_dual_plot(
   cdt_2x2_dashboard,
   "cdt_proxy_vs_empirical",
@@ -198,4 +198,4 @@ saved_cdt <- save_dual_plot(
     width = 16.0
   )
 )
-message(sprintf("✔ CDT dashboard exported to: %s and %s", saved_cdt$png, saved_cdt$pdf))
+message(sprintf("✔ CDT dashboard exported to: %s", saved_cdt$png))

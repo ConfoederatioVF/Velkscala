@@ -88,13 +88,18 @@ render_packed_subtables <- function (arg0_subtables_list, arg1_options = NULL) {
   font_size <- if (!is.null(options$font_size)) as.character(options$font_size) else "normalsize"
   is_latex <- if (requireNamespace("knitr", quietly = TRUE)) knitr::is_latex_output() else FALSE
   max_rows_per_page <- if (!is.null(options$max_rows_per_page)) as.integer(options$max_rows_per_page) else 34L
+  first_page_max_rows <- if (!is.null(options$first_page_max_rows)) as.integer(options$first_page_max_rows) else max_rows_per_page
   placement <- if (!is.null(options$placement)) as.character(options$placement) else "!htbp"
 
   #Declare local instance variables
   out_blocks <- character(0)
   packed_pages <- pack_subtables_onto_pages(
     subtables_list,
-    list(max_rows_per_page = max_rows_per_page, subtable_overhead = 2L)
+    list(
+      first_page_max_rows = first_page_max_rows,
+      max_rows_per_page = max_rows_per_page,
+      subtable_overhead = 2L
+    )
   )
 
   #Guard clauses

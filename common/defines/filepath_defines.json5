@@ -48,15 +48,11 @@
     cdt_plot_script: "data/3.data_visualisation/plot_cdt_validation.R",
     ndt_plot_script: "data/3.data_visualisation/plot_ndt_validation.R",
     cdt_figure_png: "data/3.data_visualisation/images/cdt_proxy_vs_empirical.png",
-    cdt_figure_pdf: "data/3.data_visualisation/images/cdt_proxy_vs_empirical.pdf",
     ndt_figure_png: "data/3.data_visualisation/images/ndt_paleodemographic_dashboard.png",
-    ndt_figure_pdf: "data/3.data_visualisation/images/ndt_paleodemographic_dashboard.pdf",
 
     // 4. Visuals & Papers
     visuals_cdt_png: "visuals/cdt_proxy_vs_empirical.png",
-    visuals_cdt_pdf: "visuals/cdt_proxy_vs_empirical.pdf",
     visuals_ndt_png: "visuals/ndt_paleodemographic_dashboard.png",
-    visuals_ndt_pdf: "visuals/ndt_paleodemographic_dashboard.pdf",
     velkscala_1_0_autorun: "papers/velkscala_1.0/autorun.bat",
     velkscala_1_0_rmd: "papers/velkscala_1.0/main.Rmd",
     velkscala_1_0_pdf: "papers/velkscala_1.0/main.pdf",

@@ -7,24 +7,56 @@ emails:
   - vistacitus@confoederatio.org
   - austkaetzchen@confoederatio.org
 
-abstract: |
-  Provide a single-paragraph unbolded abstract in Source Serif 4 body typography summarising the scope, methodology, and validation metrics of the Confoederatio, Research Division working paper.
-
-bibliography: pnas-sample.bib
+bibliography: intellte-sample.bib
 csl: crd-mla-numeric.csl
 link-citations: true
 
 output:
-  rticles::pnas_article:
+  pdf_document:
     template: ../resources/template.tex
     latex_engine: xelatex
     keep_tex: false
 ---
 
-Introduction {.unnumbered}
-==========================
+# Abstract {.unnumbered}
 
-Confoederatio, Research Division (CRD) working papers are typeset in a single-column layout using **Jost\*** for headers and **Source Serif 4** for body prose, with numerical MLA inline citations per clause [@belkin2002using; @berard1994embedding] and at sentence ends [@coifman2005geometric].
+Provide a single-paragraph unbolded abstract in Source Serif 4 body typography summarising the scope, methodology, and validation metrics of the Confoederatio, Research Division working paper.
 
-Sources {.unnumbered}
-=====================
+# Background {.unnumbered}
+
+Confoederatio, Research Division (CRD) working papers are typeset in the **Intellte** single-column layout using **Jost\*** for headers and subtitles, **Karla** for the division banner, author/date metadata, figure typography, and table headers, and **Source Serif 4** (`10pt` on `15pt` leading) for left-aligned body prose [@belkin2002using; @berard1994embedding].^[Footnotes are collected as numbered endnotes at the end of the paper beneath the `Footnotes` section heading.]
+
+# Methodology {.unnumbered}
+
+Describe the mathematical and computational architecture here [@coifman2005geometric].
+
+# Testing and Validation {.unnumbered}
+
+Detail the out-of-sample empirical benchmarks and stress tests.
+
+# Results {.unnumbered}
+
+Present empirical results, borderless tables, and figures with centred captions underneath.
+
+# Limitations {.unnumbered}
+
+Document data constraints, boundary conditions, and structural assumptions.
+
+# Conclusion {.unnumbered}
+
+Summarise the principal findings and implications.
+
+# Appendix {.unnumbered}
+
+Include supplementary tables and extended regional or technical series.
+
+# Sources {.unnumbered}
+
+::: {#refs}
+:::
+
+# Footnotes {.unnumbered}
+
+```{=latex}
+\printcrdfootnotes
+```

@@ -102,9 +102,9 @@ render_figure_template <- function (arg0_file_path, arg1_options = NULL) {
   caption_str <- if (!is.null(options$caption)) as.character(options$caption) else ""
   is_latex <- if (requireNamespace("knitr", quietly = TRUE)) knitr::is_latex_output() else FALSE
   label_str <- if (!is.null(options$label)) as.character(options$label) else ""
-  max_height <- if (!is.null(options$max_height)) as.character(options$max_height) else "0.43\\textheight"
+  max_height <- if (!is.null(options$max_height)) as.character(options$max_height) else "none"
   placement <- if (!is.null(options$placement)) as.character(options$placement) else "!t"
-  prefer_pdf <- if (!is.null(options$prefer_pdf)) isTRUE(options$prefer_pdf) else TRUE
+  prefer_pdf <- if (!is.null(options$prefer_pdf)) isTRUE(options$prefer_pdf) else FALSE
   span_columns <- if (!is.null(options$span_columns)) isTRUE(options$span_columns) else TRUE
   width_str <- if (!is.null(options$width)) {
     as.character(options$width)
@@ -274,6 +274,7 @@ save_dual_plot <- function (arg0_plot, arg1_stem_name, arg2_options = NULL) {
   #Initialise options
   defines <- if (!is.null(options$defines)) options$defines else load_filepath_defines()
   dpi <- if (!is.null(options$dpi)) as.integer(options$dpi) else 220L
+  export_pdf <- if (!is.null(options$export_pdf)) isTRUE(options$export_pdf) else FALSE
   extra_dirs <- if (!is.null(options$extra_dirs)) as.character(options$extra_dirs) else character(0)
   height <- if (!is.null(options$height)) as.numeric(options$height) else 10.0
   width <- if (!is.null(options$width)) as.numeric(options$width) else 16.0
@@ -283,7 +284,7 @@ save_dual_plot <- function (arg0_plot, arg1_stem_name, arg2_options = NULL) {
   images_dir <- defines$directories$data_images
   visuals_dir <- defines$directories$visuals
 
-  #Register Karla font family for ggplot2 rendering (PNG + vector PDF)
+  #Register Karla font family for ggplot2 rendering
   if (requireNamespace("sysfonts", quietly = TRUE) && requireNamespace("showtext", quietly = TRUE)) {
     karla_reg <- file.path(fonts_dir, "Karla-Regular.ttf")
     karla_bold <- file.path(fonts_dir, "Karla-Bold.ttf")
@@ -308,13 +309,10 @@ save_dual_plot <- function (arg0_plot, arg1_stem_name, arg2_options = NULL) {
   if (!dir.exists(visuals_dir)) dir.create(visuals_dir, recursive = TRUE)
 
   out_png_tmp <- file.path(images_dir, paste0(stem_name, ".tmp.png"))
-  out_pdf_tmp <- file.path(images_dir, paste0(stem_name, ".tmp.pdf"))
   out_png <- file.path(images_dir, paste0(stem_name, ".png"))
-  out_pdf <- file.path(images_dir, paste0(stem_name, ".pdf"))
   vis_png <- file.path(visuals_dir, paste0(stem_name, ".png"))
-  vis_pdf <- file.path(visuals_dir, paste0(stem_name, ".pdf"))
 
-  #Save high-DPI PNG atomically
+  #Save high-DPI PNG atomically (no intermediate .pdf files in test_cdt or test_ndt)
   ggplot2::ggsave(out_png_tmp, plot = plot_obj, width = width, height = height, dpi = dpi)
   file.copy(out_png_tmp, out_png, overwrite = TRUE)
   file.copy(out_png_tmp, vis_png, overwrite = TRUE)
@@ -323,27 +321,24 @@ save_dual_plot <- function (arg0_plot, arg1_stem_name, arg2_options = NULL) {
   }
   unlink(out_png_tmp)
 
-  #Save vector PDF atomically (using cairo_pdf if available for full Unicode glyph support, else standard pdf)
-  pdf_dev <- if (capabilities("cairo")) grDevices::cairo_pdf else "pdf"
-  tryCatch({
-    ggplot2::ggsave(out_pdf_tmp, plot = plot_obj, width = width, height = height, device = pdf_dev)
-  }, error = function (e) {
-    ggplot2::ggsave(out_pdf_tmp, plot = plot_obj, width = width, height = height, device = "pdf")
-  })
-  if (file.exists(out_pdf_tmp)) {
-    file.copy(out_pdf_tmp, out_pdf, overwrite = TRUE)
-    file.copy(out_pdf_tmp, vis_pdf, overwrite = TRUE)
-    for (d in extra_dirs) {
-      if (dir.exists(d)) file.copy(out_pdf_tmp, file.path(d, paste0(stem_name, ".pdf")), overwrite = TRUE)
+  if (export_pdf) {
+    out_pdf_tmp <- file.path(images_dir, paste0(stem_name, ".tmp.pdf"))
+    out_pdf <- file.path(images_dir, paste0(stem_name, ".pdf"))
+    pdf_dev <- if (capabilities("cairo")) grDevices::cairo_pdf else "pdf"
+    tryCatch({
+      ggplot2::ggsave(out_pdf_tmp, plot = plot_obj, width = width, height = height, device = pdf_dev)
+    }, error = function (e) {
+      ggplot2::ggsave(out_pdf_tmp, plot = plot_obj, width = width, height = height, device = "pdf")
+    })
+    if (file.exists(out_pdf_tmp)) {
+      file.copy(out_pdf_tmp, out_pdf, overwrite = TRUE)
+      unlink(out_pdf_tmp)
     }
-    unlink(out_pdf_tmp)
   }
 
   #Return statement
   return(list(
-    pdf = normalizePath(out_pdf, winslash = "/", mustWork = FALSE),
     png = normalizePath(out_png, winslash = "/", mustWork = FALSE),
-    visuals_pdf = normalizePath(vis_pdf, winslash = "/", mustWork = FALSE),
     visuals_png = normalizePath(vis_png, winslash = "/", mustWork = FALSE)
   ))
 }

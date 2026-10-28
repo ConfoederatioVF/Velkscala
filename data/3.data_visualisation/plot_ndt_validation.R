@@ -194,7 +194,7 @@ ndt_dashboard <- (p1_ijp | p2_growth) / (p3_cropland | p4_geocodes) +
     )
   )
 
-# 6. Export Dual PNG + Vector PDF to data/3.data_visualisation/images & visuals -
+# 6. Export High-DPI PNG to data/3.data_visualisation/images & visuals ---------
 saved_ndt <- save_dual_plot(
   ndt_dashboard,
   "ndt_paleodemographic_dashboard",
@@ -206,4 +206,4 @@ saved_ndt <- save_dual_plot(
     width = 16.0
   )
 )
-message(sprintf("✔ NDT dashboard exported to: %s and %s", saved_ndt$png, saved_ndt$pdf))
+message(sprintf("✔ NDT dashboard exported to: %s", saved_ndt$png))

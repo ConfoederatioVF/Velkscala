@@ -1,21 +1,19 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% pnas-new.cls — Confoederatio, Research Division (CRD)
+% intellte.cls — Confoederatio, Research Division (CRD)
 % Single-column working paper class for core/rticles/intellte/
-% Header font: Jost* | Body font: Source Serif 4
+% Header/Title/Subtitle font: Jost* | Banner/Labels: Karla | Body: Source Serif 4
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{pnas-new}[2026/10/28 v2.0 CRD Working Paper Class]
+\ProvidesClass{intellte}[2026/10/28 v2.0 Intellte CRD Working Paper Class]
 
-\newif\if@pnaslineno
-\DeclareOption{lineno}{\@pnaslinenotrue}
 \DeclareOption{twocolumn}{} % Enforce 1-column layout for CRD working papers
 \DeclareOption{twoside}{}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{extarticle}}
 \ProcessOptions*
 \LoadClass[10pt,onecolumn]{extarticle}
 
-%% Engine detection & typography (Jost* headers, Source Serif 4 body)
+%% Engine detection & typography (Jost* headers, Karla banner/labels, Source Serif 4 body)
 \RequirePackage{iftex}
 \RequirePackage[english]{babel}
 \RequirePackage{amsmath,amsfonts,amssymb}
@@ -24,18 +22,26 @@
 \IfFileExists{../../core/rticles/intellte/resources/fonts/Jost-400-Book.otf}{%
   \renewcommand{\crd@fontpath}{../../core/rticles/intellte/resources/fonts/}%
 }{%
-  \IfFileExists{fonts/Jost-400-Book.otf}{%
-    \renewcommand{\crd@fontpath}{fonts/}%
-  }{}%
+  \IfFileExists{../resources/fonts/Jost-400-Book.otf}{%
+    \renewcommand{\crd@fontpath}{../resources/fonts/}%
+  }{%
+    \IfFileExists{fonts/Jost-400-Book.otf}{%
+      \renewcommand{\crd@fontpath}{fonts/}%
+    }{}%
+  }%
 }
 
 \newcommand{\crd@logopath}{../../core/rticles/intellte/resources/crd_logo.png}
 \IfFileExists{../../core/rticles/intellte/resources/crd_logo.png}{%
   \renewcommand{\crd@logopath}{../../core/rticles/intellte/resources/crd_logo.png}%
 }{%
-  \IfFileExists{crd_logo.png}{%
-    \renewcommand{\crd@logopath}{crd_logo.png}%
-  }{}%
+  \IfFileExists{../resources/crd_logo.png}{%
+    \renewcommand{\crd@logopath}{../resources/crd_logo.png}%
+  }{%
+    \IfFileExists{crd_logo.png}{%
+      \renewcommand{\crd@logopath}{crd_logo.png}%
+    }{}%
+  }%
 }
 
 \iftutex
@@ -130,7 +136,7 @@
 \RequirePackage{placeins}
 \RequirePackage[normalem]{ulem}
 
-%% Single-column CRD page geometry (0.5in top/bottom, 1in left/right)
+%% Single-column Intellte CRD page geometry (0.5in top/bottom, 1in left/right)
 \RequirePackage[
   letterpaper,
   onecolumn,
@@ -140,8 +146,11 @@
   bottom=0.5in,
   headheight=0pt,
   headsep=0pt,
-  footskip=18pt
+  footskip=0pt
 ]{geometry}
+
+%% Suppress page numbers across all pages (online PDF readers display page numbers natively)
+\pagestyle{empty}
 
 %% Document colour palette
 \definecolor{black50}{gray}{0.5}
@@ -169,6 +178,8 @@
 \setlength{\parskip}{6pt plus 1pt minus 1pt}
 \setlist[itemize]{itemsep=2pt, parsep=2pt, topsep=3pt}
 \AtBeginDocument{%
+  \thispagestyle{empty}%
+  \pagestyle{empty}%
   \normalsize\normalfont\rmfamily\mdseries
   \raggedright
   \hyphenpenalty=10000
@@ -180,7 +191,7 @@
 %% - Title, Subtitle & Section headers: Jost*
 %% - Authors/date/emails byline: Karla Light
 %% - Figure n. / Table n. / Image n. / Definition n.: Karla Bold
-%% - Body & Abstract: Source Serif 4
+%% - Body, Abstract, Sources & Footnotes: Source Serif 4
 \newcommand{\headerfont}{\normalfont\karlaregular\fontsize{8.5pt}{11pt}\selectfont}
 \newcommand{\footerfont}{\normalfont\karlaregular\fontsize{8.5pt}{11pt}\selectfont}
 \newcommand{\crdbannerfont}{\normalfont\karlabold\fontsize{14.5pt}{18.5pt}\selectfont}
@@ -190,16 +201,12 @@
 \newcommand{\absfont}{\normalfont\rmfamily\mdseries\fontsize{10pt}{15pt}\selectfont}
 \newcommand{\dropcapfont}{\normalfont\sffamily\bfseries\fontsize{24pt}{26pt}\selectfont}
 
-%% Author and affiliation compatibility macros
 \RequirePackage{authblk}
-\newcommand*{\templatetype}[1]{\RequirePackage{#1}}
 \RequirePackage{xifthen}
 \newboolean{shortarticle}
 \setboolean{shortarticle}{false}
 \newboolean{singlecolumn}
 \setboolean{singlecolumn}{true}
-
-%% Watermark disabled (No DRAFT watermark in CRD working papers)
 \newboolean{displaywatermark}
 \setboolean{displaywatermark}{false}
 \newboolean{displaycopyright}
@@ -210,6 +217,7 @@
 %% Captions & Numbered Labels:
 %% - Always underneath figure/table/image
 %% - Always centred
+%% - Double line breaks above and below captions (aboveskip=18pt, belowskip=18pt)
 %% - Label (Figure n., Table n., Image n., Definition n.) in Karla Bold, inline with Source Serif 4 caption text
 \RequirePackage{caption}
 \DeclareCaptionFormat{crdformat}{\centering\normalfont\rmfamily\mdseries\fontsize{10pt}{15pt}\selectfont{\karlabold #1#2}#3\par}
@@ -230,7 +238,7 @@
 
 %% Image n. and Definition n. environments using Karla Bold labels inline with Source Serif 4
 \DeclareCaptionType[fileext=loi,placement={!htbp},within=none]{crdimage}[Image][List of Images]
-\captionsetup[crdimage]{position=below,format=crdformat,labelsep=period,name=Image,justification=centering}
+\captionsetup[crdimage]{position=below,format=crdformat,labelsep=period,name=Image,justification=centering,aboveskip=18pt,belowskip=18pt,skip=18pt}
 
 \newcounter{crddefinition}
 \newenvironment{definition}[1][]{%
@@ -239,29 +247,6 @@
   {\karlabold Definition \thecrddefinition\ifx&#1&\else\ (#1)\fi.}\hspace{0.4em}%
   \normalfont\rmfamily\mdseries\ignorespaces
 }{\par\vspace{4pt}}
-
-%% Table rules and typography
-\setlength{\heavyrulewidth}{0.6pt}
-\setlength{\lightrulewidth}{0.4pt}
-\setlength{\aboverulesep}{1.8pt}
-\setlength{\belowrulesep}{1.8pt}
-\setlength{\belowbottomsep}{6pt}
-\newcommand{\addtabletext}[1]{{\setlength{\leftskip}{0pt}\fontsize{8pt}{10.5pt}\selectfont#1}}
-
-%% Headers and footers (Clean CRD page numbering, no PNAS footer)
-\RequirePackage{fancyhdr}
-\RequirePackage{lastpage}
-\pagestyle{fancy}
-\fancyhf{}
-\fancyfoot[R]{\footerfont\color{crdmeta}\thepage}
-\renewcommand{\headrulewidth}{0pt}
-\renewcommand{\footrulewidth}{0pt}
-
-\fancypagestyle{firststyle}{
-  \fancyhf{}
-  \renewcommand{\headrulewidth}{0pt}
-  \renewcommand{\footrulewidth}{0pt}
-}
 
 %% Section, subsection, and subsubsection headings in Jost*
 \RequirePackage[explicit]{titlesec}
@@ -310,13 +295,12 @@
   {#1}
   []
 
-\titlespacing*{\section}{0pt}{13pt plus 2pt minus 2pt}{5pt}
-\titlespacing*{\subsection}{0pt}{10pt plus 2pt minus 1pt}{3pt}
+\titlespacing*{\section}{0pt}{14pt plus 2pt minus 2pt}{6pt}
+\titlespacing*{\subsection}{0pt}{10pt plus 2pt minus 1pt}{4pt}
 \titlespacing*{\subsubsection}{0pt}{8pt plus 2pt minus 1pt}{2pt}
 \titlespacing*{\paragraph}{0pt}{5pt plus 1pt minus 1pt}{8pt}
 
 %% Metadata macros
-\newcommand{\additionalelement}[1]{\def\@additionalelement{#1}}
 \newcommand{\subtitle}[1]{\def\@subtitle{#1}}
 \newcommand{\crddate}[1]{\def\@crddate{#1}}
 \newcommand{\crdauthors}[1]{\def\@crdauthors{#1}}
@@ -324,18 +308,6 @@
 \newcommand{\herofigure}[1]{\def\@herofigure{#1}}
 \newcommand{\herocaption}[1]{\def\@herocaption{#1}}
 \newcommand{\herolabel}[1]{\def\@herolabel{#1}}
-\newcommand{\dates}[1]{\def\@dates{#1}}
-\newcommand{\doi}[1]{\def\@doi{#1}}
-\newcommand{\leadauthor}[1]{\def\@leadauthor{#1}}
-\newcommand{\etal}[1]{\def\@etal{#1}}
-\newcommand{\keywords}[1]{\def\@keywords{#1}}
-\newcommand{\authorcontributions}[1]{\def\@authorcontributions{#1}}
-\newcommand{\authordeclaration}[1]{\def\@authordeclaration{#1}}
-\newcommand{\equalauthors}[1]{\def\@equalauthors{#1}}
-\newcommand{\correspondingauthor}[1]{\def\@correspondingauthor{#1}}
-\newcommand{\significancestatement}[1]{\def\@significancestatement{#1}}
-\newcommand{\matmethods}[1]{\def\@matmethods{#1}}
-\newcommand{\acknow}[1]{\def\@acknow{#1}}
 
 \newcommand{\dropcap}[1]{\lettrine[lines=2,lraise=0.05,findent=0.1em,nindent=0em]{{\dropcapfont{#1}}}{}}
 
@@ -358,10 +330,7 @@
 }
 \newcommand{\abscontentformatted}{\abscontent}
 
-\newlength\pnas@vertadjust
-\newcommand\verticaladjustment[1]{\setlength{\pnas@vertadjust}{#1}}
-
-%% CRD Working Paper Title Block (matching Image 1)
+%% Intellte CRD Working Paper Title Block
 \renewcommand{\@maketitle}{%
   \noindent
   \begin{minipage}{\textwidth}
@@ -381,20 +350,20 @@
     \vspace{12pt}%
     % 2. Main Title (Jost* Bold Uppercase)
     {\raggedright\titlefont\MakeUppercase{\@title}\par}%
-    % 3. Subtitle (Karla Light)
+    % 3. Subtitle (Jost* Book)
     \@ifundefined{@subtitle}{}{%
       \vspace{5pt}%
       {\raggedright\subtitlefont\@subtitle\par}%
     }%
     % 4. Date - Authors | Emails line (Karla Light)
-    \vspace{5pt}%
+    \vspace{4pt}%
     {\raggedright\datesfont\color{crdmeta}%
       \renewcommand\UrlFont{\karlalight\fontsize{11pt}{15.5pt}\selectfont\color{crdlinkblue}}%
       \@ifundefined{@crddate}{\today}{\@crddate}%
       \@ifundefined{@crdauthors}{}{ - \@crdauthors}%
       \@ifundefined{@crdemails}{}{ \textbar\ \@crdemails}%
       \par}%
-    \vspace{8pt}%
+    \vspace{4pt}%
   \end{minipage}\par
   % 5. Optional Hero Figure (Cover chart before Abstract: full-width 0in left/right margins = \paperwidth)
   \@ifundefined{@herofigure}{}{%
@@ -402,29 +371,48 @@
     \begin{minipage}{\textwidth}
       \centering
       \noindent\makebox[\textwidth][c]{\includegraphics[width=\paperwidth]{\@herofigure}}\par
-      \captionsetup{type=figure, aboveskip=18pt, belowskip=18pt, skip=18pt}%
+      \captionsetup{type=figure, aboveskip=15pt, belowskip=6pt, skip=15pt}%
       \@ifundefined{@herocaption}{}{%
         \expandafter\caption\expandafter{\@herocaption}%
         \@ifundefined{@herolabel}{}{\expandafter\label\expandafter{\@herolabel}}%
       }%
     \end{minipage}\par
   }%
-  % 6. Unbolded Abstract section
+  % 6. Unbolded Abstract section (if provided in YAML frontmatter; otherwise # Abstract section in body)
   \abscontent
 }
 
-%% Footnotes
-\RequirePackage[flushmargin,ragged]{footmisc}
-\renewcommand*{\footnotelayout}{\normalfont\rmfamily\fontsize{8.5pt}{11.5pt}\selectfont}
-\renewcommand{\footnoterule}{%
-  \kern -3pt
-  {\color{black50}\hrule width 72pt height 0.25pt}
-  \kern 2.5pt
+%% CRD Endnotes ("Footnotes" section at the end of the paper after Sources)
+%% Matches CRD convention:
+%% - Inline \footnote{...} (or Markdown ^[...]) places a hyperlinked superscript number
+%% - \printcrdfootnotes renders the horizontal separator rule under the "Footnotes" heading
+%%   followed by flush-left superscripted endnotes in 10pt/15pt Source Serif 4
+\newcounter{crdfootnote}
+\newcommand{\crd@fnlist}{}
+
+\long\def\footnote#1{%
+  \refstepcounter{crdfootnote}%
+  \hyperlink{crdfn:\thecrdfootnote}{\textsuperscript{\thecrdfootnote}}%
+  \begingroup
+    \edef\crd@currfn{\thecrdfootnote}%
+    \expandafter\crd@appendfn\expandafter{\crd@currfn}{#1}%
+  \endgroup
 }
 
-%% Disabled PNAS-specific trailing macros
-\newcommand{\showacknow}{}
-\newcommand{\showmatmethods}{}
-\def\pnasbreak{}
+\long\def\crd@appendfn#1#2{%
+  \gappto\crd@fnlist{%
+    \par\noindent\hypertarget{crdfn:#1}{\textsuperscript{#1}}\hspace{0.22em}#2\par\vspace{8pt}%
+  }%
+}
+
+\newcommand{\printcrdfootnotes}{%
+  \par\setlength{\parskip}{0pt}\vspace{-2pt}%
+  \noindent{\color{crdmeta}\rule{0.32\textwidth}{0.5pt}}\par
+  {\normalfont\rmfamily\mdseries\fontsize{10pt}{15pt}\selectfont\raggedright
+   \setlength{\parskip}{0pt}%
+   \crd@fnlist
+   \par}%
+}
 
 \endinput
+

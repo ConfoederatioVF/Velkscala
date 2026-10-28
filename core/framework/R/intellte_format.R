@@ -1,7 +1,7 @@
 # ==============================================================================
-# Intellte / rticles Output Format & Compilation (core/framework/R/intellte_format.R)
+# Intellte Output Format & Compilation (core/framework/R/intellte_format.R)
 # ==============================================================================
-# Bridges core/rticles/intellte/ (borrowed from rticles::pnas_article) with the
+# Bridges core/rticles/intellte/ (Intellte CRD Working Paper Template) with the
 # Velkscala R framework, staging LaTeX class/style assets for both RStudio Knit
 # and command-line autorun.bat compilation.
 # ==============================================================================
@@ -38,11 +38,11 @@ compile_velkscala_paper <- function (arg0_rmd_path = "velkscala_1_0_rmd", arg1_o
     cdt_script <- defines$paths$cdt_plot_script
     ndt_script <- defines$paths$ndt_plot_script
     if (file.exists(cdt_script)) {
-      message("[Velkscala] Rendering CDT validation figures (PNG + PDF)...")
+      message("[Velkscala] Rendering CDT validation figures (PNG)...")
       sys.source(cdt_script, envir = new.env(parent = globalenv()))
     }
     if (file.exists(ndt_script)) {
-      message("[Velkscala] Rendering NDT paleodemographic figures (PNG + PDF)...")
+      message("[Velkscala] Rendering NDT paleodemographic figures (PNG)...")
       sys.source(ndt_script, envir = new.env(parent = globalenv()))
     }
   }
@@ -51,13 +51,10 @@ compile_velkscala_paper <- function (arg0_rmd_path = "velkscala_1_0_rmd", arg1_o
   if (clean_staged_cls) {
     on.exit({
       transient_assets <- c(
-        "pnas-new.cls",
-        "pnasresearcharticle.sty",
-        "widetext.sty",
-        "pnas.csl",
+        "intellte.cls",
         "crd-mla-numeric.csl",
         "crd_logo.png",
-        "pnas-sample.bib"
+        "intellte-sample.bib"
       )
       for (fname in transient_assets) {
         f_path <- file.path(paper_dir, fname)
@@ -89,11 +86,26 @@ compile_velkscala_paper <- function (arg0_rmd_path = "velkscala_1_0_rmd", arg1_o
 }
 
 
-#' Custom RMarkdown output format wrapper for `core/rticles/intellte/`.
+#' Emits the CRD Footnotes endnote block (`\printcrdfootnotes`) in LaTeX output.
 #'
-#' @param ... Additional arguments passed to `rticles::pnas_article` or `rmarkdown::pdf_document`.
+#' @return A `knitr::asis_output` object.
+#' @export
+emit_crd_footnotes <- function () {
+  #Guard clauses
+  if (requireNamespace("knitr", quietly = TRUE) && !knitr::is_latex_output()) {
+    return(knitr::asis_output(""))
+  }
+
+  #Return statement
+  return(knitr::asis_output("```{=latex}\n\\printcrdfootnotes\n```"))
+}
+
+
+#' Custom RMarkdown output format wrapper for `core/rticles/intellte/` (Intellte).
+#'
+#' @param ... Additional arguments passed to `rmarkdown::pdf_document`.
 #' @param keep_tex Logical; whether to keep the intermediate `.tex` file.
-#' @param latex_engine Character; LaTeX engine to use (defaults to `"xelatex"` for Jost* and Source Serif 4 fonts).
+#' @param latex_engine Character; LaTeX engine to use (defaults to `"xelatex"`).
 #' @return An RMarkdown output format object.
 #' @export
 intellte_article <- function (..., keep_tex = FALSE, latex_engine = "xelatex") {
@@ -104,23 +116,13 @@ intellte_article <- function (..., keep_tex = FALSE, latex_engine = "xelatex") {
   #Ensure TEXINPUTS includes the intellte skeleton directory
   stage_intellte_resources(NULL, defines)
 
-  if (requireNamespace("rticles", quietly = TRUE)) {
-    fmt <- rticles::pnas_article(
-      ...,
-      keep_tex = keep_tex,
-      latex_engine = latex_engine,
-      pandoc_args = c("--metadata=link-citations:true"),
-      template = template_path
-    )
-  } else {
-    fmt <- rmarkdown::pdf_document(
-      ...,
-      keep_tex = keep_tex,
-      latex_engine = latex_engine,
-      pandoc_args = c("--metadata=link-citations:true"),
-      template = template_path
-    )
-  }
+  fmt <- rmarkdown::pdf_document(
+    ...,
+    keep_tex = keep_tex,
+    latex_engine = latex_engine,
+    pandoc_args = c("--metadata=link-citations:true"),
+    template = template_path
+  )
 
   #Return statement
   return(fmt)
@@ -128,8 +130,8 @@ intellte_article <- function (..., keep_tex = FALSE, latex_engine = "xelatex") {
 
 
 #' Configures TEXINPUTS/BIBINPUTS and stages `core/rticles/intellte/skeleton/`
-#' class and style files into the target render directory so `pdflatex` resolves
-#' `pnas-new.cls`, `pnasresearcharticle.sty`, `widetext.sty`, and `pnas.csl` in RStudio.
+#' class and style files into the target render directory so `xelatex` resolves
+#' `intellte.cls`, `crd-mla-numeric.csl`, and `crd_logo.png` in RStudio.
 #'
 #' @param arg0_target_dir Optional directory where RMarkdown is rendering (defaults to knitr input dir).
 #' @param arg1_defines Optional loaded defines list.
@@ -162,16 +164,13 @@ stage_intellte_resources <- function (arg0_target_dir = NULL, arg1_defines = NUL
     TEXINPUTS = new_tex
   )
 
-  #Also copy required LaTeX class/style/csl assets into target_dir if missing
+  #Also copy required LaTeX class/csl/logo assets into target_dir if missing
   if (!is.null(target_dir) && dir.exists(target_dir) && dir.exists(skel_dir)) {
     asset_names <- c(
-      "pnas-new.cls",
-      "pnasresearcharticle.sty",
-      "widetext.sty",
-      "pnas.csl",
+      "intellte.cls",
       "crd-mla-numeric.csl",
       "crd_logo.png",
-      "pnas-sample.bib"
+      "intellte-sample.bib"
     )
     for (fname in asset_names) {
       src_file <- file.path(skel_dir, fname)
@@ -186,4 +185,3 @@ stage_intellte_resources <- function (arg0_target_dir = NULL, arg1_defines = NUL
   #Return statement
   return(copied_files)
 }
-
