@@ -1,0 +1,201 @@
+//Initialise functions
+{
+	if (!global.GeoTIFF)
+		/**
+		 * Handles TIFF files. Part of Geospatiale III.
+		 * 
+		 * @namespace GeoTIFF
+		 */
+		global.GeoTIFF = {};
+	
+	if (typeof global.geotiff === "undefined" && typeof require !== "undefined")
+		try { global.geotiff = require("geotiff"); } catch (e) {}
+	if (typeof global.pngjs === "undefined" && typeof require !== "undefined")
+		try { global.pngjs = require("pngjs"); } catch (e) {}
+	
+	/**
+	 * Attempts to convert a given GeoTIFF file to PNG, assuming that it is single-band
+	 * @param {String} arg0_input_file_path
+	 * @param {String} arg1_output_file_path
+	 * @param {Object} [arg2_options]
+	 *  @param {string} [arg2_options.format="int32"] - Either 'float32'/'int32'.
+	 *  @param {number[]} [arg2_options.ignore_values] - NO_DATA values to ignore.
+	 *
+	 * @returns {Object}
+	 */
+	GeoTIFF.convertToPNG = async function (arg0_input_file_path, arg1_output_file_path, arg2_options) {
+		//Convert from parameters
+		let input_file_path = arg0_input_file_path;
+		let output_file_path = arg1_output_file_path;
+		let options = (arg2_options) ? arg2_options : {};
+		
+		//Initialise options
+		if (!options.format) options.format = "int32";
+		if (!options.ignore_values) options.ignore_values = [];
+		
+		//Declare local instance variables
+		let tiff = await geotiff.fromFile(input_file_path);
+		
+		let image = await tiff.getImage();
+		let image_height = image.getHeight();
+		let image_width = image.getWidth();
+		let raster = await image.readRasters();
+		let png = new pngjs.PNG({
+			height: image_height,
+			width: image_width,
+			
+			colorType: 6, //RGBA
+			inputColorType: 6, //RGBA
+			bitDepth: 8 //8 bits per channel
+		});
+		
+		let original_data = raster[0]; //Assuming single-band data
+		
+		//Iterate over all pixels and encode it as RGBA
+		for (let i = 0; i < image_height; i++)
+			for (let x = 0; x < image_width; x++) {
+				let local_index = i*image_width + x;
+				let local_value = original_data[local_index];
+				
+				if (options.ignore_values.includes(local_value)) local_value = 0;
+				
+				//Encode the value as RGBA
+				let local_rgba = Colour.encodeNumberAsRGBA(local_value, { format: options.format });
+				
+				//Write RGBA values into the PNG data
+				let local_png_index = local_index*4;
+				
+				png.data[local_png_index] = local_rgba[0];
+				png.data[local_png_index + 1] = local_rgba[1];
+				png.data[local_png_index + 2] = local_rgba[2];
+				png.data[local_png_index + 3] = local_rgba[3];
+			}
+		
+		//Write the PNG file and wait for completion
+		await new Promise((resolve, reject) => {
+			png.pack().pipe(fs.createWriteStream(output_file_path))
+				.on("finish", () => {
+					console.log(`.PNG output file written to ${output_file_path}`);
+					resolve();
+				})
+				.on("error", reject);
+		});
+		
+		//Return statement
+		return png;
+	};
+	
+	/**
+	 * Unpacks a multi-band GeoTIFF file to multiple PNG files, one for each year/band.
+	 * @alias GeoTIFF.convertToPNGs
+	 * 
+	 * @param {String} arg0_input_file_path
+	 * @param {String} arg1_output_base_path - The prefix for the output (e.g., 'map_data_').
+	 * @param {Object} [arg2_options]
+	 *  @param {string} [arg2_options.format="int32"] - Either 'float32'/'int32'.
+	 *  @param {number[]} [arg2_options.ignore_values] - NO_DATA values to ignore.
+	 *  @param {number} [arg2_options.scalar=1] - The scalar to multiply or divide by.
+	 *  @param {string[]} [arg2_options.years] - The list of years to use for output file names.
+	 *
+	 * @returns {Array<Object>}
+	 */
+	GeoTIFF.convertToPNGs = async function (arg0_input_file_path, arg1_output_base_path, arg2_options) { //[WIP] - Refactor at a later date
+		//Convert from parameters
+		let input_file_path = arg0_input_file_path;
+		let output_base_path = arg1_output_base_path;
+		let options = (arg2_options) ? arg2_options : {};
+		
+		//Initialise options
+		if (!options.format) options.format = "int32";
+		options.scalar = Math.returnSafeNumber(options.scalar, 1);
+		if (!options.ignore_values) options.ignore_values = [];
+		
+		//Declare local instance variables
+		let tiff = await geotiff.fromFile(input_file_path);
+		let image = await tiff.getImage();
+		let image_height = image.getHeight();
+		let image_width = image.getWidth();
+		let raster = await image.readRasters(); //Contains an array of bands
+		
+		let offset_x = Math.returnSafeNumber(options.offset_x || options.shift_x, 0);
+		let offset_y = Math.returnSafeNumber(options.offset_y || options.shift_y, 0);
+		let output_pngs = [];
+		let write_promises = [];
+		
+		//Iterate over every band in the GeoTIFF (each band represents a year)
+		for (let i = 0; i < raster.length; i++) {
+			let current_year = (options.years?.[i]) ? options.years[i] : i;
+			if (options.target_years && !options.target_years.includes(current_year)) continue;
+			if (options.bands && !options.bands.includes(i)) continue;
+			let current_output_path = `${output_base_path}_${current_year}.png`;
+			let original_data = raster[i];
+			
+			let png = new pngjs.PNG({
+				height: image_height,
+				width: image_width,
+				
+				colorType: 6, //RGBA
+				inputColorType: 6, //RGBA
+				bitDepth: 8, //8 bits per channel
+			});
+			
+			//Iterate over all pixels and encode it as RGBA
+			for (let x = 0; x < image_height; x++) {
+				let src_x = x - offset_y;
+				let is_row_valid = (src_x >= 0 && src_x < image_height);
+				
+				for (let y = 0; y < image_width; y++) {
+					let src_y = y - offset_x;
+					let is_col_valid = (src_y >= 0 && src_y < image_width);
+					
+					let local_value = 0;
+					if (is_row_valid && is_col_valid) {
+						let src_index = src_x*image_width + src_y;
+						local_value = original_data[src_index];
+						
+						if (options.ignore_values.includes(local_value)) local_value = 0;
+						
+						//Multiply local_value by scalar
+						local_value *= options.scalar;
+					}
+					
+					//Encode the value as RGBA using the provided helper
+					let local_rgba = Colour.encodeNumberAsRGBA(local_value, { format: options.format });
+					
+					//Write RGBA values into the PNG data
+					let local_index = x*image_width + y;
+					let local_png_index = local_index*4;
+					
+					png.data[local_png_index] = local_rgba[0];
+					png.data[local_png_index + 1] = local_rgba[1];
+					png.data[local_png_index + 2] = local_rgba[2];
+					png.data[local_png_index + 3] = local_rgba[3];
+				}
+			}
+			
+			//Write the PNG file for this specific year
+			let write_promise = new Promise((resolve, reject) => {
+				png.pack()
+					.pipe(fs.createWriteStream(current_output_path))
+					.on("finish", () => {
+						console.log(`.PNG output for band ${current_year} written to ${current_output_path}`);
+						resolve();
+					})
+					.on("error", reject);
+			});
+			if (options.parallel) {
+				write_promises.push(write_promise);
+			} else {
+				await write_promise;
+			}
+			
+			//Push PNG to output array
+			if (options.return_pngs) output_pngs.push(png);
+		}
+		
+		if (write_promises.length > 0) await Promise.all(write_promises);
+		
+		//Return statement
+		return output_pngs;
+	};
+}

@@ -1,0 +1,148 @@
+\documentclass[10pt,onecolumn]{pnas-new}
+
+\usepackage{booktabs,array,multirow,graphicx}
+$if(highlighting-macros)$
+% Pandoc syntax highlighting
+$highlighting-macros$
+$endif$
+
+% tightlist command for lists without linebreak
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{2pt}\setlength{\parskip}{0pt}}
+
+$if(tables)$
+% From pandoc table feature
+\usepackage{longtable,booktabs,array}
+$if(pandoc3821)$\newcounter{none} % for unnumbered tables
+$endif$
+$if(multirow)$
+\usepackage{multirow}
+$endif$
+\usepackage{calc}
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+$endif$
+
+$if(graphics)$$if(pandoc321)$
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{%
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi%
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+\makeatother
+$endif$$endif$
+
+$if(csl-refs)$
+% Pandoc citation processing (Numerical MLA inline [1][2][3] & MLA bibliography)
+$if(pandoc318)$
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \hyperlink{cite.#1}{#2}}
+\makeatletter
+ \let\@cite@ofmt\@firstofone
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.8em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{2.2em}
+\newenvironment{CSLReferences}[2]
+ {\par\vspace{4pt}%
+  \begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  \setlength{\itemsep}{4pt plus 1pt minus 1pt}}}
+ {\end{list}}
+$else$
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.8em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{2.2em}
+\newlength{\cslentryspacingunit}
+\setlength{\cslentryspacingunit}{\parskip}
+\newenvironment{CSLReferences}[2]
+ {\par\vspace{4pt}%
+  \setlength{\parindent}{0pt}
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  \setlength{\parskip}{4pt}
+ }%
+ {}
+$endif$
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\sffamily\bfseries\fontsize{9pt}{13pt}\selectfont #1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\rmfamily\fontsize{9.5pt}{13.5pt}\selectfont #1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+$endif$
+
+$for(header-includes)$
+$header-includes$
+$endfor$
+
+\templatetype{pnasresearcharticle}
+
+\title{$title$}
+$if(subtitle)$
+\subtitle{$subtitle$}
+$endif$
+$if(date)$
+\crddate{$date$}
+$endif$
+$if(authors_line)$
+\crdauthors{$authors_line$}
+$endif$
+$if(emails)$
+\crdemails{$for(emails)$$emails$$sep$, $endfor$}
+$endif$
+$if(hero_figure)$
+\herofigure{$hero_figure$}
+$endif$
+$if(hero_caption)$
+\herocaption{$hero_caption$}
+$endif$
+$if(hero_label)$
+\herolabel{$hero_label$}
+$endif$
+
+$if(abstract)$
+\begin{abstract}
+$abstract$
+\end{abstract}
+$endif$
+
+\begin{document}
+
+$for(include-before)$
+$include-before$
+$endfor$
+
+\maketitle
+\thispagestyle{firststyle}
+
+$body$
+
+$for(include-after)$
+$include-after$
+$endfor$
+
+\end{document}

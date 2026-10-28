@@ -1,0 +1,305 @@
+//Initialise functions
+{
+	if (!global.File)
+		/**
+		 * The namespace for all UF/File utility functions, typically for static methods.
+		 * 
+		 * @namespace File
+		 */
+		global.File = {};
+	
+	/**
+	 * Whether a file is inside a folder path.
+	 * @alias File.containsPath
+	 * 
+	 * @param {string} arg0_file_path
+	 * @param {string} arg1_folder_path
+	 * 
+	 * @returns {boolean}
+	 */
+	//[QUARANTINE]
+	File.containsPath = function (arg0_file_path, arg1_folder_path) {
+		const resolvedFile = path.resolve(arg0_file_path);
+		const resolvedFolder = path.resolve(arg1_folder_path);
+		
+		//Return statement
+		return (
+			resolvedFile === resolvedFolder ||
+			resolvedFile.startsWith(resolvedFolder + path.sep)
+		);
+	};
+	
+	/**
+	 * Converts an image, preferably `.png`, to a Base64 string for inline embedding.
+	 * @alias File.convertImageToBase64
+	 * 
+	 * @param {string} arg0_file_path
+	 * 
+	 * @returns {string}
+	 */
+	File.convertImageToBase64 = function (arg0_file_path) {
+		//Convert from parameters
+		let file_buffer = fs.readFileSync(arg0_file_path);
+		
+		//Return statement
+		return file_buffer.toString("base64");
+	};
+	
+	/**
+	 * Returns all drives in the current operating system.
+	 * @alias File.getAllDrives
+	 * 
+	 * @returns {string[]}
+	 */
+	//[QUARANTINE]
+	File.getAllDrives = function () {
+		const platform = process.platform;
+		
+		try {
+			if (platform === "win32") {
+				// Run WMIC command to list logical drives
+				const output = child_process.execSync("wmic logicaldisk get name", { encoding: "utf8" });
+				return output
+				.split("\n")
+				.map((line) => line.trim())
+				.filter((line) => /^[A-Z]:$/i.test(line)) // e.g. "C:"
+				.map((drive) => drive + "\\");
+			} else {
+				// POSIX systems
+				// Common mount points: "/", "/Volumes/*" (macOS), "/mnt/*" or "/media/*" (Linux)
+				const drives = ["/"];
+				
+				const possibleDirs = ["/Volumes", "/mnt", "/media"];
+				for (const dir of possibleDirs) {
+					if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
+						const subMounts = fs
+						.readdirSync(dir)
+						.map((name) => path.join(dir, name))
+						.filter((p) => {
+							try {
+								return fs.statSync(p).isDirectory();
+							} catch {
+								return false;
+							}
+						});
+						drives.push(...subMounts);
+					}
+				}
+				return drives;
+			}
+		} catch (err) {
+			console.error("getAllDrives() failed:", err);
+			return [];
+		}
+	};
+	
+	/**
+	 * Returns all files in a current folder path as full file paths.
+	 * @alias File.getAllFiles
+	 * 
+	 * @param {string} arg0_folder_path
+	 * @param {Object} [arg1_options]
+	 *  @param {string[]} [arg1_options.excluded_paths]
+	 * 
+	 * @returns {string[]}
+	 */
+	File.getAllFiles = async function (arg0_folder_path, arg1_options) {
+		//Convert from parameters
+		let root_path = path.resolve(arg0_folder_path);
+		let options = arg1_options || {};
+		
+		//Declare local instance variables
+		let excluded_paths = (options.excluded_paths || []).map((p) => path.resolve(p));
+		
+		try {
+			let entries = await fs.promises.readdir(root_path, { withFileTypes: true });
+			let paths = await Promise.all(
+				entries.map(async (entry) => {
+					let full_path = path.resolve(root_path, entry.name);
+					
+					//Internal guard clause if the current full path is in the excluded list
+					if (excluded_paths.includes(full_path))
+						return [];
+					if (entry.isDirectory())
+						//Recursively call File.getAllFiles if possible
+						return await File.getAllFiles(full_path, options);
+					return full_path;
+				}),
+			);
+			
+			return paths.flat();
+		} catch (err) {
+			console.error(`File.getAllFiles: Error reading directory ${root_path}:`, err);
+			throw err;
+		}
+	};
+	
+	/**
+	 * Returns all files in a current folder synchronously.
+	 * @alias File.getAllFilesSync
+	 * 
+	 * @param {string} arg0_folder_path
+	 * 
+	 * @returns {string[]}
+	 */
+	File.getAllFilesSync = function (arg0_folder_path) {
+		//Convert from parameters
+		let folder_path = arg0_folder_path;
+		
+		//Declare local instance variables
+		let all_files = fs.readdirSync(folder_path, {
+			recursive: true,
+			withFileTypes: true
+		});
+		
+		//Return statement
+		return all_files.filter((entry) => entry.isFile())
+			.map((entry) => path.join(entry.path, entry.name));
+	};
+	
+	/**
+	 * Returns the time at which a file was last modified.
+	 * @alias File.getLastModified
+	 * 
+	 * @param {string} arg0_file_path
+	 * 
+	 * @returns {Promise<{last_modified: Date, seconds: number}>}
+	 */
+	File.getLastModified = function (arg0_file_path) {
+		//Convert from parameters
+		let file_path = arg0_file_path;
+		
+		//Check if file_path exists, then extract last modified time
+		if (fs.existsSync(file_path)) {
+			//Declare local instance variables
+			let date_obj = new Date();
+			let stats = fs.statSync(file_path);
+			
+			let last_modified = stats.mtime;
+			
+			let diff_in_seconds = Math.floor((date_obj.getTime() - last_modified.getTime())/1000);
+			
+			//Return statement
+			return {
+				last_modified: last_modified,
+				seconds: diff_in_seconds
+			};
+		}
+	};
+	
+	/**
+	 * Returns whether the given file path is a file.
+	 * @alias File.isFile
+	 * 
+	 * @param {string} arg0_file_path
+	 * 
+	 * @returns {boolean}
+	 */
+	File.isFile = function (arg0_file_path) { return (!File.isFolder(arg0_file_path)); };
+	
+	/**
+	 * Checks whether the file extension is an image.
+	 * @alias File.isImage
+	 *
+	 * @param {string} arg0_file_path
+	 * 
+	 * @returns {boolean}
+	 */
+	File.isImage = function (arg0_file_path) {
+		//Convert from parameters
+		let file_path = arg0_file_path;
+		
+		//Declare local instance variables
+		let pattern_check = /\.(jpeg|jpg|gif|png|webp|svg|bmp)$|^data:image/i;
+		
+		//Return statement
+		return pattern_check.test(file_path);
+	};
+	
+	/**
+	 * Checks whether the file extension is a video.
+	 * @alias File.isVideo
+	 * 
+	 * @param {string} arg0_file_path
+	 * 
+	 * @returns {boolean}
+	 */
+	File.isVideo  = function (arg0_file_path) {
+		//Convert from parameters
+		let file_path = arg0_file_path;
+		
+		//Declare local instance variables
+		let pattern_check = /\.(mp4|mov|avi|wmv|flv|mkv|webm)$/i;
+		
+		//Return statement
+		return pattern_check.test(file_path);
+	};
+	
+	/**
+	 * Returns whether the given file path is a folder.
+	 * @alias File.isFolder
+	 * 
+	 * @param {string} arg0_file_path
+	 * 
+	 * @returns {boolean}
+	 */
+	File.isFolder = function (arg0_file_path) {
+		//Convert from parameters
+		let file_path = path.resolve(arg0_file_path);
+		
+		//Return statement
+		if (fs.existsSync(file_path))
+			return (fs.statSync(file_path).isDirectory());
+		return false;
+	};
+	
+	/**
+	 * Whether the selected file path is a valid drive.
+	 * @alias File.isDrive
+	 * 
+	 * @param {string} arg0_file_path
+	 * 
+	 * @returns {boolean}
+	 */
+	File.isDrive = function (arg0_file_path) {
+		//Convert from parameters
+		let file_path = arg0_file_path;
+		
+		//Declare local instance variables
+		let resolved = path.resolve(file_path);
+		
+		//Check if file_path is drive
+		try {
+			let stats = fs.statSync(resolved);
+			if (!stats.isDirectory()) return false; //Internal guard clause if not a directory
+		} catch (e) {
+			//Return statement
+			return false;
+		}
+		
+		//Return statement
+		return (resolved === path.parse(resolved).root);
+	};
+	
+	/**
+	 * Resolves and parses a JSON file if given a file path, or passes an already parsed object through.
+	 * @alias File.loadJSON
+	 * 
+	 * @param {string|Object} arg0_file_path
+	 * @param {Object} [arg1_options]
+	 * 
+	 * @returns {Object}
+	 */
+	File.loadJSON = function (arg0_file_path, arg1_options) {
+		//Convert from parameters
+		let file_path = arg0_file_path;
+		let options = (arg1_options) ? arg1_options : {};
+		
+		//Return statement
+		if (typeof file_path === "string") {
+			let resolved_path = path.resolve(file_path);
+			return JSON.parse(fs.readFileSync(resolved_path, "utf8"));
+		}
+		return file_path;
+	};
+}

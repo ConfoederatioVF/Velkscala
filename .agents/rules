@@ -1,53 +1,44 @@
 # PROJECT RULES & RESEARCH NORMS
 
-## 1. Design System: Project 1431/1436 Dataview Palette
+## 1. Project Architecture & File Structure
 
-- **Theme**: Dark workspace styling borrowed directly from Project 1431/1436 (Dataview).
-- **Colour Palette**:
-  - Core Accent Primary: Dataview Crimson Red `rgb(200, 40, 40)` (`#c82828`).
-  - Core Accent Secondary: Vibrant Red `rgb(240, 60, 60)` (`#f03c3c`).
-  - Accent Tertiary / Dividers: Translucent white `rgba(255, 255, 255, 0.15)`.
-  - Canvas & Backgrounds: Main workspace `#111113`, Panels/Surfaces `#18181b`, Cards `#202024`, Hover `#27272c`.
-  - Typography Scale: Primary text `#ffffff`, Secondary/Muted text `rgba(255, 255, 255, 0.65)`, Dim text `rgba(255, 255, 255, 0.45)`.
-- **Button vs Outline Rules**:
-  - **Only actual interactive buttons** (e.g. "Generate Data", "Run Tests", "Generate Figures") may have the red button look (`background-color: var(--accent-primary)`).
-  - **List item selection outlines** (such as the Data Explorer tree items on the left-hand side) must be **white** (`#ffffff`) for contrast, never red.
-- **Web App Architecture (React + shadcn/ui)**:
-  - Uses a single unified web app on port 16000 (`React + shadcn/ui` with the Dataview colour palette) rather than separate terminal TUIs.
-  - **Data Explorer**: Contains a searchbar and the 3 top-level folders (`Tabulation`, `Tests`, and `Figures`) with inline stage buttons (`Generate Data`, `Run Tests`, `Generate Figures`). Clicking any item in the Data Explorer displays that artefact in the main scene like a true file explorer.
-  - **Main Scene**: Includes an Expand/Collapse toggle to view the active artefact in full-screen mode.
+- **`common/defines/`**:
+  - `filepath_defines.json5`: Single source of truth for project directories, data pipelines, R framework modules, `rticles` templates, and compiled paper artefacts.
+- **`core/framework/R/`**:
+  - R templating, PDF embedding, and page-splitting frameworks (`framework_init.R`, `filepath_loader.R`, `layout_pagination.R`, `table_templating.R`, `figure_templating.R`, `prose_templating.R`, `intellte_format.R`).
+  - Provides frameworks for tables, figures, and Markdown prose that accurately split and pack content across pages without excessive deadspace or two-column `longtable` failures.
+- **`core/rticles/intellte/`**:
+  - Custom RMarkdown journal template (`resources/template.tex` and `skeleton/` assets borrowed from `rticles::pnas_article` for downstream customisation).
+- **`data/`**:
+  - `1.data_cleaning/`: Raw raster cleaning and downscaling scripts/datasets (e.g. `WorldPop/`).
+  - `2.data_testing/`: Empirical validation suites (`test_cdt/`, `test_ndt/`).
+  - `3.data_visualisation/`: R plotting scripts (`plot_cdt_validation.R`, `plot_ndt_validation.R`), `animations/`, and `images/` (dual high-DPI `.png` and vector `.pdf` outputs).
+- **`papers/velkscala_1.0/`**:
+  - `autorun.bat` / `autorun.sh`: Compiles the validation visualisations and renders `main.Rmd` into `main.pdf`.
+  - `main.Rmd`: Master RMarkdown manuscript inspectable directly in RStudio or compiled via `autorun.bat`.
+- **`visuals/`**:
+  - Mirrored publication-ready figures (`.png` and `.pdf`).
+- **`UF/`**:
+  - Universal Framework library modules.
 
 ## 2. Typography & Table Standards
 
-- **Font Families (from Dataview)**:
-  - Primary UI & Headings:
-    ```css
-    font-family: "Karla", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    ```
-  - Monospace (strictly code & raw documents):
-    ```css
-    font-family: "Fira Code", monospace;
-    ```
-- **Monospace Restriction**:
-  - Monospace is **strictly reserved for actual code snippets/blocks and raw JSON/Markdown source**.
-  - It must **never** be used for data tables, statistics, KPI numbers, geocodes, table headers, or badges.
-  - Numbers and figures use the primary sans-serif font (`Karla`) with `font-variant-numeric: tabular-nums` for precise alignment.
-- **Table Interactivity & Bolding Rule**:
-  - All tables must be **sortable** (ascending `▲` and descending `▼`) by clicking column headers.
-  - **Cells outside the first column must NOT be bolded**. Only the entity/epoch in the first column (`col-entity`) is bolded for identification. All other cells (figures, ratios, errors, rates) must use standard regular weight (`font-weight: 400`).
+- **Table Formatting & First-Column Bolding Rule**:
+  - **Cells outside the first column must NOT be bolded**. Only the entity/epoch in the first column (`col-entity`) is bolded for identification. All other cells (figures, ratios, errors, rates) must use standard regular weight.
+  - Long tables and multi-region sub-tables must be split and packed across pages using `core/framework/R/layout_pagination.R` and `core/framework/R/table_templating.R` to prevent bottom overflow and eliminate float deadspace.
 
 ## 3. Writing & Research Norms
 
 - **Minimal and Human Prose**:
-  - Write plain, direct, human English. Explain clearly what each view or metric shows.
+  - Write plain, direct, human British English (EN-GB). Explain clearly what each view or metric shows.
   - Eliminate jargon bloat, robotic boilerplate, and excessive technical labelling.
-  - Never use ALLCAPS for component headers, card titles, or navigation.
-  - Omit gratuitous metadata in headers (e.g. do not attach "GMT+0", raw port numbers, or implementation stack tags to titles).
+  - Variable delimiters in prose templates use the `£` sign (e.g. `£1£`, `£key£`).
 - **Demographic & Statistical Conventions**:
   - Use standard academic notation: $R^2$ (coefficient of determination), MAE (mean absolute error), RMSE (root mean square error).
   - Clearly distinguish demographic stages:
-    - CDT: Contemporary Demographic Transition (1850–2019) comparing empirical vital flows (HMD, UNWPP) against model estimates and Stadestér bounds.
-    - NDT: Neolithic Demographic Transition (10000 BC–1000 AD) assessing agricultural onset timing, early population booms, and immature proportion (15P5) proxies.
+    - CDT: Contemporary Demographic Transition (1850–2019) comparing empirical vital flows (HMD, UNWPP, Kummu) against model estimates and Stadestér bounds.
+    - NDT: Neolithic Demographic Transition (10000 BC–1000 AD) assessing agricultural onset timing, early population booms, and immature juvenile proportion ($p(5\text{--}19)/p(5+)$) proxies.
   - State observations ($N$), sample coverage, and unit of analysis explicitly.
-- **European Formatting**:
-  - Use comma for decimal separator (`58,88%`, `0,61`) in display copy.
+- **European & Semantic Formatting**:
+  - Use comma for decimal separator (`58,88%`, `0,6092`) in display copy and tables.
+  - Use semantic abbreviations for large numbers: `k`, `M`, `B`, `T`.

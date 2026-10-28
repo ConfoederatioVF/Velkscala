@@ -1,0 +1,381 @@
+/**
+ * Refer to <span color = "yellow">{@link ve.Component}</span> for methods or fields inherited from this Component's parent such as `.options.attributes` or `.element`.
+ *
+ * Represents a {@link Blockly} sub-component used as a visual editor for {@link ve.ComponentScriptManager}.
+ *
+ * **Note.** Declaring duplicate {@link ve.ScriptManager} components will reset the main Blockly workspace for each new instance.
+ * - Functional binding: <span color=00ffff>veScriptManagerBlockly</span>().
+ *
+ * ##### Constructor:
+ * - `arg0_value`: {@link string} - The code to input into the present Blockly viewer.
+ * - `arg1_options`: {@link Object}
+ *   - `.script_manager`: {@link ve.ScriptManager}
+ *
+ * ##### Instance:
+ * - `.workspace`: {@link Blockly.Workspace}
+ * - `.v`: {@link string}
+ *
+ * ##### Methods:
+ * - <span color=00ffff>{@link ve.ScriptManagerBlockly.disable|disable}</span>()
+ * - <span color=00ffff>{@link ve.ScriptManagerBlockly.enable|enable}</span>()
+ * - <span color=00ffff>{@link ve.ScriptManagerBlockly.fixBlocklyScaling|fixBlocklyScaling}</span>()
+ * - <span color=00ffff>{@link ve.ScriptManagerBlockly.handleCSS|handleCSS}</span>()
+ * - <span color=00ffff>{@link ve.ScriptManagerBlockly.hide|hide}</span>()
+ * - <span color=00ffff>{@link ve.ScriptManagerBlockly.interceptBlocklyTransforms|interceptBlocklyTransforms}</span>()
+ * - <span color=00ffff>{@link ve.ScriptManagerBlockly.setTheme|setTheme}</span>(arg0_theme:{@link string}) - Either 'theme_default'/'theme_light'.
+ * - <span color=00ffff>{@link ve.ScriptManagerBlockly.show|show}</span>()
+ *
+ * @augments ve.Component
+ * @memberof ve.Component
+ * @type {ve.ScriptManagerBlockly}
+ */
+ve.ScriptManagerBlockly = class extends ve.Component {
+	static excluded_from_demo = true;
+	
+	constructor (arg0_value, arg1_options) {
+		//Convert from parameters
+		let value = arg0_value;
+		let options = (arg1_options) ? arg1_options : {};
+		super(options);
+		
+		//Initialise options
+		options.attributes = (options.attributes) ? options.attributes : {};
+		
+		//Declare local instance variables
+		let toolbox = ve.ScriptManager.toolbox;
+		
+		this.element = document.createElement("div");
+			this.element.instance = this;
+			this.element.setAttribute("component", "ve-script-manager-blockly");
+			HTML.setAttributesObject(this.element, options.attributes);
+		this.options = options;
+		this.value = value;
+		
+		//Initialise ScriptManagerBlockly element 
+		document.body.appendChild(this.element);
+		this.workspace = Blockly.inject(this.element, {
+			toolbox: toolbox,
+			zoom: {
+				controls: true,
+				wheel: true,
+				startScale: 1.0,
+				maxScale: 3,
+				minScale: 0.2,
+				scaleSpeed: 1.2
+			},
+			trashcan: true
+		});
+		window.workspace = this.workspace;
+		document.body.removeChild(this.element);
+		this.blockly_widget_el = document.querySelector("body > .blocklyWidgetDiv");
+		this.blockly_tooltip_el = document.querySelector("body > .blocklyTooltipDiv");
+		this.blockly_toolbox_el = document.querySelector("body > .blocklyToolboxDiv");
+		
+		//Call after Blockly initialization
+		this.interceptBlocklyTransforms();
+		this.workspace.addChangeListener(() => {
+			this._exportToMonaco();
+			this.fireToBinding(); 
+		});
+		
+		this.fixBlocklyScaling();
+		this.handleCSS();
+	}
+	
+	/**
+	 * Returns the code value of the present Component by parsing ES6 JS as an Abstract Syntax Tree.
+	 * - Accessor of: {@link ve.ScriptManagerBlockly}
+	 *
+	 * @alias v
+	 * @memberof ve.Component.ve.ScriptManagerBlockly
+	 * @type {string}
+	 */
+	get v () {
+		//Return statement
+		try {
+			return Blockly.Javascript.workspaceToCode(Blockly.mainWorkspace);
+		} catch (e) {}
+	}
+	
+	/**
+	 * Sets the code value of the present Component if possible.
+	 * - Accessor of: {@link ve.ScriptManagerBlockly}
+	 *
+	 * @alias v
+	 * @memberof ve.Component.ve.ScriptManagerBlockly
+	 *
+	 * @param {string} arg0_value
+	 */
+	set v (arg0_value) {
+		//Convert from parameters
+		let value = arg0_value;
+		
+		if (this._disabled) return; //Internal guard clause if element is disabled
+		
+		//Instantiate new blocks
+		this.to_binding_fire_silently = true;
+		js2blocks.parseCode(value);
+		setTimeout(() => delete this.to_binding_fire_silently, 100);
+		this.fireFromBinding();
+	}
+	
+	_exportToMonaco (arg0_force_export) {
+		//Convert from parameters
+		let force_export = arg0_force_export;
+		
+		try {
+			//Declare local instance variables
+			let blockly_value = Blockly.JavaScript.workspaceToCode(Blockly.mainWorkspace);
+			let should_export = false;
+			if (this.options.script_manager && !this.options.script_manager._settings.manual_synchronisation)
+				should_export = true;
+			if (force_export) should_export = true;
+			
+			//Only export if should_export is true
+			if (should_export)
+				if (!this.to_binding_fire_silently)
+					try {
+						//Traverse up to the ScriptManager container, then search down for Monaco
+						let manager_el = this.element.closest(`[component="ve-script-manager"]`);
+						let monaco_el = (manager_el) ?
+							manager_el.querySelector(`[component="ve-script-manager-monaco"]`) :
+							undefined;
+						
+						if (monaco_el && monaco_el.instance) {
+							let monaco_obj = monaco_el.instance;
+							
+							monaco_obj.to_binding_fire_silently = true;
+							monaco_obj.v = blockly_value;
+							delete monaco_obj.to_binding_fire_silently;
+						}
+					} catch (e) { console.error(e); }
+		} catch (e) {}
+	}
+	
+	/**
+	 * Disables the present workspace.
+	 * - Method of: {@link ve.ScriptManagerBlockly}
+	 *
+	 * @alias disable
+	 * @memberof ve.Component.ve.ScriptManagerBlockly
+	 */
+	disable () {
+		if (this._disabled) return; //Internal guard clause to ensure file can't be disabled twice
+		
+		//Declare local instance variables
+		this._disabled = true;
+		delete window.workspace;
+		this.element.classList.add("disabled");
+		
+		try {
+			this.blockly_tooltip_parent_el = this.blockly_tooltip_el.parentElement;
+			this.blockly_tooltip_el.parentElement.removeChild(this.blockly_tooltip_el);
+			this.blockly_widget_parent_el = this.blockly_widget_el.parentElement;
+			this.blockly_widget_el.parentElement.removeChild(this.blockly_widget_el);
+		} catch (e) {}
+	}
+	
+	/**
+	 * Enables the present workspace.
+	 * - Method of: {@link ve.ScriptManagerBlockly}
+	 *
+	 * @alias enable
+	 * @memberof ve.Component.ve.ScriptManagerBlockly
+	 */
+	enable () {
+		if (!this._disabled) return; //Internal guard clause to ensure file can't be enabled twice
+		
+		//Declare local instance variables
+		delete this._disabled;
+		window.workspace = this.workspace;
+		this.element.classList.remove("disabled");
+		
+		this.blockly_tooltip_parent_el.appendChild(this.blockly_tooltip_el);
+		delete this.blockly_tooltip_parent_el;
+		this.blockly_widget_parent_el.appendChild(this.blockly_widget_el);
+		delete this.blockly_widget_parent_el;
+	}
+	
+	/**
+	 * Internal helper method. Fixes Blockly scaling issues.
+	 * - Method of: {@link ve.ScriptManagerBlockly}
+	 *
+	 * @alias fixBlocklyScaling
+	 * @memberof ve.Component.ve.ScriptManagerBlockly
+	 */
+	fixBlocklyScaling () {
+		//Declare local instance variables
+		let flyout_bg_el = this.element.querySelector('.blocklyFlyoutBackground');
+		let flyout_container_el = this.element.querySelector('.blocklyFlyout');
+		
+		//Fix flyout scaling - CSS fix
+		if (flyout_bg_el && flyout_container_el) {
+			//Get the actual flyout container dimensions
+			let flyout_rect = flyout_container_el.getBoundingClientRect();
+			
+			let height = flyout_rect.height;
+			let width = flyout_rect.width;
+			
+			//Set flyout_bg_el's dynamic path
+			flyout_bg_el.setAttribute('d', `M 0,0 h ${width} a 8 8 0 0 1 8 8 v ${height - 16} a 8 8 0 0 1 -8 8 h -${width} z`);
+		}
+	}
+	
+	/**
+	 * Internal helper method. Handles CSS issues so that Blockly can be mounted into a window.
+	 * - Method of: {@link ve.ScriptManagerBlockly}
+	 *
+	 * @alias handleCSS
+	 * @memberof ve.Component.ve.ScriptManagerBlockly
+	 */
+	handleCSS () {
+		//Declare local instance variables
+		let blockly_raf;
+		this.blockly_toolbox_mode = "canvas"; //Either 'body'/'canvas'
+		let runToolboxUpdate = () => {
+			if (this._hidden) {
+				blockly_raf = requestAnimationFrame(runToolboxUpdate);
+				return;
+			}
+			
+			if (this._disabled) {
+				if (this.blockly_toolbox_el.parentElement)
+					this.blockly_toolbox_el.parentElement.removeChild(this.blockly_toolbox_el);
+				blockly_raf = requestAnimationFrame(runToolboxUpdate);
+				return;
+			}
+			
+			this.svg_el = this.element.querySelector("svg");
+				this.svg_el.setAttribute("width", "100%");
+				this.svg_el.setAttribute("height", "100%");
+			this.svg_rect = this.svg_el.getBoundingClientRect();
+			
+			let rect = this.element.getBoundingClientRect();
+			this.blockly_toolbox_mode =
+				this.element.querySelector(".blocklyFlyout:hover") ||
+				this.blockly_toolbox_el.querySelector(":hover") ||
+				document.querySelector(".blocklyDraggable:hover")
+					? "body"
+					: "canvas";
+			
+			if (this.blockly_toolbox_mode === "body") {
+				if (!document.querySelector("body > .blocklyToolboxDiv")) {
+					document.body.appendChild(this.blockly_toolbox_el);
+				}
+				this.blockly_toolbox_el.style.height = `${this.toolbox_height}px`;
+				this.blockly_toolbox_el.style.left = `${rect.x}px`;
+				this.blockly_toolbox_el.style.top = `calc(${rect.y}px + var(--cell-padding))`;
+				this.blockly_toolbox_el.style.zIndex = "2";
+			} else {
+				// canvas mode
+				if (!this.element.contains(this.blockly_toolbox_el)) {
+					this.element.appendChild(this.blockly_toolbox_el);
+				}
+				this.blockly_toolbox_el.style.height = `${this.svg_rect.height}px`;
+				this.blockly_toolbox_el.style.left = "0px";
+				this.blockly_toolbox_el.style.top = `calc(var(--cell-padding))`;
+				this.blockly_toolbox_el.style.zIndex = "0";
+				this.toolbox_height = HTML.getElementDimensions(this.blockly_toolbox_el).height;
+			}
+			
+			blockly_raf = requestAnimationFrame(runToolboxUpdate);
+		};
+		
+		//Start RAF to handle CSS
+		blockly_raf = requestAnimationFrame(runToolboxUpdate);
+	}
+	
+	/**
+	 * Hides the present workspace entirely.
+	 * - Method of: {@link ve.ScriptManagerBlockly}
+	 *
+	 * @alias hide
+	 * @memberof ve.Component.ve.ScriptManagerBlockly
+	 */
+	hide () {
+		if (this._hidden) return; //Internal guard clause if already hidden
+		
+		//Declare local instance variables
+		this._hidden = true;
+		this.element.style.display = "none";
+	}
+	
+	/**
+	 * Internal helper method. Fixes Blockly transforms so that Blockly can be mounted into a window.
+	 * - Method of: {@link ve.ScriptManagerBlockly}
+	 *
+	 * @alias interceptBlocklyTransforms
+	 * @memberof ve.Component.ve.ScriptManagerBlockly
+	 */
+	interceptBlocklyTransforms () {
+		//Declare local instance variables
+		let targets = [
+			'.blocklyFlyout .blocklyBlockCanvas',
+			'.blocklyFlyout .blocklyBubbleCanvas'
+		];
+		
+		//Iterate over all targets
+		targets.forEach((selector) => {
+			let local_element = this.element.querySelector(selector);
+			
+			if (local_element) {
+				// Override setAttribute to intercept transform changes
+				let originalSetAttribute = local_element.setAttribute;
+				local_element.setAttribute = function (name, value) {
+					if (name === 'transform' && value.includes('scale(')) {
+						// Preserve translate, force scale(1)
+						value = value.replace(/scale\([^)]+\)/g, 'scale(1)');
+					}
+					return originalSetAttribute.call(this, name, value);
+				};
+			}
+		});
+	}
+	
+	/**
+	 * Internal helper method. Propagates the main editor theme class down from {@link ve.ScriptManager}. Either 'theme-default'/'theme-light'.
+	 * - Method of: {@link ve.ScriptManagerBlockly}
+	 *
+	 * @alias setTheme
+	 * @memberof ve.Component.ve.ScriptManagerBlockly
+	 *
+	 * @param {string} arg0_theme_class
+	 */
+	setTheme (arg0_theme_class) {
+		//Convert from parameters
+		let theme_class = arg0_theme_class;
+		
+		//Remove previous themes
+		if (this._theme)
+			this.blockly_toolbox_el.classList.remove(this._theme);
+		this._theme = theme_class;
+		
+		//Add theme to this.blockly_toolbox_el
+		this.blockly_toolbox_el.classList.add(this._theme);
+	}
+	
+	/**
+	 * Displays the present workspace if hidden.
+	 * - Method of: {@link ve.ScriptManagerBlockly}
+	 *
+	 * @alias show
+	 * @memberof ve.Component.ve.ScriptManagerBlockly
+	 */
+	show () {
+		if (!this._hidden) return; //Internal guard clause if already shown
+		
+		//Declare local instance variables
+		delete this._hidden;
+		this.element.style.display = "block";
+	}
+};
+
+//Functional binding
+
+/**
+ * @returns {ve.ScriptManagerBlockly}
+ */
+veScriptManagerBlockly = function () {
+	//Return statement
+	return new ve.ScriptManagerBlockly(...arguments);
+}

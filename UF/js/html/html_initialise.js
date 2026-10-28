@@ -1,0 +1,92 @@
+//Initialise functions
+{
+	if (!global.HTML) global.HTML = {};
+	
+	/**
+	 * Initialises HTML related fields and functions.
+	 * @alias HTML.initialise
+	 */
+	HTML.initialise = function () {
+		//Add event listeners
+		{
+			document.addEventListener("keydown", (e) => {
+				if (e.keyCode === 17) { //Ctrl
+					if (window.is_naissance)
+						try { 
+							map.scrollWheelZoom.disable(); 
+						} catch (e) { console.log(e); } //Disable map zoom upon Ctrl down
+					/**
+					 * Whether the `Ctrl` key is currently pressed.
+					 * @type {boolean}
+					 */
+					HTML.ctrl_pressed = true;
+				}
+				if (e.keyCode === 16) //Shift
+					HTML.shift_pressed = true;
+			});
+			document.addEventListener("keyup", (e) => {
+				if (e.keyCode === 17) { //Ctrl
+					if (window.is_naissance) {
+						try { 
+							map.scrollWheelZoom.enable(); 
+						} catch (e) { console.log(e); } //Re-enable map zoom upon Ctrl up
+					}
+					delete HTML.ctrl_pressed;
+				}
+				if (e.keyCode === 16) //Shift
+					delete HTML.shift_pressed;
+			});
+			
+			//HTML.mouse_x, HTML.mouse_y tracker
+			document.addEventListener("mousemove", (e) => {
+				/**
+				 * The current mouse X position.
+				 * @type {number}
+				 */
+				HTML.mouse_x = e.clientX;
+				/**
+				 * The current mouse Y position.
+				 * @type {number}
+				 */
+				HTML.mouse_y = e.clientY;
+			});
+			document.addEventListener("click", (e) => {
+				HTML.mouse_x = e.clientX;
+				HTML.mouse_y = e.clientY;
+			}, { capture: true });
+			document.addEventListener("contextmenu", (e) => {
+				HTML.mouse_x = e.clientX;
+				HTML.mouse_y = e.clientY;
+			}, { capture: true });
+		}
+		
+		//Vercengen CSS handler
+		{
+			//Flag to ensure only one RAF loop is running
+			if (!HTML.ve_css_active_loops) {
+				HTML.ve_css_active_loops = true;
+				HTML.ve_css_global_loop = () => {
+					let ve_css_registry = HTML.ve_css_registry;
+					
+					//Iterate over all elements in ve_css_registry
+					for (let [local_el, local_entry] of ve_css_registry.entries()) {
+						if (!document.body.contains(local_el)) {
+							//Cleanup elements removed from DOM
+							ve_css_registry.delete(local_el);
+							continue;
+						}
+						
+						//Reapply only dynamic (function) styles
+						HTML.applyDynamicTelestyle(local_el, local_entry.dynamic);
+					}
+					requestAnimationFrame(HTML.ve_css_global_loop);
+				};
+				
+				//Jumpstart RAF loop
+				requestAnimationFrame(HTML.ve_css_global_loop);
+			}
+			if (!HTML.ve_css_registry)
+				HTML.ve_css_registry = new Map();
+		}
+	};
+}

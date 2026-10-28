@@ -1,0 +1,477 @@
+---
+title: "VELKSCALA 1.0."
+subtitle: "Empirical Validation of Global Gridded Paleodemographics and Contemporary Vital Flows from 10000BC to the Present."
+date: "28 October 2026"
+authors_line: "Vis Tacitus and Aust Kätzchen"
+emails:
+  - vistacitus@confoederatio.org
+  - austkaetzchen@confoederatio.org
+
+hero_figure: "../../data/3.data_visualisation/images/cdt_proxy_vs_empirical.pdf"
+hero_caption: "Contemporary Demographic Transition (CDT) out-of-sample validation dashboard (1850--2019 AD) comparing country-level age-sex goodness-of-fit ($R^2$) and normalised median relative error for annual births and deaths."
+hero_label: "fig:cdt-dashboard"
+
+abstract: |
+  Velkscala 1.0 is a global gridded demographic database reconstructing population counts, age-sex pyramids, and vital flows from 10000BC to 2025AD at 5-arcminute resolution, published by Confoederatio, Research Division. Our validation framework evaluates two foundational demographic regimes: the Contemporary Demographic Transition (CDT, 1850--2019AD) against Human Mortality Database (HMD), United Nations World Population Prospects (UNWPP), and Niva et al. (Kummu) subnational vital records; and the Neolithic Demographic Transition (NDT, 10000BC--1000AD) across five independent agricultural origins and 19 subnational geocodes against Bocquet-Appel paleodemographic priors. Across the CDT benchmark, isotonic Pool-Adjacent-Violators (PAVA) and Whittaker-Henderson graduation clamped to Stadester bounds elevate geometric mean age-sex goodness-of-fit ($R^2$) from 0,4625 (raw multinomial logit) to 0,6092 (+0,1466 improvement), reaching 0,8140--0,8736 across pre-1950 historical HMD cohorts. Across the NDT domain, raster cohort buffers confirm spatially endogenous age-structure differentiation across all 19 tracked geocodes and capture both the Bocquet-Appel immature juvenile proportion surge ($p(5\text{--}19)/p(5+)$) and the European Linearbandkeramik (LBK) boom-and-bust cycle.
+
+bibliography: velkscala.bib
+csl: crd-mla-numeric.csl
+
+output:
+  rticles::pnas_article:
+    template: ../../core/rticles/intellte/resources/template.tex
+    latex_engine: xelatex
+    keep_tex: false
+---
+
+```{r setup, include=FALSE}
+# Bootstrap the Velkscala R Framework (paths, table/figure/prose templating, pagination)
+source("../../core/framework/R/framework_init.R")
+
+# Ingest CDT and NDT validation JSON artefacts via filepath_defines.json5
+cdt_as_data <- jsonlite::fromJSON(velkscala_defines$paths$cdt_age_sex_json, simplifyVector = FALSE)
+cdt_bd_data <- jsonlite::fromJSON(velkscala_defines$paths$cdt_births_deaths_json, simplifyVector = FALSE)
+ndt_data    <- jsonlite::fromJSON(velkscala_defines$paths$ndt_results_json, simplifyVector = FALSE)
+```
+
+```{r layout-control, results='asis'}
+# Emit float & pagination parameters to prevent page deadspace
+emit_deadspace_control(list(compact_floats = TRUE, ragged_bottom = TRUE))
+```
+
+```{r intro-prose, results='asis'}
+intro_template <- paste(
+  "Continuous gridded reconstructions of historical human populations have traditionally",
+  "relied on static regional growth multipliers or uniform age-structure templates [@hyde2017].",
+  "In **Velkscala 1.0**, demographic cohorts and vital flows are generated endogenously",
+  "at the pixel and geocode level across two coupled regimes: a premodern 34-covariate",
+  "multinomial logit (MNL) ensemble governing the pre-industrial domain (10000 BC--1750 AD),",
+  "and a rolling contemporary regime (1750--2025 AD) graduated via isotonic",
+  "Pool-Adjacent-Violators (PAVA) and Whittaker-Henderson smoothing [@ayer1955; @whittaker1923].",
+  "\n\n",
+  "To verify out-of-sample fidelity before post-1950 United Nations census splicing,",
+  "we subject the proxy estimators to two empirical stress tests. First, we evaluate",
+  "the **Contemporary Demographic Transition (CDT)** across £1£ benchmark epochs",
+  "(1850--2019 AD, up to $N = £2£$ sovereign ISO3 jurisdictions), comparing raw MNL",
+  "cohort probabilities and Stadester-clamped pyramids against empirical life tables",
+  "from the Human Mortality Database (HMD) and UNWPP [@hmd2024; @unwpp2024], alongside",
+  "vital birth and death stocks from Niva et al. [@niva2023]. Second, we audit the",
+  "**Neolithic Demographic Transition (NDT)** from 10000 BC to 1000 AD ($£3£$ epochs)",
+  "across five independent agricultural hearths and $£4£$ national/subnational geocodes",
+  "against archaeological juvenile mortality priors [@bocquet2002; @bocquet2008] and",
+  "Holocene radiocarbon and land-use reconstructions [@shennan2013; @timpson2014; @hyde2017]."
+)
+
+render_markdown_prose(
+  intro_template,
+  list(
+    euro_decimals = TRUE,
+    include_tables = FALSE,
+    vars = list(
+      length(cdt_as_data$summary_by_epoch),
+      189,
+      length(ndt_data$regional_data[[1]]$epochs),
+      length(ndt_data$tracked_geocodes)
+    )
+  )
+)
+```
+
+Contemporary Demographic Transition (CDT) Validation (1850--2019 AD) {#sec:cdt .unnumbered}
+===========================================================================================
+
+```{r cdt-prose, results='asis'}
+raw_geomean_str   <- format_euro_number(cdt_as_data$overall_cdt$raw_mnl_geomean_r2, list(digits = 4))
+clamp_geomean_str <- format_euro_number(cdt_as_data$overall_cdt$clamped_geomean_r2, list(digits = 4))
+delta_geomean_str <- format_euro_number(cdt_as_data$overall_cdt$delta_geomean_r2, list(digits = 4, signed = TRUE))
+
+cdt_narrative <- paste(
+  "Across the contemporary validation horizon, graduating raw multinomial logit",
+  "age-sex probabilities through isotonic PAVA and Whittaker-Henderson kernels [@ayer1955; @whittaker1923]",
+  "clamped to Stadester total population bounds substantially improves demographic",
+  "fit. Across all evaluated country-epoch pairs, geometric mean $R^2$ rises from",
+  "$£raw_r2£$ under raw MNL baseline probabilities to $£clamp_r2£$ post-clamping",
+  "(an overall improvement of $\\Delta R^2 = £delta_r2£$; Figure \\ref{fig:cdt-dashboard}",
+  "and Table \\ref{tab:cdt_age_sex}).",
+  "\n\n",
+  "Crucially, within the pre-1950 historical domain where proxy models operate",
+  "as the primary estimator in Velkscala 1.0 [@hmd2024], clamped age-sex $R^2$ consistently",
+  "exceeds $0.81$, reaching $0.8525$ in 1850 ($N = 8$ HMD countries), $0.8505$ in",
+  "1900 ($N = 11$), $0.8736$ in 1920 ($N = 12$), and $0.8140$ in 1940 ($N = 16$).",
+  "Post-1950 divergence reflects the expansion of the test sample from high-income",
+  "European HMD registers to $N = 189$ global UNWPP jurisdictions [@hmd2024; @unwpp2024]",
+  "exhibiting heterogeneous fertility transitions and subnational vital schedules [@niva2023];",
+  "in the final Velkscala 1.0 composite, empirical UNWPP records directly replace",
+  "proxy estimates from 1950 AD onwards (Table \\ref{tab:cdt_vital_flows})."
+)
+
+render_markdown_prose(
+  cdt_narrative,
+  list(
+    euro_decimals = TRUE,
+    vars = list(
+      clamp_r2 = clamp_geomean_str,
+      delta_r2 = delta_geomean_str,
+      raw_r2 = raw_geomean_str
+    )
+  )
+)
+```
+
+```{r tab-cdt-age-sex, results='asis'}
+# Build Table 1 (CDT Age/Sex R^2 by Epoch) from JSON
+as_epochs <- cdt_as_data$summary_by_epoch
+as_rows <- lapply(as_epochs, function (ep) {
+  data.frame(
+    Year = as.character(ep$year),
+    Source = as.character(ep$domain),
+    N = as.character(ep$num_countries),
+    Raw_M = format_euro_number(ep$raw_mnl$male_r2, list(digits = 4)),
+    Raw_F = format_euro_number(ep$raw_mnl$female_r2, list(digits = 4)),
+    Raw_Geo = format_euro_number(ep$raw_mnl$geomean_r2, list(digits = 4)),
+    Clamp_M = format_euro_number(ep$clamped$male_r2, list(digits = 4)),
+    Clamp_F = format_euro_number(ep$clamped$female_r2, list(digits = 4)),
+    Clamp_Geo = format_euro_number(ep$clamped$geomean_r2, list(digits = 4)),
+    Delta_R2 = format_euro_number(ep$delta_geomean, list(digits = 4, signed = TRUE)),
+    stringsAsFactors = FALSE
+  )
+})
+df_cdt_as_table <- do.call(rbind, as_rows)
+
+render_table_template(
+  df_cdt_as_table,
+  list(
+    align = c("l", "l", "r", "r", "r", "r", "r", "r", "r", "r"),
+    caption = "Contemporary Demographic Transition (CDT) age and sex bracket goodness-of-fit ($R^2$) by benchmark epoch (1850--2019 AD), comparing raw multinomial logit (MNL) baseline probabilities against PAVA/Whittaker-graduated Stadester cohorts.",
+    col_names = c(
+      "Epoch", "Empirical Source", "Sample ($N$)",
+      "Raw $R^2$ (M)", "Raw $R^2$ (F)", "Raw Geomean $R^2$",
+      "Clamped $R^2$ (M)", "Clamped $R^2$ (F)", "Clamped Geomean $R^2$",
+      "$\\Delta R^2$ Gain"
+    ),
+    font_size = "footnotesize",
+    footnote = "Country R² is computed as the arithmetic mean of male and female cohort fits per ISO3 jurisdiction and aggregated across countries via geometric mean.",
+    label = "tab:cdt_age_sex",
+    placement = "!htbp",
+    scale_to_fit = TRUE,
+    span_columns = TRUE
+  )
+)
+```
+
+```{r tab-cdt-vital-flows, results='asis'}
+# Build Table 2 (CDT Births & Deaths Validation by Epoch) with semantic abbreviations
+bd_epochs <- cdt_bd_data$summary_by_epoch
+bd_rows <- lapply(bd_epochs, function (ep) {
+  data.frame(
+    Year = as.character(ep$year),
+    Source = as.character(ep$source),
+    N = as.character(ep$num_countries),
+    Proxy_Births = format_semantic_number(ep$proxy_births, list(digits = 2)),
+    Emp_Births = format_semantic_number(ep$empirical_births, list(digits = 2)),
+    Birth_Err = format_euro_number(ep$birth_error_pct, list(digits = 2, signed = TRUE, suffix = "%")),
+    Proxy_Deaths = format_semantic_number(ep$proxy_deaths, list(digits = 2)),
+    Emp_Deaths = format_semantic_number(ep$empirical_deaths, list(digits = 2)),
+    Death_Err = format_euro_number(ep$death_error_pct, list(digits = 2, signed = TRUE, suffix = "%")),
+    Net_Residual = format_semantic_number(ep$residual_natural, list(digits = 2)),
+    stringsAsFactors = FALSE
+  )
+})
+df_cdt_bd_table <- do.call(rbind, bd_rows)
+
+render_table_template(
+  df_cdt_bd_table,
+  list(
+    align = c("l", "l", "r", "r", "r", "r", "r", "r", "r", "r"),
+    caption = "Global vital flows validation (1950--2019 AD): proxy vs. empirical annual births, deaths, relative error percentages, and net natural increase residuals across UNWPP and Niva et al. (Kummu) benchmarks.",
+    col_names = c(
+      "Epoch", "Benchmark Source", "Sample ($N$)",
+      "Proxy Births", "Empirical Births", "Births Error",
+      "Proxy Deaths", "Empirical Deaths", "Deaths Error",
+      "Net Residual"
+    ),
+    font_size = "footnotesize",
+    footnote = "Vital counts are expressed using semantic abbreviations (M = millions) and European decimal notation.",
+    label = "tab:cdt_vital_flows",
+    placement = "!htbp",
+    scale_to_fit = TRUE,
+    span_columns = TRUE
+  )
+)
+```
+
+Neolithic Demographic Transition (NDT) Empirical Audit (10000 BC--1000 AD) {#sec:ndt .unnumbered}
+=================================================================================================
+
+```{r ndt-exec-prose, results='asis'}
+ndt_prose_synthesis <- paste(
+  c(
+    paste(
+      "This audit evaluates the **Neolithic Demographic Transition (NDT)** across five major",
+      "independent global agricultural origins and 19 subnational/national geocodes from",
+      "$10000\\text{ BC}$ to $1000\\text{ AD}$ ($21$ historical epochs; Figure \\ref{fig:ndt_dashboard}",
+      "and Table \\ref{tab:ndt_scorecard}). Under Bocquet-Appel's paleodemographic framework",
+      "[@bocquet2002; @bocquet2008], the transition from mobile foraging to sedentary agriculture",
+      "induced three canonical demographic signatures: (1) a transient surge in maternal fertility",
+      "and annualised population growth ($r$\\%/yr) peaking approximately $\\Delta t \\approx 700\\text{--}800$",
+      "years post-onset [@bocquet2002]; (2) a pronounced elevation in the immature juvenile proportion",
+      "($p(5\\text{--}19)/p(5+)$), reflecting shortened interbirth intervals [@bocquet2008]; and (3) a",
+      "subsequent post-boom deceleration or boom-bust contraction as agrarian density encountered",
+      "ecological and epidemiological frontiers [@shennan2013; @timpson2014]."
+    ),
+    "### Key Audit Findings & Methodological Synthesis {.unnumbered}",
+    paste(
+      "- **Unique Age Structure Per Geocode (Refuting the 'Global Template' Fallacy)**:",
+      "Direct audit of raster cohort buffers confirms that age-structure proportions are",
+      "**spatially unique per geocode and per pixel**, driven by local covariates (cropland,",
+      "shifting cultivation, irrigation, population density, and income) [@hyde2017] and graduated via",
+      "isotonic PAVA/Whittaker algorithms [@ayer1955; @whittaker1923]. As shown in Table \\ref{tab:ndt_geocodes},",
+      "at $0\\text{ AD}$ under-5 shares ($p(0\\text{--}4)$) range from $12.96\\%$ (South Korea)",
+      "to $16.22\\%$ (Syria/Levant), while Bocquet-Appel juvenile ratios range from $30.15\\%$",
+      "to $49.88\\%$. At $600\\text{ AD}$, Italy exhibits an elevated IJP ($41.66\\%$) amidst",
+      "population contraction ($7.50\\text{M} \\rightarrow 3.06\\text{M}$), capturing demographic",
+      "crisis dynamics associated with late antique mortality shocks."
+    ),
+    paste(
+      "- **The European LBK Boom-and-Bust Dynamic**:",
+      "In Europe, total population expands to $1.47\\text{M}$ at $6000\\text{ BC}$ before",
+      "contracting to $1.12\\text{M}$ at $5000\\text{ BC}$ ($r = -0.027\\%$/yr; Table \\ref{tab:ndt_trajectories}).",
+      "Rather than contradicting the NDT, this trajectory reproduces the empirically",
+      "established **Early Neolithic Linearbandkeramik (LBK) boom-and-bust cycle**",
+      "[@shennan2013; @timpson2014], wherein early farming communities expanded rapidly across",
+      "European loess soils before experiencing soil depletion and pathogen-induced crashes",
+      "prior to Middle Neolithic recovery ($+0.044\\%$/yr by $4000\\text{ BC}$)."
+    ),
+    paste(
+      "- **Taphonomic Preservation and the Bocquet-Appel $p(5\\text{--}19)$ Signal**:",
+      "Because infant skeletal remains ($p(0\\text{--}4)$) suffer differential taphonomic",
+      "loss in archaeological cemeteries [@bocquet2002; @bocquet2008], the",
+      "juvenile ratio $p(5\\text{--}19)/p(5+)$ serves as the primary osteological index of fertility.",
+      "Across our gridded cohorts, this signal is robust across hearths, led by Southeast Asia",
+      "($11.8\\times$ growth elevation; $+1.42\\text{ pp}$ IJP surge) and the American Southwest",
+      "($1.6\\times$ elevation; $+2.79\\text{ pp}$ IJP surge peaking at $\\Delta t = +600$)."
+    ),
+    paste(
+      "- **HYDE 3.2 Holocene Step Artefacts & Continental Smoothing**:",
+      "Between $8000\\text{ BC}$ and $7000\\text{ BC}$, baseline",
+      "population in HYDE [@hyde2017] exhibits a step increase across",
+      "Eurasia ($+0.071\\%$/yr in Southwest Asia; $+0.080\\%$/yr in",
+      "Europe) tied to Holocene climatic amelioration. Isolating this pre-onset step",
+      "confirms that post-onset agricultural expansion remains distinctly elevated above",
+      "homeostatic foraging baselines ($0.01\\text{--}0.03\\%$/yr) [@bocquet2008; @shennan2013], while continental raster",
+      "integration naturally smooths micro-site cemetery peaks ($\\sim 0.8\\text{--}1.1\\%$/yr)",
+      "to macro-regional millennial rates ($\\sim 0.07\\text{--}0.15\\%$/yr)."
+    )
+  ),
+  collapse = "\n\n"
+)
+
+render_markdown_prose(
+  ndt_prose_synthesis,
+  list(
+    euro_decimals = TRUE,
+    include_tables = FALSE
+  )
+)
+```
+
+```{r fig-ndt-dashboard, results='asis'}
+render_figure_template(
+  "ndt_figure_pdf",
+  list(
+    caption = "Neolithic Demographic Transition (NDT) empirical audit dashboard (10000 BC--1000 AD) across five independent agricultural origins and 19 national/subnational geocodes. Panels illustrate (top-left) Bocquet-Appel juvenile proportion $p(5\\text{--}19)/p(5+)$ aligned to regional agricultural onset $\\Delta t = 0$; (top-right) annualised population growth rate $r$ (\\%/yr) contrasting transient Neolithic booms with European LBK boom-bust cycles; (bottom-left) HYDE 3.3 / Velkscala 1.0 per-capita arable cropland intensification; and (bottom-right) endogenous spatial variation in juvenile proportions across 19 geocodes at 0 AD.",
+    label = "fig:ndt_dashboard",
+    max_height = "0.33\\textheight",
+    placement = "!t",
+    prefer_pdf = TRUE,
+    span_columns = TRUE
+  )
+)
+```
+
+```{r tab-ndt-scorecard, results='asis'}
+sc_list <- ndt_data$scorecard
+sc_rows <- lapply(names(sc_list), function (reg_name) {
+  sc <- sc_list[[reg_name]]
+  elev_str <- if (!is.null(sc$elevation_ratio) && is.numeric(sc$elevation_ratio) && sc$elevation_ratio > 0) {
+    paste0(format_euro_number(sc$elevation_ratio, list(digits = 1)), "x")
+  } else {
+    "Negative"
+  }
+  verdict_str <- if (isTRUE(sc$is_boom_artifact)) {
+    "Indeterminate (Step Artefact)"
+  } else if (!is.null(sc$elevation_ratio) && is.numeric(sc$elevation_ratio) && sc$elevation_ratio >= 3.0) {
+    "Strong"
+  } else if (!is.null(sc$elevation_ratio) && is.numeric(sc$elevation_ratio) && sc$elevation_ratio >= 1.2) {
+    "Moderate"
+  } else {
+    "Weak (LBK Boom-Bust)"
+  }
+
+  post_dyn_str <- if (identical(reg_name, "Europe")) {
+    "LBK Boom-Bust"
+  } else if (identical(reg_name, "East Asia")) {
+    "Lull -> Yangshao Boom"
+  } else {
+    "Steady Deceleration"
+  }
+
+  data.frame(
+    Region = reg_name,
+    Onset = as.character(sc$onset_label),
+    Pre_r = format_euro_number(sc$pre_growth_rate_clean, list(digits = 3, signed = TRUE, suffix = "%")),
+    Boom_r = paste0(
+      format_euro_number(sc$boom_growth_rate, list(digits = 3, signed = TRUE, suffix = "%")),
+      " (", as.character(sc$boom_interval_label), ")"
+    ),
+    Elevation = elev_str,
+    Peak_r = paste0(
+      format_euro_number(sc$peak_early_growth_rate, list(digits = 3, signed = TRUE, suffix = "%")),
+      " (", as.character(sc$peak_early_interval), ")"
+    ),
+    Pre_IJP = format_euro_number(sc$ijp_pre_max, list(digits = 2, suffix = "%")),
+    Boom_IJP = paste0(
+      format_euro_number(sc$ijp_boom_peak, list(digits = 2, suffix = "%")),
+      " (dt=", as.character(sc$ijp_peak_dt), ")"
+    ),
+    Surge_pp = paste0(
+      format_euro_number(sc$ijp_delta_pp, list(digits = 2, signed = TRUE, suffix = " pp")),
+      " (", format_euro_number(sc$ijp_relative_gain_pct, list(digits = 1, signed = TRUE, suffix = "%")), ")"
+    ),
+    Dynamic = post_dyn_str,
+    Verdict = verdict_str,
+    stringsAsFactors = FALSE
+  )
+})
+df_ndt_scorecard <- do.call(rbind, sc_rows)
+
+render_table_template(
+  df_ndt_scorecard,
+  list(
+    align = c("l", "l", "r", "r", "r", "r", "r", "r", "r", "l", "l"),
+    caption = "Cross-regional Neolithic Demographic Transition (NDT) hypothesis scorecard across five independent agricultural origins (10000 BC--1000 AD), evaluating pre-onset foraging growth baselines, post-onset boom elevation ratios, and Bocquet-Appel immature juvenile proportion ($p(5\\text{--}19)/p(5+)$) surges.",
+    col_names = c(
+      "Region", "Onset ($T_{\\text{onset}}$)", "Pre-NDT $r$",
+      "Boom Window $r$", "Elevation", "Peak Early $r$",
+      "Pre Max IJP", "Boom Peak IJP", "IJP Surge ($\\Delta$pp)",
+      "Post-Boom Dynamic", "Audit Verdict"
+    ),
+    font_size = "scriptsize",
+    label = "tab:ndt_scorecard",
+    placement = "!htbp",
+    scale_to_fit = TRUE,
+    span_columns = TRUE
+  )
+)
+```
+
+```{r tab-ndt-geocodes, results='asis'}
+tracked_list <- ndt_data$tracked_geocodes
+geo_rows <- lapply(names(tracked_list), function (code) {
+  g <- tracked_list[[code]]
+  ep_0ad   <- g$benchmark_epochs[["0"]]
+  ep_600ad <- g$benchmark_epochs[["600"]]
+
+  data.frame(
+    Geocode = as.character(g$info$code),
+    Jurisdiction = as.character(g$info$name),
+    Region = as.character(g$info$region),
+    Pop_0AD = if (!is.null(ep_0ad)) format_semantic_number(ep_0ad$population, list(digits = 2)) else "---",
+    U5_0AD = if (!is.null(ep_0ad)) format_euro_number(ep_0ad$p_under5_pct, list(digits = 2, suffix = "%")) else "---",
+    IJP_0AD = if (!is.null(ep_0ad)) format_euro_number(ep_0ad$p_5_19_bocquet_pct, list(digits = 2, suffix = "%")) else "---",
+    Pop_600AD = if (!is.null(ep_600ad)) format_semantic_number(ep_600ad$population, list(digits = 2)) else "---",
+    U5_600AD = if (!is.null(ep_600ad)) format_euro_number(ep_600ad$p_under5_pct, list(digits = 2, suffix = "%")) else "---",
+    IJP_600AD = if (!is.null(ep_600ad)) format_euro_number(ep_600ad$p_5_19_bocquet_pct, list(digits = 2, suffix = "%")) else "---",
+    stringsAsFactors = FALSE
+  )
+})
+df_ndt_geocodes <- do.call(rbind, geo_rows)
+
+render_table_template(
+  df_ndt_geocodes,
+  list(
+    align = c("l", "l", "l", "r", "r", "r", "r", "r", "r"),
+    caption = "Subnational and national anchor geocode audit across 19 jurisdictions at 0 AD and 600 AD, confirming spatially endogenous age-structure variation.",
+    col_names = c(
+      "Geocode", "Jurisdiction", "Macro-Region",
+      "Pop. (0 AD)", "$p(0\\text{--}4)$ (0 AD)", "Bocquet IJP (0 AD)",
+      "Pop. (600 AD)", "$p(0\\text{--}4)$ (600 AD)", "Bocquet IJP (600 AD)"
+    ),
+    font_size = "scriptsize",
+    footnote = "Distinct under-5 shares and Bocquet-Appel IJP ratios across all 19 geocodes verify pixel-level covariate graduation rather than a global template.",
+    label = "tab:ndt_geocodes",
+    placement = "!htbp",
+    scale_to_fit = TRUE,
+    span_columns = TRUE
+  )
+)
+```
+
+```{r tab-ndt-trajectories-packed, results='asis'}
+# Flush prior floats so Table 5 panels and References align without orphaned headings
+if (knitr::is_latex_output()) cat("\\FloatBarrier\n")
+
+# Build Table 5: Pack all 5 Regional 21-Epoch Paleodemographic Trajectories onto
+# page-balanced composite floats
+reg_names <- names(ndt_data$regional_data)
+subtables_ndt <- lapply(seq_along(reg_names), function (idx) {
+  r_name <- reg_names[idx]
+  r_obj  <- ndt_data$regional_data[[r_name]]
+  ep_rows <- lapply(r_obj$epochs, function (ep) {
+    yr_num <- as.numeric(ep$year)
+    yr_label <- if (yr_num < 0) paste0(abs(yr_num), " BC") else paste0(yr_num, " AD")
+    dt_str <- if (as.numeric(ep$dt) >= 0) paste0("+", ep$dt) else as.character(ep$dt)
+    dt_mid_str <- if (!is.null(ep$interval_dt_mid) && !is.na(ep$interval_dt_mid)) {
+      if (as.numeric(ep$interval_dt_mid) >= 0) paste0("+", ep$interval_dt_mid) else as.character(ep$interval_dt_mid)
+    } else {
+      "---"
+    }
+    r_str <- if (!is.null(ep$growth_rate_pct) && !is.na(ep$growth_rate_pct)) {
+      format_euro_number(ep$growth_rate_pct, list(digits = 3, signed = TRUE, suffix = "%"))
+    } else {
+      "---"
+    }
+
+    data.frame(
+      Epoch = yr_label,
+      Interval = as.character(ep$interval_label),
+      Point_dt = dt_str,
+      Mid_dt = dt_mid_str,
+      Phase = as.character(ep$stage),
+      Pop = format_semantic_number(ep$pop_stadester, list(digits = 2)),
+      Growth_r = r_str,
+      Cropland = format_semantic_number(ep$cropland_km2, list(digits = 1, unit = "km²")),
+      Crop_PC = format_euro_number(ep$cropland_per_capita_m2, list(digits = 0, suffix = " m²")),
+      Under5 = format_euro_number(ep$p_under5_pct, list(digits = 2, suffix = "%")),
+      IJP = format_euro_number(ep$p_5_19_bocquet_pct, list(digits = 2, suffix = "%")),
+      Imm_Tot = format_euro_number(ep$p_5_19_total_pct, list(digits = 2, suffix = "%")),
+      stringsAsFactors = FALSE
+    )
+  })
+  list(
+    df = do.call(rbind, ep_rows),
+    title = paste0("Panel ", LETTERS[idx], ": ", r_name, " (Onset: ", r_obj$info$onset_label, ")")
+  )
+})
+
+render_packed_subtables(
+  subtables_ndt,
+  list(
+    align = c("l", "l", "r", "r", "l", "r", "r", "r", "r", "r", "r", "r"),
+    caption = "Regional paleodemographic trajectories across 21 historical epochs (10000 BC--1000 AD) for all five agricultural origins, packed across multi-panel pages.",
+    col_names = c(
+      "Epoch", "Interval", "Point $\\Delta t$", "Mid $\\Delta t_{\\text{mid}}$",
+      "NDT Stage / Phase", "Population ($P$)", "Growth ($r$/yr)",
+      "Cropland Area", "Cropland / Cap.", "$p(0\\text{--}4)$",
+      "Bocquet IJP $p(5\\text{--}19)$", "Immature / Total"
+    ),
+    font_size = "scriptsize",
+    footnote = "Population and cropland areas use semantic abbreviations (k = thousands, M = millions) and European decimals.",
+    label = "tab:ndt_trajectories",
+    max_rows_per_page = 46L,
+    placement = "!t"
+  )
+)
+```
+
+# References {.unnumbered}

@@ -1,0 +1,74 @@
+{
+  // ===========================================================================
+  // Velkscala Filepath & Environment Defines (common/defines/filepath_defines.json5)
+  // Single source of truth for project directories, data pipelines, R framework
+  // modules, rticles templates, and compiled paper artefacts.
+  // ===========================================================================
+  project_name: "Velkscala 1.0",
+  rscript_path: "C:/Program Files/R/R-4.6.1/bin/Rscript.exe",
+  svea_dir: "D:/Project 1509 - SVEA",
+
+  directories: {
+    common_defines: "common/defines",
+    r_framework: "core/framework/R",
+    rticles_intellte: "core/rticles/intellte",
+    rticles_intellte_resources: "core/rticles/intellte/resources",
+    rticles_intellte_skeleton: "core/rticles/intellte/skeleton",
+    data: "data",
+    data_cleaning: "data/1.data_cleaning",
+    data_testing: "data/2.data_testing",
+    data_visualisation: "data/3.data_visualisation",
+    data_animations: "data/3.data_visualisation/animations",
+    data_images: "data/3.data_visualisation/images",
+    papers: "papers",
+    velkscala_1_0: "papers/velkscala_1.0",
+    visuals: "visuals",
+    uf: "UF"
+  },
+
+  paths: {
+    filepath_defines: "common/defines/filepath_defines.json5",
+
+    // 1. Data Cleaning
+    worldpop_dir: "data/1.data_cleaning/WorldPop",
+    worldpop_downscale_py: "data/1.data_cleaning/WorldPop/.downscale.py",
+
+    // 2. Data Testing (CDT & NDT)
+    test_cdt_dir: "data/2.data_testing/test_cdt",
+    test_ndt_dir: "data/2.data_testing/test_ndt",
+    cdt_age_sex_json: "data/2.data_testing/test_cdt/validation_age_sex_cdt.json",
+    cdt_births_deaths_json: "data/2.data_testing/test_cdt/validation_births_deaths_cdt.json",
+    cdt_empirical_age_sex_json: "data/2.data_testing/test_cdt/empirical_age_sex.json",
+    cdt_empirical_births_deaths_json: "data/2.data_testing/test_cdt/empirical_births_deaths.json",
+    cdt_md: "data/2.data_testing/test_cdt/cdt.md",
+    ndt_results_json: "data/2.data_testing/test_ndt/ndt_validation_results.json",
+    ndt_md: "data/2.data_testing/test_ndt/ndt.md",
+
+    // 3. Data Visualisation (Scripts, Images & Animations)
+    cdt_plot_script: "data/3.data_visualisation/plot_cdt_validation.R",
+    ndt_plot_script: "data/3.data_visualisation/plot_ndt_validation.R",
+    cdt_figure_png: "data/3.data_visualisation/images/cdt_proxy_vs_empirical.png",
+    cdt_figure_pdf: "data/3.data_visualisation/images/cdt_proxy_vs_empirical.pdf",
+    ndt_figure_png: "data/3.data_visualisation/images/ndt_paleodemographic_dashboard.png",
+    ndt_figure_pdf: "data/3.data_visualisation/images/ndt_paleodemographic_dashboard.pdf",
+
+    // 4. Visuals & Papers
+    visuals_cdt_png: "visuals/cdt_proxy_vs_empirical.png",
+    visuals_cdt_pdf: "visuals/cdt_proxy_vs_empirical.pdf",
+    visuals_ndt_png: "visuals/ndt_paleodemographic_dashboard.png",
+    visuals_ndt_pdf: "visuals/ndt_paleodemographic_dashboard.pdf",
+    velkscala_1_0_autorun: "papers/velkscala_1.0/autorun.bat",
+    velkscala_1_0_rmd: "papers/velkscala_1.0/main.Rmd",
+    velkscala_1_0_pdf: "papers/velkscala_1.0/main.pdf",
+
+    // 5. External SVEA / Histmap Rasters
+    h1: "D:/Project 1509 - SVEA/histmap/1.data_raw/",
+    h2: "D:/Project 1509 - SVEA/histmap/2.data_cleaning/",
+    h3: "D:/Project 1509 - SVEA/histmap/3.data_transform/",
+    h4: "D:/Project 1509 - SVEA/histmap/4.data_exports/",
+    h5: "D:/Project 1509 - SVEA/histmap/5.data_visualisation/",
+    svea_node_modules: "D:/Project 1509 - SVEA/node_modules",
+    svea_uf: "D:/Project 1509 - SVEA/UF"
+  }
+}
+

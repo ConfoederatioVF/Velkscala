@@ -1,0 +1,29 @@
+---
+title: "PROJECT TITLE 1.0."
+subtitle: "Subtitle of the Confoederatio, Research Division Working Paper."
+date: "28 October 2026"
+authors_line: "Vis Tacitus and Aust Kätzchen"
+emails:
+  - vistacitus@confoederatio.org
+  - austkaetzchen@confoederatio.org
+
+abstract: |
+  Provide a single-paragraph unbolded abstract in Source Serif 4 body typography summarising the scope, methodology, and validation metrics of the Confoederatio, Research Division working paper.
+
+bibliography: pnas-sample.bib
+csl: crd-mla-numeric.csl
+
+output:
+  rticles::pnas_article:
+    template: ../resources/template.tex
+    latex_engine: xelatex
+    keep_tex: false
+---
+
+Introduction {.unnumbered}
+==========================
+
+Confoederatio, Research Division (CRD) working papers are typeset in a single-column layout using **Jost\*** for headers and **Source Serif 4** for body prose, with numerical MLA inline citations per clause [@belkin2002using; @berard1994embedding] and at sentence ends [@coifman2005geometric].
+
+References {.unnumbered}
+========================
