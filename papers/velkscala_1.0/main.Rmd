@@ -142,19 +142,18 @@ df_cdt_as_table <- do.call(rbind, as_rows)
 render_table_template(
   df_cdt_as_table,
   list(
-    align = c("l", "l", "r", "r", "r", "r", "r", "r", "r", "r"),
+    align = c("l", "l", "l", "l", "l", "l", "l", "l", "l", "l"),
     caption = "Contemporary Demographic Transition (CDT) age and sex bracket goodness-of-fit ($R^2$) by benchmark epoch (1850--2019 AD), comparing raw multinomial logit (MNL) baseline probabilities against PAVA/Whittaker-graduated Stadester cohorts.",
     col_names = c(
-      "Epoch", "Empirical Source", "Sample ($N$)",
-      "Raw $R^2$ (M)", "Raw $R^2$ (F)", "Raw Geomean $R^2$",
-      "Clamped $R^2$ (M)", "Clamped $R^2$ (F)", "Clamped Geomean $R^2$",
-      "$\\Delta R^2$ Gain"
+      "Epoch", "Empirical\nSource", "Sample\n($N$)",
+      "Raw $R^2$\n(Male)", "Raw $R^2$\n(Female)", "Raw\nGeomean",
+      "Clamped $R^2$\n(Male)", "Clamped $R^2$\n(Female)", "Clamped\nGeomean",
+      "$\\Delta R^2$\nGain"
     ),
-    font_size = "footnotesize",
-    footnote = "Country R² is computed as the arithmetic mean of male and female cohort fits per ISO3 jurisdiction and aggregated across countries via geometric mean.",
+    font_size = "normalsize",
     label = "tab:cdt_age_sex",
     placement = "!htbp",
-    scale_to_fit = TRUE,
+    scale_to_fit = FALSE,
     span_columns = TRUE
   )
 )
@@ -183,19 +182,18 @@ df_cdt_bd_table <- do.call(rbind, bd_rows)
 render_table_template(
   df_cdt_bd_table,
   list(
-    align = c("l", "l", "r", "r", "r", "r", "r", "r", "r", "r"),
+    align = c("l", "l", "l", "l", "l", "l", "l", "l", "l", "l"),
     caption = "Global vital flows validation (1950--2019 AD): proxy vs. empirical annual births, deaths, relative error percentages, and net natural increase residuals across UNWPP and Niva et al. (Kummu) benchmarks.",
     col_names = c(
-      "Epoch", "Benchmark Source", "Sample ($N$)",
-      "Proxy Births", "Empirical Births", "Births Error",
-      "Proxy Deaths", "Empirical Deaths", "Deaths Error",
-      "Net Residual"
+      "Epoch", "Benchmark\nSource", "Sample\n($N$)",
+      "Proxy\nBirths", "Empirical\nBirths", "Births\nError",
+      "Proxy\nDeaths", "Empirical\nDeaths", "Deaths\nError",
+      "Net\nResidual"
     ),
-    font_size = "footnotesize",
-    footnote = "Vital counts are expressed using semantic abbreviations (M = millions) and European decimal notation.",
+    font_size = "normalsize",
     label = "tab:cdt_vital_flows",
     placement = "!htbp",
-    scale_to_fit = TRUE,
+    scale_to_fit = FALSE,
     span_columns = TRUE
   )
 )
@@ -282,8 +280,8 @@ render_figure_template(
   list(
     caption = "Neolithic Demographic Transition (NDT) empirical audit dashboard (10000 BC--1000 AD) across five independent agricultural origins and 19 national/subnational geocodes. Panels illustrate (top-left) Bocquet-Appel juvenile proportion $p(5\\text{--}19)/p(5+)$ aligned to regional agricultural onset $\\Delta t = 0$; (top-right) annualised population growth rate $r$ (\\%/yr) contrasting transient Neolithic booms with European LBK boom-bust cycles; (bottom-left) HYDE 3.3 / Velkscala 1.0 per-capita arable cropland intensification; and (bottom-right) endogenous spatial variation in juvenile proportions across 19 geocodes at 0 AD.",
     label = "fig:ndt_dashboard",
-    max_height = "0.33\\textheight",
-    placement = "!t",
+    max_height = "none",
+    placement = "!htbp",
     prefer_pdf = TRUE,
     span_columns = TRUE
   )
@@ -300,46 +298,28 @@ sc_rows <- lapply(names(sc_list), function (reg_name) {
     "Negative"
   }
   verdict_str <- if (isTRUE(sc$is_boom_artifact)) {
-    "Indeterminate (Step Artefact)"
+    "Step Artefact"
   } else if (!is.null(sc$elevation_ratio) && is.numeric(sc$elevation_ratio) && sc$elevation_ratio >= 3.0) {
     "Strong"
   } else if (!is.null(sc$elevation_ratio) && is.numeric(sc$elevation_ratio) && sc$elevation_ratio >= 1.2) {
     "Moderate"
   } else {
-    "Weak (LBK Boom-Bust)"
+    "LBK Boom-Bust"
   }
 
-  post_dyn_str <- if (identical(reg_name, "Europe")) {
-    "LBK Boom-Bust"
-  } else if (identical(reg_name, "East Asia")) {
-    "Lull -> Yangshao Boom"
-  } else {
-    "Steady Deceleration"
-  }
+  onset_clean <- sub("\\s*\\(.*$", "", as.character(sc$onset_label))
+  reg_short <- if (identical(reg_name, "American Southwest")) "Amer. Southwest" else reg_name
 
   data.frame(
-    Region = reg_name,
-    Onset = as.character(sc$onset_label),
+    Region = reg_short,
+    Onset = onset_clean,
     Pre_r = format_euro_number(sc$pre_growth_rate_clean, list(digits = 3, signed = TRUE, suffix = "%")),
-    Boom_r = paste0(
-      format_euro_number(sc$boom_growth_rate, list(digits = 3, signed = TRUE, suffix = "%")),
-      " (", as.character(sc$boom_interval_label), ")"
-    ),
+    Boom_r = format_euro_number(sc$boom_growth_rate, list(digits = 3, signed = TRUE, suffix = "%")),
     Elevation = elev_str,
-    Peak_r = paste0(
-      format_euro_number(sc$peak_early_growth_rate, list(digits = 3, signed = TRUE, suffix = "%")),
-      " (", as.character(sc$peak_early_interval), ")"
-    ),
+    Peak_r = format_euro_number(sc$peak_early_growth_rate, list(digits = 3, signed = TRUE, suffix = "%")),
     Pre_IJP = format_euro_number(sc$ijp_pre_max, list(digits = 2, suffix = "%")),
-    Boom_IJP = paste0(
-      format_euro_number(sc$ijp_boom_peak, list(digits = 2, suffix = "%")),
-      " (dt=", as.character(sc$ijp_peak_dt), ")"
-    ),
-    Surge_pp = paste0(
-      format_euro_number(sc$ijp_delta_pp, list(digits = 2, signed = TRUE, suffix = " pp")),
-      " (", format_euro_number(sc$ijp_relative_gain_pct, list(digits = 1, signed = TRUE, suffix = "%")), ")"
-    ),
-    Dynamic = post_dyn_str,
+    Boom_IJP = format_euro_number(sc$ijp_boom_peak, list(digits = 2, suffix = "%")),
+    Surge_pp = format_euro_number(sc$ijp_delta_pp, list(digits = 2, signed = TRUE, suffix = " pp")),
     Verdict = verdict_str,
     stringsAsFactors = FALSE
   )
@@ -349,18 +329,18 @@ df_ndt_scorecard <- do.call(rbind, sc_rows)
 render_table_template(
   df_ndt_scorecard,
   list(
-    align = c("l", "l", "r", "r", "r", "r", "r", "r", "r", "l", "l"),
+    align = c("l", "l", "l", "l", "l", "l", "l", "l", "l", "l"),
     caption = "Cross-regional Neolithic Demographic Transition (NDT) hypothesis scorecard across five independent agricultural origins (10000 BC--1000 AD), evaluating pre-onset foraging growth baselines, post-onset boom elevation ratios, and Bocquet-Appel immature juvenile proportion ($p(5\\text{--}19)/p(5+)$) surges.",
     col_names = c(
-      "Region", "Onset ($T_{\\text{onset}}$)", "Pre-NDT $r$",
-      "Boom Window $r$", "Elevation", "Peak Early $r$",
-      "Pre Max IJP", "Boom Peak IJP", "IJP Surge ($\\Delta$pp)",
-      "Post-Boom Dynamic", "Audit Verdict"
+      "Agricultural\nRegion", "Onset\n($T_{\\text{onset}}$)", "Pre-NDT\nGrowth $r$",
+      "Boom\nGrowth $r$", "Growth\nElevation", "Peak Early\nGrowth $r$",
+      "Pre-NDT\nMax IJP", "Boom\nPeak IJP", "IJP Surge\n($\\Delta$pp)",
+      "Audit\nVerdict"
     ),
-    font_size = "scriptsize",
+    font_size = "normalsize",
     label = "tab:ndt_scorecard",
     placement = "!htbp",
-    scale_to_fit = TRUE,
+    scale_to_fit = FALSE,
     span_columns = TRUE
   )
 )
@@ -372,11 +352,13 @@ geo_rows <- lapply(names(tracked_list), function (code) {
   g <- tracked_list[[code]]
   ep_0ad   <- g$benchmark_epochs[["0"]]
   ep_600ad <- g$benchmark_epochs[["600"]]
+  jur_clean <- sub("\\s*\\([^)]*\\)$", "", as.character(g$info$name))
+  reg_short <- if (identical(as.character(g$info$region), "American Southwest")) "Amer. Southwest" else as.character(g$info$region)
 
   data.frame(
     Geocode = as.character(g$info$code),
-    Jurisdiction = as.character(g$info$name),
-    Region = as.character(g$info$region),
+    Jurisdiction = jur_clean,
+    Region = reg_short,
     Pop_0AD = if (!is.null(ep_0ad)) format_semantic_number(ep_0ad$population, list(digits = 2)) else "---",
     U5_0AD = if (!is.null(ep_0ad)) format_euro_number(ep_0ad$p_under5_pct, list(digits = 2, suffix = "%")) else "---",
     IJP_0AD = if (!is.null(ep_0ad)) format_euro_number(ep_0ad$p_5_19_bocquet_pct, list(digits = 2, suffix = "%")) else "---",
@@ -391,18 +373,17 @@ df_ndt_geocodes <- do.call(rbind, geo_rows)
 render_table_template(
   df_ndt_geocodes,
   list(
-    align = c("l", "l", "l", "r", "r", "r", "r", "r", "r"),
+    align = c("l", "l", "l", "l", "l", "l", "l", "l", "l"),
     caption = "Subnational and national anchor geocode audit across 19 jurisdictions at 0 AD and 600 AD, confirming spatially endogenous age-structure variation.",
     col_names = c(
       "Geocode", "Jurisdiction", "Macro-Region",
-      "Pop. (0 AD)", "$p(0\\text{--}4)$ (0 AD)", "Bocquet IJP (0 AD)",
-      "Pop. (600 AD)", "$p(0\\text{--}4)$ (600 AD)", "Bocquet IJP (600 AD)"
+      "Population\n(0 AD)", "$p(0\\text{--}4)$\n(0 AD)", "Bocquet IJP\n(0 AD)",
+      "Population\n(600 AD)", "$p(0\\text{--}4)$\n(600 AD)", "Bocquet IJP\n(600 AD)"
     ),
-    font_size = "scriptsize",
-    footnote = "Distinct under-5 shares and Bocquet-Appel IJP ratios across all 19 geocodes verify pixel-level covariate graduation rather than a global template.",
+    font_size = "normalsize",
     label = "tab:ndt_geocodes",
     placement = "!htbp",
-    scale_to_fit = TRUE,
+    scale_to_fit = FALSE,
     span_columns = TRUE
   )
 )
@@ -413,7 +394,7 @@ render_table_template(
 if (knitr::is_latex_output()) cat("\\FloatBarrier\n")
 
 # Build Table 5: Pack all 5 Regional 21-Epoch Paleodemographic Trajectories onto
-# page-balanced composite floats
+# page-balanced composite floats at full 10pt body font size
 reg_names <- names(ndt_data$regional_data)
 subtables_ndt <- lapply(seq_along(reg_names), function (idx) {
   r_name <- reg_names[idx]
@@ -422,23 +403,19 @@ subtables_ndt <- lapply(seq_along(reg_names), function (idx) {
     yr_num <- as.numeric(ep$year)
     yr_label <- if (yr_num < 0) paste0(abs(yr_num), " BC") else paste0(yr_num, " AD")
     dt_str <- if (as.numeric(ep$dt) >= 0) paste0("+", ep$dt) else as.character(ep$dt)
-    dt_mid_str <- if (!is.null(ep$interval_dt_mid) && !is.na(ep$interval_dt_mid)) {
-      if (as.numeric(ep$interval_dt_mid) >= 0) paste0("+", ep$interval_dt_mid) else as.character(ep$interval_dt_mid)
-    } else {
-      "---"
-    }
     r_str <- if (!is.null(ep$growth_rate_pct) && !is.na(ep$growth_rate_pct)) {
       format_euro_number(ep$growth_rate_pct, list(digits = 3, signed = TRUE, suffix = "%"))
     } else {
       "---"
     }
+    phase_short <- as.character(ep$stage)
+    phase_short <- sub("^Stage 2: Post-NDT Dispersal$", "Stage 2: Dispersal", phase_short)
+    phase_short <- sub("^Agrarian Consolidation$", "Agrarian Consol.", phase_short)
 
     data.frame(
       Epoch = yr_label,
-      Interval = as.character(ep$interval_label),
       Point_dt = dt_str,
-      Mid_dt = dt_mid_str,
-      Phase = as.character(ep$stage),
+      Phase = phase_short,
       Pop = format_semantic_number(ep$pop_stadester, list(digits = 2)),
       Growth_r = r_str,
       Cropland = format_semantic_number(ep$cropland_km2, list(digits = 1, unit = "km²")),
@@ -458,21 +435,20 @@ subtables_ndt <- lapply(seq_along(reg_names), function (idx) {
 render_packed_subtables(
   subtables_ndt,
   list(
-    align = c("l", "l", "r", "r", "l", "r", "r", "r", "r", "r", "r", "r"),
+    align = c("l", "l", "l", "l", "l", "l", "l", "l", "l", "l"),
     caption = "Regional paleodemographic trajectories across 21 historical epochs (10000 BC--1000 AD) for all five agricultural origins, packed across multi-panel pages.",
     col_names = c(
-      "Epoch", "Interval", "Point $\\Delta t$", "Mid $\\Delta t_{\\text{mid}}$",
-      "NDT Stage / Phase", "Population ($P$)", "Growth ($r$/yr)",
-      "Cropland Area", "Cropland / Cap.", "$p(0\\text{--}4)$",
-      "Bocquet IJP $p(5\\text{--}19)$", "Immature / Total"
+      "Epoch", "Onset\n$\\Delta t$", "NDT Stage /\nPhase",
+      "Population\n($P$)", "Growth\n($r$/yr)", "Cropland\nArea",
+      "Cropland /\nCapita", "$p(0\\text{--}4)$\nShare",
+      "Bocquet IJP\n$p(5\\text{--}19)$", "Immature /\nTotal"
     ),
-    font_size = "scriptsize",
-    footnote = "Population and cropland areas use semantic abbreviations (k = thousands, M = millions) and European decimals.",
+    font_size = "normalsize",
     label = "tab:ndt_trajectories",
-    max_rows_per_page = 46L,
-    placement = "!t"
+    max_rows_per_page = 37L,
+    placement = "!htbp"
   )
 )
 ```
 
-# References {.unnumbered}
+# Sources {.unnumbered}

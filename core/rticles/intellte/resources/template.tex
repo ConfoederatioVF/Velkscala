@@ -57,41 +57,43 @@ $if(pandoc318)$
 \newlength{\cslhangindent}
 \setlength{\cslhangindent}{1.8em}
 \newlength{\csllabelwidth}
-\setlength{\csllabelwidth}{2.2em}
+\setlength{\csllabelwidth}{1.8em}
 \newenvironment{CSLReferences}[2]
- {\par\vspace{4pt}%
+ {\par\vspace{2pt}%
   \begin{list}{}{%
-  \setlength{\itemindent}{0pt}
-  \setlength{\leftmargin}{0pt}
-  \setlength{\parsep}{0pt}
-  \ifodd #1
-   \setlength{\leftmargin}{\cslhangindent}
-   \setlength{\itemindent}{-1\cslhangindent}
-  \fi
-  \setlength{\itemsep}{4pt plus 1pt minus 1pt}}}
+  \normalfont\rmfamily\mdseries\fontsize{10pt}{15pt}\selectfont\raggedright
+  \setlength{\lineskiplimit}{-6pt}%
+  \setlength{\leftmargin}{\csllabelwidth}%
+  \setlength{\itemindent}{-\csllabelwidth}%
+  \setlength{\labelwidth}{\csllabelwidth}%
+  \setlength{\labelsep}{0pt}%
+  \setlength{\parsep}{0pt}%
+  \setlength{\topsep}{0pt}%
+  \setlength{\partopsep}{0pt}%
+  \setlength{\itemsep}{0pt}}}
  {\end{list}}
 $else$
 \newlength{\cslhangindent}
 \setlength{\cslhangindent}{1.8em}
 \newlength{\csllabelwidth}
-\setlength{\csllabelwidth}{2.2em}
+\setlength{\csllabelwidth}{1.8em}
 \newlength{\cslentryspacingunit}
-\setlength{\cslentryspacingunit}{\parskip}
+\setlength{\cslentryspacingunit}{0pt}
 \newenvironment{CSLReferences}[2]
- {\par\vspace{4pt}%
+ {\par\vspace{2pt}%
+  \normalfont\rmfamily\mdseries\fontsize{10pt}{15pt}\selectfont\raggedright
+  \setlength{\lineskiplimit}{-6pt}%
   \setlength{\parindent}{0pt}
-  \ifodd #1
   \let\oldpar\par
-  \def\par{\hangindent=\cslhangindent\oldpar}
-  \fi
-  \setlength{\parskip}{4pt}
+  \def\par{\hangindent=\csllabelwidth\oldpar}
+  \setlength{\parskip}{0pt}
  }%
  {}
 $endif$
 \usepackage{calc}
 \newcommand{\CSLBlock}[1]{#1\hfill\break}
-\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\karlabold\fontsize{9pt}{13pt}\selectfont #1}}
-\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\rmfamily\fontsize{9.5pt}{13.5pt}\selectfont #1}\break}
+\newcommand{\CSLLeftMargin}[1]{\makebox[\csllabelwidth][l]{\normalfont\rmfamily\mdseries\fontsize{10pt}{15pt}\selectfont #1}}
+\newcommand{\CSLRightInline}[1]{\normalfont\rmfamily\mdseries\fontsize{10pt}{15pt}\selectfont #1}
 \newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 $endif$
 

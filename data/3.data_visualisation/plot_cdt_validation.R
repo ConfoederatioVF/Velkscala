@@ -130,7 +130,7 @@ cdt_theme <- theme_minimal(base_size = 12, base_family = "Karla") +
     panel.grid.major = element_line(colour = "#E2E8F0", linewidth = 0.5),
     panel.background = element_rect(fill = "#FAFAFA", colour = NA),
     plot.background  = element_rect(fill = "#FFFFFF", colour = NA),
-    plot.margin      = margin(t = 15, r = 15, b = 15, l = 15)
+    plot.margin      = margin(t = 8, r = 6, b = 8, l = 6)
   )
 
 euro_pct_label <- function (x) gsub("\\.", ",", sprintf("%.1f%%", x * 100))
@@ -179,10 +179,10 @@ cdt_2x2_dashboard <- (p1_raw | p3_births) / (p2_clamped | p4_deaths) +
     caption  = "CDT: Contemporary Demographic Transition. Data: HMD, UNWPP, Niva et al. (2023); Velkscala 1.0 (2026)\nAccuracy rates reflect R^2 and 1 - MAPE for age/sex vs. births/deaths respectively.\n\nProxy models are discarded after 1950AD in final composites; UN data is used by Velkscala 1.0 after that period.",
     theme    = theme(
       text          = element_text(family = "Karla"),
-      plot.title    = element_text(family = "Karla", face = "bold", size = 22, margin = margin(t = 20, b = 10)),
-      plot.subtitle = element_text(family = "Karla", size = 15, colour = "#64748B", margin = margin(b = 40)),
-      plot.caption  = element_text(family = "Karla", size = 11, colour = "#64748B", margin = margin(t = 15)),
-      plot.margin   = margin(t = 15, r = 25, b = 20, l = 15)
+      plot.title    = element_text(family = "Karla", face = "bold", size = 21, margin = margin(t = 6, b = 6)),
+      plot.subtitle = element_text(family = "Karla", size = 14, colour = "#64748B", margin = margin(b = 16)),
+      plot.caption  = element_text(family = "Karla", size = 10.5, colour = "#64748B", margin = margin(t = 8)),
+      plot.margin   = margin(t = 6, r = 14, b = 6, l = 14)
     )
   )
 
@@ -194,7 +194,7 @@ saved_cdt <- save_dual_plot(
     defines = velkscala_defines,
     dpi = 220L,
     extra_dirs = c(velkscala_defines$paths$test_cdt_dir),
-    height = 10.0,
+    height = 6.4,
     width = 16.0
   )
 )

@@ -17,17 +17,17 @@ calculate_page_budget <- function (arg0_options = NULL) {
   options <- if (!is.null(arg0_options)) arg0_options else list()
 
   #Initialise options
-  font_size <- if (!is.null(options$font_size)) as.character(options$font_size) else "footnotesize"
+  font_size <- if (!is.null(options$font_size)) as.character(options$font_size) else "normalsize"
   has_banner_figure <- if (!is.null(options$has_banner_figure)) isTRUE(options$has_banner_figure) else FALSE
   is_first_page <- if (!is.null(options$is_first_page)) isTRUE(options$is_first_page) else FALSE
   two_column <- if (!is.null(options$two_column)) isTRUE(options$two_column) else FALSE
 
   #Declare local instance variables
-  #CRD single-column textheight is ~676pt (9.39 in). Body baseline skip is 15pt (10pt Source Serif 4).
+  #CRD single-column textheight is 720pt (10.0 in, 0.5in top/bottom margins). Body baseline skip is 15pt.
   base_leading_pt <- 15.0
-  chars_per_line <- if (two_column) 67L else 95L
-  table_row_pt <- 11.2
-  usable_height_pt <- 664.0
+  chars_per_line <- if (two_column) 67L else 98L
+  table_row_pt <- 15.0
+  usable_height_pt <- 708.0
 
   if (font_size == "tiny") {
     table_row_pt <- 8.2
@@ -36,9 +36,9 @@ calculate_page_budget <- function (arg0_options = NULL) {
   } else if (font_size == "footnotesize") {
     table_row_pt <- 10.6
   } else if (font_size == "small") {
-    table_row_pt <- 11.6
+    table_row_pt <- 12.0
   } else {
-    table_row_pt <- 12.6
+    table_row_pt <- 15.0
   }
 
   if (is_first_page) {
@@ -102,13 +102,13 @@ emit_deadspace_control <- function (arg0_options = NULL) {
       "\\setcounter{bottomnumber}{4}",
       "\\setcounter{totalnumber}{8}",
       "\\setcounter{dbltopnumber}{4}",
-      "\\setlength{\\floatsep}{6pt plus 2pt minus 2pt}",
-      "\\setlength{\\textfloatsep}{8pt plus 2pt minus 2pt}",
-      "\\setlength{\\intextsep}{6pt plus 2pt minus 2pt}",
-      "\\setlength{\\dblfloatsep}{6pt plus 2pt minus 2pt}",
-      "\\setlength{\\dbltextfloatsep}{8pt plus 2pt minus 2pt}",
-      "\\setlength{\\abovecaptionskip}{4pt plus 1pt minus 1pt}",
-      "\\setlength{\\belowcaptionskip}{2pt plus 1pt minus 1pt}",
+      "\\setlength{\\floatsep}{22pt plus 2pt minus 2pt}",
+      "\\setlength{\\textfloatsep}{22pt plus 2pt minus 2pt}",
+      "\\setlength{\\intextsep}{22pt plus 2pt minus 2pt}",
+      "\\setlength{\\dblfloatsep}{22pt plus 2pt minus 2pt}",
+      "\\setlength{\\dbltextfloatsep}{22pt plus 2pt minus 2pt}",
+      "\\setlength{\\abovecaptionskip}{18pt plus 2pt minus 2pt}",
+      "\\setlength{\\belowcaptionskip}{18pt plus 2pt minus 2pt}",
       "\\makeatletter",
       "\\setlength{\\@fptop}{0pt}",
       "\\setlength{\\@fpsep}{10pt}",
@@ -236,51 +236,53 @@ pack_subtables_onto_pages <- function (arg0_tables_list, arg1_options = NULL) {
   options <- if (!is.null(arg1_options)) arg1_options else list()
 
   #Initialise options
-  max_rows_per_page <- if (!is.null(options$max_rows_per_page)) as.integer(options$max_rows_per_page) else 48L
-  subtable_overhead <- if (!is.null(options$subtable_overhead)) as.integer(options$subtable_overhead) else 3L
+  max_rows_per_page <- if (!is.null(options$max_rows_per_page)) as.integer(options$max_rows_per_page) else 34L
+  subtable_overhead <- if (!is.null(options$subtable_overhead)) as.integer(options$subtable_overhead) else 2L
 
   #Declare local instance variables
   current_page <- list()
   current_used <- 0L
-  expanded_items <- list()
   packed_pages <- list()
 
   #Guard clauses
   if (length(tables_list) == 0) return(packed_pages)
 
-  #First split any individual subtable that exceeds a single page on its own
+  #Pack subtables onto pages, splitting across page boundaries when >= 6 data rows fit on the current page
   for (i in seq_along(tables_list)) {
     local_item <- tables_list[[i]]
-    local_df <- as.data.frame(local_item$df, stringsAsFactors = FALSE)
-    local_max_single <- max(8L, max_rows_per_page - subtable_overhead)
+    rem_df <- as.data.frame(local_item$df, stringsAsFactors = FALSE)
+    base_title <- as.character(local_item$title)
+    is_cont_part <- FALSE
 
-    if (nrow(local_df) > local_max_single) {
-      local_chunks <- split_dataframe_for_pages(local_df, list(max_rows_per_page = local_max_single))
-      for (x in seq_along(local_chunks)) {
-        chunk_title <- if (x == 1L) local_item$title else paste0(local_item$title, " (Continued)")
-        expanded_items[[length(expanded_items) + 1L]] <- list(
-          df = local_chunks[[x]]$df,
-          subtitle = local_item$subtitle,
-          title = chunk_title
-        )
+    while (nrow(rem_df) > 0L) {
+      avail_rows <- max_rows_per_page - current_used - subtable_overhead
+      if (length(current_page) > 0L && avail_rows < 6L) {
+        packed_pages[[length(packed_pages) + 1L]] <- current_page
+        current_page <- list()
+        current_used <- 0L
+        avail_rows <- max_rows_per_page - subtable_overhead
       }
-    } else {
-      expanded_items[[length(expanded_items) + 1L]] <- local_item
-    }
-  }
 
-  #Greedily bin subtables onto pages without exceeding max_rows_per_page
-  for (i in seq_along(expanded_items)) {
-    local_item <- expanded_items[[i]]
-    local_cost <- nrow(local_item$df) + subtable_overhead
+      take_n <- min(nrow(rem_df), max(6L, avail_rows))
+      slice_df <- rem_df[seq_len(take_n), , drop = FALSE]
+      part_title <- if (!is_cont_part) base_title else paste0(base_title, " (Continued)")
 
-    if (length(current_page) > 0 && (current_used + local_cost > max_rows_per_page)) {
-      packed_pages[[length(packed_pages) + 1L]] <- current_page
-      current_page <- list(local_item)
-      current_used <- local_cost
-    } else {
-      current_page[[length(current_page) + 1L]] <- local_item
-      current_used <- current_used + local_cost
+      current_page[[length(current_page) + 1L]] <- list(
+        df = slice_df,
+        subtitle = local_item$subtitle,
+        title = part_title
+      )
+      current_used <- current_used + take_n + subtable_overhead
+
+      if (take_n < nrow(rem_df)) {
+        rem_df <- rem_df[(take_n + 1L):nrow(rem_df), , drop = FALSE]
+        is_cont_part <- TRUE
+        packed_pages[[length(packed_pages) + 1L]] <- current_page
+        current_page <- list()
+        current_used <- 0L
+      } else {
+        rem_df <- rem_df[integer(0), , drop = FALSE]
+      }
     }
   }
 

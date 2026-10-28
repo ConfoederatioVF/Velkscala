@@ -26,5 +26,5 @@ Introduction {.unnumbered}
 
 Confoederatio, Research Division (CRD) working papers are typeset in a single-column layout using **Jost\*** for headers and **Source Serif 4** for body prose, with numerical MLA inline citations per clause [@belkin2002using; @berard1994embedding] and at sentence ends [@coifman2005geometric].
 
-References {.unnumbered}
-========================
+Sources {.unnumbered}
+=====================

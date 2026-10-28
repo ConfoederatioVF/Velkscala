@@ -89,6 +89,15 @@
     BoldFont = *-Bold,
     BoldItalicFont = *-BoldItalic
   ]
+  \newfontfamily\karlalightfont{Karla}[
+    Path = \crd@fontpath,
+    Extension = .ttf,
+    UprightFont = *-Light,
+    ItalicFont = *-LightItalic,
+    BoldFont = *-Regular,
+    BoldItalicFont = *-Italic
+  ]
+  \newcommand{\karlalight}{\karlalightfont\mdseries}
   \newcommand{\karlaregular}{\karlafont\mdseries}
   \newcommand{\karlabold}{\karlafont\bfseries}
 \else
@@ -100,6 +109,7 @@
   \newcommand{\jostmedium}{\sffamily}
   \newcommand{\jostsemibold}{\sffamily\bfseries}
   \newcommand{\karlafont}{\sffamily}
+  \newcommand{\karlalight}{\sffamily\mdseries}
   \newcommand{\karlaregular}{\sffamily\mdseries}
   \newcommand{\karlabold}{\sffamily\bfseries}
 \fi
@@ -118,18 +128,19 @@
 \RequirePackage{enumitem}
 \RequirePackage{float}
 \RequirePackage{placeins}
+\RequirePackage[normalem]{ulem}
 
-%% Single-column CRD page geometry
+%% Single-column CRD page geometry (0.5in top/bottom, 1in left/right)
 \RequirePackage[
   letterpaper,
   onecolumn,
-  left=1.08in,
-  right=1.08in,
-  top=0.78in,
-  bottom=0.82in,
+  left=1in,
+  right=1in,
+  top=0.5in,
+  bottom=0.5in,
   headheight=0pt,
   headsep=0pt,
-  footskip=26pt
+  footskip=18pt
 ]{geometry}
 
 %% Document colour palette
@@ -145,31 +156,37 @@
   citecolor=crdlinkblue,
   urlcolor=crdlinkblue
 ]{hyperref}
-\renewcommand\UrlFont{\karlaregular\color{crdlinkblue}}
+\renewcommand\UrlFont{\normalfont\rmfamily\mdseries\color{crdlinkblue}}
 \AtBeginDocument{%
-  \let\crd@orig@nolinkurl\nolinkurl
-  \renewcommand{\nolinkurl}[1]{\textcolor{crdlinkblue}{\underline{\crd@orig@nolinkurl{#1}}}}%
+  \setlength{\ULdepth}{1.5pt}%
+  \let\crd@orig@hyper@linkurl\hyper@linkurl
+  \def\hyper@linkurl#1#2{\crd@orig@hyper@linkurl{\uline{#1}}{#2}}%
 }
 
-%% Paragraph & body text formatting (Source Serif 4, unbolded)
+%% Paragraph & body text formatting (Source Serif 4, 10pt on 15pt leading, unbolded, left-aligned)
+\renewcommand{\normalsize}{\@setfontsize\normalsize{10pt}{15pt}}
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{4.5pt plus 1pt minus 1pt}
-\setlist[itemize]{itemsep=1pt, parsep=1.5pt, topsep=2pt}
+\setlength{\parskip}{6pt plus 1pt minus 1pt}
+\setlist[itemize]{itemsep=2pt, parsep=2pt, topsep=3pt}
 \AtBeginDocument{%
-  \normalfont\rmfamily\mdseries\fontsize{10pt}{14.4pt}\selectfont
+  \normalsize\normalfont\rmfamily\mdseries
+  \raggedright
+  \hyphenpenalty=10000
+  \exhyphenpenalty=10000
 }
 
 %% Font helper macros
 %% - Confoederatio, Research Division (CRD) banner: Karla Bold
-%% - Title & Section headers: Jost*
-%% - Authors/date subtitle line & Figure n. / Table n. / Image n. / Definition n.: Karla
+%% - Title, Subtitle & Section headers: Jost*
+%% - Authors/date/emails byline: Karla Light
+%% - Figure n. / Table n. / Image n. / Definition n.: Karla Bold
 %% - Body & Abstract: Source Serif 4
 \newcommand{\headerfont}{\normalfont\karlaregular\fontsize{8.5pt}{11pt}\selectfont}
 \newcommand{\footerfont}{\normalfont\karlaregular\fontsize{8.5pt}{11pt}\selectfont}
-\newcommand{\crdbannerfont}{\normalfont\karlabold\fontsize{14pt}{17pt}\selectfont}
-\newcommand{\titlefont}{\normalfont\sffamily\bfseries\fontsize{18.5pt}{22.5pt}\selectfont}
-\newcommand{\subtitlefont}{\normalfont\sffamily\mdseries\fontsize{13pt}{17pt}\selectfont}
-\newcommand{\datesfont}{\normalfont\karlaregular\fontsize{9.5pt}{13.5pt}\selectfont}
+\newcommand{\crdbannerfont}{\normalfont\karlabold\fontsize{14.5pt}{18.5pt}\selectfont}
+\newcommand{\titlefont}{\normalfont\sffamily\bfseries\fontsize{20pt}{24pt}\selectfont}
+\newcommand{\subtitlefont}{\normalfont\sffamily\mdseries\fontsize{14.5pt}{19pt}\selectfont}
+\newcommand{\datesfont}{\normalfont\karlalight\fontsize{11pt}{15.5pt}\selectfont}
 \newcommand{\absfont}{\normalfont\rmfamily\mdseries\fontsize{10pt}{15pt}\selectfont}
 \newcommand{\dropcapfont}{\normalfont\sffamily\bfseries\fontsize{24pt}{26pt}\selectfont}
 
@@ -190,24 +207,30 @@
 
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
 
-%% Captions & Numbered Labels: Figure n., Table n., Image n., Definition n. bolded in Karla and inline with Source Serif 4 caption
+%% Captions & Numbered Labels:
+%% - Always underneath figure/table/image
+%% - Always centred
+%% - Label (Figure n., Table n., Image n., Definition n.) in Karla Bold, inline with Source Serif 4 caption text
 \RequirePackage{caption}
-\DeclareCaptionFormat{crdformat}{\normalfont\rmfamily\mdseries\fontsize{9.5pt}{13.5pt}\selectfont{\karlabold #1#2}#3\par}
+\DeclareCaptionFormat{crdformat}{\centering\normalfont\rmfamily\mdseries\fontsize{10pt}{15pt}\selectfont{\karlabold #1#2}#3\par}
 \captionsetup{
   format=crdformat,
   labelsep=period,
   figurename=Figure,
   tablename=Table,
   singlelinecheck=true,
-  justification=justified,
-  skip=6pt
+  justification=centering,
+  position=below,
+  aboveskip=18pt,
+  belowskip=18pt,
+  skip=18pt
 }
-\captionsetup[figure]{position=below}
-\captionsetup[table]{position=above, singlelinecheck=false, justification=raggedright}
+\captionsetup[figure]{position=below, justification=centering, aboveskip=18pt, belowskip=18pt, skip=18pt}
+\captionsetup[table]{position=below, justification=centering, aboveskip=18pt, belowskip=18pt, skip=18pt}
 
 %% Image n. and Definition n. environments using Karla Bold labels inline with Source Serif 4
 \DeclareCaptionType[fileext=loi,placement={!htbp},within=none]{crdimage}[Image][List of Images]
-\captionsetup[crdimage]{position=below,format=crdformat,labelsep=period,name=Image}
+\captionsetup[crdimage]{position=below,format=crdformat,labelsep=period,name=Image,justification=centering}
 
 \newcounter{crddefinition}
 \newenvironment{definition}[1][]{%
@@ -326,11 +349,11 @@
 
 \newcommand{\abscontent}{%
   \@ifundefined{theabstract}{}{%
-    \par\vspace{8pt}%
+    \par\vspace{4pt}%
     {\normalfont\sffamily\bfseries\fontsize{14pt}{18pt}\selectfont Abstract\par}%
-    \vspace{6pt}%
+    \vspace{4pt}%
     {\noindent\absfont\theabstract\par}%
-    \vspace{10pt}%
+    \vspace{8pt}%
   }%
 }
 \newcommand{\abscontentformatted}{\abscontent}
@@ -344,13 +367,12 @@
   \begin{minipage}{\textwidth}
     \raggedright
     % 1. Top CRD Flag + CONFOEDERATIO, RESEARCH DIVISION (CRD). Banner
-    % CRD 2026 logo aspect ratio is 512x464: control height only so width scales proportionally
+    % CRD 2026 logo aspect ratio is 512x464: optically aligned to the combined line height (37pt) of the two 18.5pt rows
     \noindent
     \IfFileExists{\crd@logopath}{%
-      \raisebox{-0.5\height}{\includegraphics[height=34pt]{\crd@logopath}}%
-      \hspace{10pt}%
-      \parbox[c]{0.80\textwidth}{%
-        \crdbannerfont CONFOEDERATIO,\par\vspace{1pt}%
+      \noindent\raisebox{-3.5pt}{\includegraphics[height=37pt]{\crd@logopath}}\hspace{10pt}%
+      \parbox[b]{0.80\textwidth}{%
+        \crdbannerfont CONFOEDERATIO,\par\vspace{2pt}%
         \crdbannerfont RESEARCH DIVISION (CRD).%
       }\par
     }{%
@@ -359,33 +381,33 @@
     \vspace{12pt}%
     % 2. Main Title (Jost* Bold Uppercase)
     {\raggedright\titlefont\MakeUppercase{\@title}\par}%
-    % 3. Subtitle (Jost* Book)
+    % 3. Subtitle (Karla Light)
     \@ifundefined{@subtitle}{}{%
       \vspace{5pt}%
       {\raggedright\subtitlefont\@subtitle\par}%
     }%
-    % 4. Date - Authors | Emails line (Jost* Book)
+    % 4. Date - Authors | Emails line (Karla Light)
     \vspace{5pt}%
     {\raggedright\datesfont\color{crdmeta}%
+      \renewcommand\UrlFont{\karlalight\fontsize{11pt}{15.5pt}\selectfont\color{crdlinkblue}}%
       \@ifundefined{@crddate}{\today}{\@crddate}%
       \@ifundefined{@crdauthors}{}{ - \@crdauthors}%
       \@ifundefined{@crdemails}{}{ \textbar\ \@crdemails}%
       \par}%
     \vspace{8pt}%
   \end{minipage}\par
-  % 5. Optional Hero Figure (Figure 1 above Abstract, as in Image 1)
+  % 5. Optional Hero Figure (Cover chart before Abstract: full-width 0in left/right margins = \paperwidth)
   \@ifundefined{@herofigure}{}{%
     \noindent
     \begin{minipage}{\textwidth}
       \centering
-      \includegraphics[width=\textwidth,height=0.355\textheight,keepaspectratio]{\@herofigure}%
-      \captionsetup{type=figure}%
+      \noindent\makebox[\textwidth][c]{\includegraphics[width=\paperwidth]{\@herofigure}}\par
+      \captionsetup{type=figure, aboveskip=18pt, belowskip=18pt, skip=18pt}%
       \@ifundefined{@herocaption}{}{%
         \expandafter\caption\expandafter{\@herocaption}%
         \@ifundefined{@herolabel}{}{\expandafter\label\expandafter{\@herolabel}}%
       }%
     \end{minipage}\par
-    \vspace{4pt}%
   }%
   % 6. Unbolded Abstract section
   \abscontent

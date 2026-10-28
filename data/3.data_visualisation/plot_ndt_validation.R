@@ -124,7 +124,7 @@ ndt_theme <- theme_minimal(base_size = 12, base_family = "Karla") +
     plot.background  = element_rect(fill = "#FFFFFF", colour = NA),
     legend.position  = "bottom",
     legend.title     = element_blank(),
-    plot.margin      = margin(t = 12, r = 15, b = 12, l = 15)
+    plot.margin      = margin(t = 8, r = 6, b = 8, l = 6)
   )
 
 # 4. Construct Subplots --------------------------------------------------------
@@ -187,10 +187,10 @@ ndt_dashboard <- (p1_ijp | p2_growth) / (p3_cropland | p4_geocodes) +
     caption  = "Priors: Bocquet-Appel (2002, 2008), Shennan et al. (2013), HYDE 3.3 & Stadester/Velkscala 1.0 (2026).",
     theme    = theme(
       text          = element_text(family = "Karla"),
-      plot.title    = element_text(family = "Karla", face = "bold", size = 20, margin = margin(t = 15, b = 8)),
-      plot.subtitle = element_text(family = "Karla", size = 14, colour = "#64748B", margin = margin(b = 25)),
-      plot.caption  = element_text(family = "Karla", size = 10.5, colour = "#64748B", margin = margin(t = 12)),
-      plot.margin   = margin(t = 12, r = 20, b = 15, l = 12)
+      plot.title    = element_text(family = "Karla", face = "bold", size = 20, margin = margin(t = 6, b = 6)),
+      plot.subtitle = element_text(family = "Karla", size = 14, colour = "#64748B", margin = margin(b = 16)),
+      plot.caption  = element_text(family = "Karla", size = 10.5, colour = "#64748B", margin = margin(t = 8)),
+      plot.margin   = margin(t = 4, r = 2, b = 4, l = 2)
     )
   )
 
@@ -202,7 +202,7 @@ saved_ndt <- save_dual_plot(
     defines = velkscala_defines,
     dpi = 220L,
     extra_dirs = c(velkscala_defines$paths$test_ndt_dir),
-    height = 10.0,
+    height = 8.8,
     width = 16.0
   )
 )

@@ -29,9 +29,9 @@ embed_pdf_document <- function (arg0_pdf_path, arg1_options = NULL) {
   width_str <- if (!is.null(options$width)) {
     as.character(options$width)
   } else if (span_columns) {
-    "0.98\\textwidth"
+    "\\textwidth"
   } else {
-    "0.98\\columnwidth"
+    "\\columnwidth"
   }
 
   #Declare local instance variables
@@ -109,9 +109,9 @@ render_figure_template <- function (arg0_file_path, arg1_options = NULL) {
   width_str <- if (!is.null(options$width)) {
     as.character(options$width)
   } else if (span_columns) {
-    "0.98\\textwidth"
+    "\\textwidth"
   } else {
-    "0.98\\columnwidth"
+    "\\columnwidth"
   }
 
   #Declare local instance variables
@@ -152,14 +152,14 @@ render_figure_template <- function (arg0_file_path, arg1_options = NULL) {
       "\\end{minipage}\\par\\vspace{4pt}"
     )
   } else {
+    inc_args <- paste0("width=", width_str)
+    if (!is.null(options$max_height) && nzchar(max_height) && !identical(max_height, "none")) {
+      inc_args <- paste0(inc_args, ",height=", max_height, ",keepaspectratio")
+    }
     block_lines <- c(
       paste0("\\begin{", env_name, "}[", placement, "]"),
       "\\centering",
-      paste0(
-        "\\includegraphics[width=", width_str,
-        ",height=", max_height,
-        ",keepaspectratio]{", chosen_path, "}"
-      ),
+      paste0("\\includegraphics[", inc_args, "]{", chosen_path, "}"),
       if (nzchar(cap_tex) || nzchar(lbl_tex)) paste0("\\caption{", cap_tex, lbl_tex, "}") else NULL,
       paste0("\\end{", env_name, "}")
     )
