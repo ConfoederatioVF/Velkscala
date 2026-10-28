@@ -6,7 +6,7 @@
 ## Abstract.
 
 > [!WARNING]
-> This README as well as the contents of this repository are a **work-in-progress**.
+> This README as well as the contents of this repository are a **work-in-progress**. It is currently being worked on as part of Intellte.
 
 This is the testing and validation repository for **Velkscala**, a geospatial database on population and demographics from 10000BC to 2025AD. Figures and methods reports are prepared here, sorted by version.
 
