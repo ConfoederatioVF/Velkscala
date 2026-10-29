@@ -18,36 +18,44 @@
 \RequirePackage[english]{babel}
 \RequirePackage{amsmath,amsfonts,amssymb}
 
-\newcommand{\crd@fontpath}{../../../core/rticles/intellte/resources/fonts/}
-\IfFileExists{../../../core/rticles/intellte/resources/fonts/Jost-400-Book.otf}{%
-  \renewcommand{\crd@fontpath}{../../../core/rticles/intellte/resources/fonts/}%
+\newcommand{\crd@fontpath}{../../../../core/rticles/intellte/resources/fonts/}
+\IfFileExists{../../../../core/rticles/intellte/resources/fonts/Jost-400-Book.otf}{%
+  \renewcommand{\crd@fontpath}{../../../../core/rticles/intellte/resources/fonts/}%
 }{%
-  \IfFileExists{../../core/rticles/intellte/resources/fonts/Jost-400-Book.otf}{%
-    \renewcommand{\crd@fontpath}{../../core/rticles/intellte/resources/fonts/}%
+  \IfFileExists{../../../core/rticles/intellte/resources/fonts/Jost-400-Book.otf}{%
+    \renewcommand{\crd@fontpath}{../../../core/rticles/intellte/resources/fonts/}%
   }{%
-    \IfFileExists{../resources/fonts/Jost-400-Book.otf}{%
-      \renewcommand{\crd@fontpath}{../resources/fonts/}%
+    \IfFileExists{../../core/rticles/intellte/resources/fonts/Jost-400-Book.otf}{%
+      \renewcommand{\crd@fontpath}{../../core/rticles/intellte/resources/fonts/}%
     }{%
-      \IfFileExists{fonts/Jost-400-Book.otf}{%
-        \renewcommand{\crd@fontpath}{fonts/}%
-      }{}%
+      \IfFileExists{../resources/fonts/Jost-400-Book.otf}{%
+        \renewcommand{\crd@fontpath}{../resources/fonts/}%
+      }{%
+        \IfFileExists{fonts/Jost-400-Book.otf}{%
+          \renewcommand{\crd@fontpath}{fonts/}%
+        }{}%
+      }%
     }%
   }%
 }
 
-\newcommand{\crd@logopath}{../../../core/rticles/intellte/resources/crd_logo.png}
-\IfFileExists{../../../core/rticles/intellte/resources/crd_logo.png}{%
-  \renewcommand{\crd@logopath}{../../../core/rticles/intellte/resources/crd_logo.png}%
+\newcommand{\crd@logopath}{../../../../core/rticles/intellte/resources/crd_logo.png}
+\IfFileExists{../../../../core/rticles/intellte/resources/crd_logo.png}{%
+  \renewcommand{\crd@logopath}{../../../../core/rticles/intellte/resources/crd_logo.png}%
 }{%
-  \IfFileExists{../../core/rticles/intellte/resources/crd_logo.png}{%
-    \renewcommand{\crd@logopath}{../../core/rticles/intellte/resources/crd_logo.png}%
+  \IfFileExists{../../../core/rticles/intellte/resources/crd_logo.png}{%
+    \renewcommand{\crd@logopath}{../../../core/rticles/intellte/resources/crd_logo.png}%
   }{%
-    \IfFileExists{../resources/crd_logo.png}{%
-      \renewcommand{\crd@logopath}{../resources/crd_logo.png}%
+    \IfFileExists{../../core/rticles/intellte/resources/crd_logo.png}{%
+      \renewcommand{\crd@logopath}{../../core/rticles/intellte/resources/crd_logo.png}%
     }{%
-      \IfFileExists{crd_logo.png}{%
-        \renewcommand{\crd@logopath}{crd_logo.png}%
-      }{}%
+      \IfFileExists{../resources/crd_logo.png}{%
+        \renewcommand{\crd@logopath}{../resources/crd_logo.png}%
+      }{%
+        \IfFileExists{crd_logo.png}{%
+          \renewcommand{\crd@logopath}{crd_logo.png}%
+        }{}%
+      }%
     }%
   }%
 }
