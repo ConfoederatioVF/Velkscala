@@ -1,0 +1,76 @@
+/*
+  Bibliography Sources (sources.json5 -> compiled automatically into velkscala.bib)
+  Prefer citing works by `doi`; bibliographic metadata is resolved via DOI content negotiation and cached locally.
+  Where no DOI exists, provide `url` (with optional overrides when web `<meta>` tags are incomplete).
+
+  Semantic Structure:
+  [
+    {
+      id: "<citation_key>", //Optional. Referenced as [@<citation_key>] in .Rmd; auto-derived (<surname><year>) when omitted.
+      doi: "10.xxxx/...", //Preferred. Resolves author, title, container, volume, issue, pages and year automatically.
+      url: "https://...", //Fallback when no DOI exists; scrapes HTML citation <meta> tags when title is omitted.
+      type: "article", //Optional override ("article", "book", "incollection", "inproceedings", "misc", "techreport").
+      author: "Surname, Given and ...", //Optional override; accepts a BibTeX string or an array of strings.
+      corporate_author: false, //Optional. Wraps institutional authors in double braces {{...}} in BibTeX.
+      title: "<Title>", //Optional override.
+      journal: "<Journal>", //Optional override (or booktitle, editor, institution, publisher, volume, number, pages, year, note).
+      year: 2026 //Optional override.
+    }
+  ]
+*/
+[
+  {
+    id: "ayer1955",
+    doi: "10.1214/aoms/1177728423"
+  },
+  {
+    id: "whittaker1923",
+    doi: "10.1017/S0013091500077853",
+    year: 1923
+  },
+  {
+    id: "hmd2024",
+    type: "misc",
+    author: "Human Mortality Database",
+    corporate_author: true,
+    title: "Human Mortality Database: University of California, Berkeley, and Max Planck Institute for Demographic Research",
+    publisher: "Max Planck Institute for Demographic Research",
+    year: 2024,
+    url: "https://www.mortality.org"
+  },
+  {
+    id: "unwpp2024",
+    type: "techreport",
+    author: "United Nations, Department of Economic and Social Affairs, Population Division",
+    corporate_author: true,
+    title: "World Population Prospects 2024: Methodology of the United Nations Population Estimates and Projections",
+    institution: "United Nations",
+    year: 2024,
+    url: "https://population.un.org/wpp/"
+  },
+  {
+    id: "niva2023",
+    doi: "10.1038/s41562-023-01689-4"
+  },
+  {
+    id: "bocquet2002",
+    doi: "10.1086/342429"
+  },
+  {
+    id: "bocquet2008",
+    doi: "10.1007/978-1-4020-8539-0_3"
+  },
+  {
+    id: "shennan2013",
+    doi: "10.1038/ncomms3486"
+  },
+  {
+    id: "timpson2014",
+    doi: "10.1016/j.jas.2014.08.011"
+  },
+  {
+    id: "hyde2017",
+    doi: "10.5194/essd-9-927-2017"
+  }
+]
+

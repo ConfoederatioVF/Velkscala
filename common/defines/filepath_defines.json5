@@ -54,8 +54,10 @@
     visuals_cdt_png: "visuals/cdt_proxy_vs_empirical.png",
     visuals_ndt_png: "visuals/ndt_paleodemographic_dashboard.png",
     velkscala_1_0_autorun: "papers/velkscala_1.0/autorun.bat",
+    velkscala_1_0_bib: "papers/velkscala_1.0/velkscala.bib",
     velkscala_1_0_rmd: "papers/velkscala_1.0/main.Rmd",
     velkscala_1_0_pdf: "papers/velkscala_1.0/main.pdf",
+    velkscala_1_0_sources: "papers/velkscala_1.0/sources.json5",
 
     // 5. External SVEA / Histmap Rasters
     h1: "D:/Project 1509 - SVEA/histmap/1.data_raw/",
