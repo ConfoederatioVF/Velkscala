@@ -187,7 +187,7 @@ p4_geocodes <- ggplot(df_geocodes, aes(x = reorder(code, ijp_0AD), y = ijp_0AD, 
 ndt_dashboard <- (p1_ijp | p2_growth) / (p3_cropland | p4_geocodes) +
   plot_annotation(
     title    = "Velkscala 1.0: Neolithic Demographic Transition (NDT) Empirical Audit",
-    subtitle = "10000 BC - 1000 AD | 5 Agricultural Origins & 19 Subnational/National Geocodes",
+    subtitle = "10000 BC - 1000 AD | 5 Agricultural Regions & 19 Subnational/National Geocodes",
     caption  = "Priors: Bocquet-Appel (2002, 2008), Shennan et al. (2013), HYDE 3.3 & Stadester/Velkscala 1.0 (2026).",
     theme    = theme(
       text          = element_text(family = "Karla"),

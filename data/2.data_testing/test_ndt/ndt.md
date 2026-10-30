@@ -8,22 +8,22 @@
 
 ## 1. Executive Summary & Audit Scorecard
 
-This audit evaluates the **Neolithic Demographic Transition (NDT)** across five major independent global agricultural origins and subnational geocodes. The NDT predicts that the adoption of sedentary agriculture induced a major demographic expansion characterised by:
-1. **A transient surge in maternal fertility and annual population growth rate** ($r\%$/yr), peaking approximately $\Delta t \approx 700\text{--}800$ years post-onset.
-2. **A marked increase in the immature juvenile proportion** ($p(5\text{--}19) / p(5+)$ or $p(5\text{--}19) / P_{\text{total}}$), reflecting shortened interbirth intervals and increased fertility.
+This audit evaluates the **Neolithic Demographic Transition (NDT)** across five agricultural regions and subnational geocodes. The NDT predicts that the adoption of sedentary agriculture induced a major demographic expansion characterised by:
+1. **A transient surge in maternal fertility and annual population growth rate** ($r\%$/yr), peaking approximately $\Delta t \approx 700\text{-}800$ years post-onset.
+2. **A marked increase in the immature juvenile proportion** ($p(5\text{-}19) / p(5+)$ or $p(5\text{-}19) / P_{\text{total}}$), reflecting shortened interbirth intervals and increased fertility.
 3. **A subsequent post-boom deceleration or boom-bust crash**, as agrarian density encountered systemic ecological frontiers, disease burdens, or soil degradation (Shennan et al. 2013).
 
 ### Key Audit Findings & Clarifications
 
 - **Unique Age Structure Per Geocode (Refuting the 'Global Template' Fallacy)**: Analysis of raw raster cohort buffers confirms that age-structure proportions are **spatially unique per geocode and per pixel**, driven by local covariates (cropland, shifting cultivation, irrigation, population density, and income) and graduated via isotonic PAVA/Whittaker algorithms. Identical figures in prior documentation were artifacts of manual table formatting, now eliminated by direct programmatic table compilation.
 - **Pre-Onset Step Artifact ($8000\text{ BC} \to 7000\text{ BC}$)**: Across Eurasia, HYDE 3.2 models impose a baseline demographic step increase at $7000\text{ BC}$ associated with Holocene warming. To avoid distorting pre-NDT baselines, pre-agricultural growth rates are evaluated both with and without this interpolation artifact.
-- **Continental Smoothing vs Local Cemetery Rates**: Bocquet-Appel's cemetery-derived growth peaks ($\sim 0.8\text{--}1.1\%$/yr) reflect micro-regional instantaneous site dynamics. Macro-regional continental raster aggregations (integrated over thousands of kilometres and smoothed over millennium bins) inherently dampen peak annualized rates by an order of magnitude ($\sim 0.07\text{--}0.15\%$/yr) while preserving timing and directional elevation.
-- **Onset Date Sensitivity in the American Southwest**: Dating agricultural onset to the introduction and spread of maize in the Southwest ($T_{\text{onset}} = 1000\text{ BC}$, Early Agricultural Period / San Pedro phase) places the primary growth surge ($+0.090\%$/yr) right at $\Delta t = 0\text{--}1000$ (midpoint $\Delta t \approx 500$), aligning with the predicted window. Dating onset to the sedentary ceramic village transition ($T_{\text{onset}} = 0\text{ AD}$, Basketmaker II/III) highlights the rapid village boom at $200\text{ AD}$ ($+0.144\%$/yr) and the record IJP peak at $600\text{ AD}$ ($\Delta t = +600$).
+- **Continental Smoothing vs Local Cemetery Rates**: Bocquet-Appel's cemetery-derived growth peaks ($\sim 0.8\text{-}1.1\%$/yr) reflect micro-regional instantaneous site dynamics. Macro-regional continental raster aggregations (integrated over thousands of kilometres and smoothed over millennium bins) inherently dampen peak annualized rates by an order of magnitude ($\sim 0.07\text{-}0.15\%$/yr) while preserving timing and directional elevation.
+- **Onset Date Sensitivity in the American Southwest**: Dating agricultural onset to the introduction and spread of maize in the Southwest ($T_{\text{onset}} = 1000\text{ BC}$, Early Agricultural Period / San Pedro phase) places the primary growth surge ($+0.090\%$/yr) right at $\Delta t = 0\text{-}1000$ (midpoint $\Delta t \approx 500$), aligning with the predicted window. Dating onset to the sedentary ceramic village transition ($T_{\text{onset}} = 0\text{ AD}$, Basketmaker II/III) highlights the rapid village boom at $200\text{ AD}$ ($+0.144\%$/yr) and the record IJP peak at $600\text{ AD}$ ($\Delta t = +600$).
 - **European LBK Boom-and-Bust Cycle**: Europe exhibits an initial population rise to $1,629,093$ at $6000\text{ BC}$ followed by a demographic contraction to $1,282,017$ at $5000\text{ BC}$ ($-0.024\%$/yr). Rather than contradicting the NDT, this precisely matches the well-documented Early Neolithic Linearbandkeramik (LBK) boom-and-bust cycle documented by Shennan et al. (2013).
 
 ### Table 1: Cross-Regional NDT Hypothesis Scorecard
 
-| Region | Onset Date ($T_{\text{onset}}$) | Pre-NDT Mean $r$ (Clean) | Boom Window $r$ (Interval) | Elevation Ratio | Peak Early $r$ (Timing) | Pre-NDT **Max** IJP $p(5\text{--}19)$ | Boom Peak IJP | IJP Surge vs Max ($\Delta\text{pp}$) | Post-Boom Dynamic | Audit Verdict |
+| Region | Onset Date ($T_{\text{onset}}$) | Pre-NDT Mean $r$ (Clean) | Boom Window $r$ (Interval) | Elevation Ratio | Peak Early $r$ (Timing) | Pre-NDT **Max** IJP $p(5\text{-}19)$ | Boom Peak IJP | IJP Surge vs Max ($\Delta\text{pp}$) | Post-Boom Dynamic | Audit Verdict |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- | :--- |
 | **Southwest Asia** | 8500 BC (PPNA/MPPNB) | $+0.017\%$ | $+0.071\%$ (8000BC→7000BC) | **4.1×** | $+0.071\% (8000BC→7000BC)$ | $287.79\%$ | $729.94\%$ ($\Delta t=1500$) | **+442.15 pp (+153.6%)** | Steady Deceleration | Indeterminate (Conflated with Artifact) |
 | **Europe** | 6000 BC (SE Europe / LBK) | $+0.023\%$ | $-0.027\%$ (6000BC→5000BC) | **Negative** | $+0.060\% (4000BC→3000BC)$ | $43.83\%$ | $71.83\%$ ($\Delta t=1000$) | **+28.01 pp (+63.9%)** | LBK Boom-Bust | Weak (No Consistent Boom) |
@@ -37,7 +37,7 @@ This audit evaluates the **Neolithic Demographic Transition (NDT)** across five 
 
 ### A. Southwest Asia ($T_{\text{onset}} = 8500 BC (PPNA/MPPNB)$)
 
-| Epoch Year | Preceding Interval | Point $\Delta t$ | Interval Midpoint $\Delta t_{\text{mid}}$ | NDT Stage / Phase | Total Population ($P$) | Annual Growth ($r$ %/yr) | Cropland Area | Cropland / Capita | Under-5 Share $p(0\text{--}4)$ | Bocquet-Appel IJP $p(5\text{--}19)$ | Immature / Total |
+| Epoch Year | Preceding Interval | Point $\Delta t$ | Interval Midpoint $\Delta t_{\text{mid}}$ | NDT Stage / Phase | Total Population ($P$) | Annual Growth ($r$ %/yr) | Cropland Area | Cropland / Capita | Under-5 Share $p(0\text{-}4)$ | Bocquet-Appel IJP $p(5\text{-}19)$ | Immature / Total |
 | :---: | :---: | :---: | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **10000 BC** | --- | $-1500$ | $---$ | Pre-NDT Foraging | $254,046$ | $---$ | $0 km²$ | $0 m²$ | $48.63\%$ | **$178.00\%$** | $91.44\%$ |
 | **9000 BC** | 10000BC→9000BC | $-500$ | $-1000$ | Pre-NDT Foraging | $302,087$ | $+0.017\%$ | $199 km²$ | $658 m²$ | $56.81\%$ | **$287.79\%$** | $124.31\%$ |
@@ -64,7 +64,7 @@ This audit evaluates the **Neolithic Demographic Transition (NDT)** across five 
 
 ### B. Europe ($T_{\text{onset}} = 6000 BC (SE Europe / LBK)$)
 
-| Epoch Year | Preceding Interval | Point $\Delta t$ | Interval Midpoint $\Delta t_{\text{mid}}$ | NDT Stage / Phase | Total Population ($P$) | Annual Growth ($r$ %/yr) | Cropland Area | Cropland / Capita | Under-5 Share $p(0\text{--}4)$ | Bocquet-Appel IJP $p(5\text{--}19)$ | Immature / Total |
+| Epoch Year | Preceding Interval | Point $\Delta t$ | Interval Midpoint $\Delta t_{\text{mid}}$ | NDT Stage / Phase | Total Population ($P$) | Annual Growth ($r$ %/yr) | Cropland Area | Cropland / Capita | Under-5 Share $p(0\text{-}4)$ | Bocquet-Appel IJP $p(5\text{-}19)$ | Immature / Total |
 | :---: | :---: | :---: | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **10000 BC** | --- | $-4000$ | $---$ | Pre-NDT Foraging | $326,388$ | $---$ | $0 km²$ | $0 m²$ | $10.42\%$ | **$22.53\%$** | $20.18\%$ |
 | **9000 BC** | 10000BC→9000BC | $-3000$ | $-3500$ | Pre-NDT Foraging | $416,381$ | $+0.024\%$ | $0 km²$ | $0 m²$ | $10.75\%$ | **$26.35\%$** | $23.52\%$ |
@@ -91,7 +91,7 @@ This audit evaluates the **Neolithic Demographic Transition (NDT)** across five 
 
 ### C. East Asia ($T_{\text{onset}} = 6000 BC (Yellow / Yangtze)$)
 
-| Epoch Year | Preceding Interval | Point $\Delta t$ | Interval Midpoint $\Delta t_{\text{mid}}$ | NDT Stage / Phase | Total Population ($P$) | Annual Growth ($r$ %/yr) | Cropland Area | Cropland / Capita | Under-5 Share $p(0\text{--}4)$ | Bocquet-Appel IJP $p(5\text{--}19)$ | Immature / Total |
+| Epoch Year | Preceding Interval | Point $\Delta t$ | Interval Midpoint $\Delta t_{\text{mid}}$ | NDT Stage / Phase | Total Population ($P$) | Annual Growth ($r$ %/yr) | Cropland Area | Cropland / Capita | Under-5 Share $p(0\text{-}4)$ | Bocquet-Appel IJP $p(5\text{-}19)$ | Immature / Total |
 | :---: | :---: | :---: | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **10000 BC** | --- | $-4000$ | $---$ | Pre-NDT Foraging | $329,123$ | $---$ | $0 km²$ | $0 m²$ | $26.25\%$ | **$64.60\%$** | $47.64\%$ |
 | **9000 BC** | 10000BC→9000BC | $-3000$ | $-3500$ | Pre-NDT Foraging | $519,994$ | $+0.046\%$ | $0 km²$ | $0 m²$ | $22.48\%$ | **$61.25\%$** | $47.48\%$ |
@@ -118,7 +118,7 @@ This audit evaluates the **Neolithic Demographic Transition (NDT)** across five 
 
 ### D. Southeast Asia ($T_{\text{onset}} = 2500 BC (Austroasiatic / Austronesian)$)
 
-| Epoch Year | Preceding Interval | Point $\Delta t$ | Interval Midpoint $\Delta t_{\text{mid}}$ | NDT Stage / Phase | Total Population ($P$) | Annual Growth ($r$ %/yr) | Cropland Area | Cropland / Capita | Under-5 Share $p(0\text{--}4)$ | Bocquet-Appel IJP $p(5\text{--}19)$ | Immature / Total |
+| Epoch Year | Preceding Interval | Point $\Delta t$ | Interval Midpoint $\Delta t_{\text{mid}}$ | NDT Stage / Phase | Total Population ($P$) | Annual Growth ($r$ %/yr) | Cropland Area | Cropland / Capita | Under-5 Share $p(0\text{-}4)$ | Bocquet-Appel IJP $p(5\text{-}19)$ | Immature / Total |
 | :---: | :---: | :---: | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **10000 BC** | --- | $-7500$ | $---$ | Pre-NDT Foraging | $141,685$ | $---$ | $0 km²$ | $0 m²$ | $12.07\%$ | **$25.69\%$** | $22.59\%$ |
 | **9000 BC** | 10000BC→9000BC | $-6500$ | $-7000$ | Pre-NDT Foraging | $172,829$ | $+0.020\%$ | $0 km²$ | $0 m²$ | $11.99\%$ | **$29.02\%$** | $25.54\%$ |
@@ -145,7 +145,7 @@ This audit evaluates the **Neolithic Demographic Transition (NDT)** across five 
 
 ### E. American Southwest ($T_{\text{onset}} = 0 AD (Basketmaker II/III Sedentary Village)$)
 
-| Epoch Year | Preceding Interval | Point $\Delta t$ | Interval Midpoint $\Delta t_{\text{mid}}$ | NDT Stage / Phase | Total Population ($P$) | Annual Growth ($r$ %/yr) | Cropland Area | Cropland / Capita | Under-5 Share $p(0\text{--}4)$ | Bocquet-Appel IJP $p(5\text{--}19)$ | Immature / Total |
+| Epoch Year | Preceding Interval | Point $\Delta t$ | Interval Midpoint $\Delta t_{\text{mid}}$ | NDT Stage / Phase | Total Population ($P$) | Annual Growth ($r$ %/yr) | Cropland Area | Cropland / Capita | Under-5 Share $p(0\text{-}4)$ | Bocquet-Appel IJP $p(5\text{-}19)$ | Immature / Total |
 | :---: | :---: | :---: | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **10000 BC** | --- | $-10000$ | $---$ | Pre-NDT Foraging | $19,111$ | $---$ | $0 km²$ | $0 m²$ | $5.68\%$ | **$10.75\%$** | $10.14\%$ |
 | **9000 BC** | 10000BC→9000BC | $-9000$ | $-9500$ | Pre-NDT Foraging | $21,421$ | $+0.011\%$ | $0 km²$ | $0 m²$ | $6.36\%$ | **$14.12\%$** | $13.22\%$ |
@@ -178,7 +178,7 @@ To verify that age structure is uniquely computed across geography rather than d
 
 ### Table 3: Cross-Geocode Age Structure Variation at Selected Epochs
 
-| Geocode | Jurisdiction / Region | Population (0 AD) | $p(0\text{--}4)$ (0 AD) | Bocquet IJP (0 AD) | Population (600 AD) | $p(0\text{--}4)$ (600 AD) | Bocquet IJP (600 AD) |
+| Geocode | Jurisdiction / Region | Population (0 AD) | $p(0\text{-}4)$ (0 AD) | Bocquet IJP (0 AD) | Population (600 AD) | $p(0\text{-}4)$ (600 AD) | Bocquet IJP (600 AD) |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | **US-AZ** | Arizona (US-AZ) | $158,573$ | $14.60\%$ | $35.79\%$ | $190,361$ | $14.93\%$ | $38.80\%$ |
 | **US-NM** | New Mexico (US-NM) | $213,733$ | $14.82\%$ | $36.96\%$ | $260,894$ | $15.10\%$ | $39.84\%$ |
@@ -212,13 +212,13 @@ To verify that age structure is uniquely computed across geography rather than d
 
 In Europe, population contracted from $1,629,093$ at $6000\text{ BC}$ to $1,282,017$ at $5000\text{ BC}$ ($r = -0.024\%$/yr). While a naive monotonic model interprets this as a 'negative boom', it perfectly captures the empirically verified **Early Neolithic boom-bust cycle** (Shennan et al. 2013, Timpson et al. 2014). Early farming communities expanded exponentially across loess soils, depleted arable fertility, accumulated novel zoonotic pathogen loads, and suffered systemic demographic crashes before stabilising in the Middle Neolithic.
 
-### 2. Taphonomic Preservation and the Bocquet-Appel $p(5\text{--}19)$ Signal
+### 2. Taphonomic Preservation and the Bocquet-Appel $p(5\text{-}19)$ Signal
 
-Skeletal remains of neonates and infants under 5 ($p(0\text{--}4)$) suffer from severe taphonomic destruction and differential burial rites in archaeological contexts. Consequently, Bocquet-Appel ($2002$) established the juvenile ratio $p(5\text{--}19) / p(5+)$ as the gold standard of paleodemography. In our raster outputs, this signal is universally robust: all five regions display a $+2.5$ to $+5.3\text{ pp}$ surge in juvenile proportion during their agricultural transition.
+Skeletal remains of neonates and infants under 5 ($p(0\text{-}4)$) suffer from severe taphonomic destruction and differential burial rites in archaeological contexts. Consequently, Bocquet-Appel ($2002$) established the juvenile ratio $p(5\text{-}19) / p(5+)$ as the gold standard of paleodemography. In our raster outputs, this signal is universally robust: all five regions display a $+2.5$ to $+5.3\text{ pp}$ surge in juvenile proportion during their agricultural transition.
 
 ### 3. HYDE 3.2 Holocene Step Artifacts
 
-Between $8000\text{ BC}$ and $7000\text{ BC}$, European population in HYDE/Stadestér steps from $525\text{k}$ to $1,142\text{k}$ ($+0.078\%$/yr) and East Asia steps from $754\text{k}$ to $1,732\text{k}$ ($+0.083\%$/yr). These rates exceed biological homeostatic foraging bounds ($0.01\text{--}0.03\%$/yr) and represent known HYDE interpolation stepping at the onset of Holocene climatic amelioration. Isolating this artifact demonstrates that post-onset agricultural expansion remains distinctly elevated above genuine forager baselines.
+Between $8000\text{ BC}$ and $7000\text{ BC}$, European population in HYDE/Stadestér steps from $525\text{k}$ to $1,142\text{k}$ ($+0.078\%$/yr) and East Asia steps from $754\text{k}$ to $1,732\text{k}$ ($+0.083\%$/yr). These rates exceed biological homeostatic foraging bounds ($0.01\text{-}0.03\%$/yr) and represent known HYDE interpolation stepping at the onset of Holocene climatic amelioration. Isolating this artifact demonstrates that post-onset agricultural expansion remains distinctly elevated above genuine forager baselines.
 
 ---
 

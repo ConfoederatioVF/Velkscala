@@ -8,7 +8,7 @@ emails:
   - austkaetzchen@confoederatio.org
 
 hero_figure: "../../data/3.data_visualisation/images/cdt_proxy_vs_empirical.png"
-hero_caption: "Contemporary Demographic Transition (CDT) out-of-sample validation dashboard (1850--2019 AD) comparing country-level age-sex goodness-of-fit ($R^2$) and normalised median relative error for annual births and deaths."
+hero_caption: "Contemporary Demographic Transition (CDT) out-of-sample validation dashboard (1850-2019 AD) comparing country-level age-sex goodness-of-fit ($R^2$) and normalised median relative error for annual births and deaths."
 hero_label: "fig:cdt-dashboard"
 
 bibliography: velkscala.bib
@@ -44,7 +44,7 @@ emit_deadspace_control(list(compact_floats = TRUE, ragged_bottom = TRUE))
 
 # Abstract {.unnumbered}
 
-Velkscala 1.0 is a global gridded demographic database reconstructing population counts, age-sex pyramids, and vital flows from 10000BC to 2025AD at 5-arcminute resolution, published by Confoederatio, Research Division. Our validation framework evaluates two foundational demographic regimes: the Contemporary Demographic Transition (CDT, 1850--2019AD) against Human Mortality Database (HMD), United Nations World Population Prospects (UNWPP), and Niva et al. (Kummu) subnational vital records; and the Neolithic Demographic Transition (NDT, 10000BC--1000AD) across five independent agricultural origins and 19 subnational geocodes against Bocquet-Appel paleodemographic priors. Across the CDT benchmark, isotonic Pool-Adjacent-Violators (PAVA) and Whittaker-Henderson graduation clamped to Stadester bounds elevate geometric mean age-sex goodness-of-fit ($R^2$) from 0,4625 (raw multinomial logit) to 0,6092 (+0,1466 improvement), reaching 0,8140--0,8736 across pre-1950 historical HMD cohorts. Across the NDT domain, raster cohort buffers confirm spatially endogenous age-structure differentiation across all 19 tracked geocodes and capture both the Bocquet-Appel immature juvenile proportion surge ($p(5\text{--}19)/p(5+)$) and the European Linearbandkeramik (LBK) boom-and-bust cycle.
+Velkscala 1.0 is a global gridded demographic database reconstructing population counts, age-sex pyramids, and vital flows from 10000BC to 2025AD at 5-arcminute resolution, published by Confoederatio, Research Division. Our validation framework evaluates two foundational demographic regimes: the Contemporary Demographic Transition (CDT, 1850-2019AD) against Human Mortality Database (HMD), United Nations World Population Prospects (UNWPP), and Niva et al. (Kummu) subnational vital records; and the Neolithic Demographic Transition (NDT, 10000BC-1000AD) across five agricultural regions and 19 subnational geocodes against Bocquet-Appel paleodemographic priors. Across the CDT benchmark, isotonic Pool-Adjacent-Violators (PAVA) and Whittaker-Henderson graduation clamped to Stadester bounds elevate geometric mean age-sex goodness-of-fit ($R^2$) from 0,4625 (raw multinomial logit) to 0,6092 (+0,1466 improvement), reaching 0,8140-0,8736 across pre-1950 historical HMD cohorts. Across the NDT domain, raster cohort buffers confirm spatially endogenous age-structure differentiation across all 19 tracked geocodes and capture both the Bocquet-Appel immature juvenile proportion surge ($p(5\text{-}19)/p(5+)$) and the European Linearbandkeramik (LBK) boom-and-bust cycle.
 
 # Background {.unnumbered}
 
@@ -52,23 +52,23 @@ Continuous gridded reconstructions of historical human populations have traditio
 
 # Methodology {.unnumbered}
 
-### Premodern Multinomial Logit (MNL) Cohort Ensemble (10000 BC--1750 AD) {.unnumbered}
+### Premodern Multinomial Logit (MNL) Cohort Ensemble (10000 BC-1750 AD) {.unnumbered}
 
-In **Velkscala 1.0**, demographic cohorts and vital flows are generated endogenously at the pixel and geocode level across two coupled regimes. Across the pre-industrial domain (10000 BC--1750 AD), a 34-covariate multinomial logit (MNL) ensemble predicts five-year age-sex bracket shares from local agricultural intensity (arable cropland, shifting cultivation, and irrigation), settlement density, and climatic envelope priors [@hyde2017].^[Unlike static regional life-table lookup schemes, the 34-covariate MNL ensemble evaluates local arable land per capita and settlement hierarchy at every 5-arcminute grid cell before aggregating to subnational and sovereign geocodes.]
+In **Velkscala 1.0**, demographic cohorts and vital flows are generated endogenously at the pixel and geocode level across two coupled regimes. Across the pre-industrial domain (10000 BC-1750 AD), a 34-covariate multinomial logit (MNL) ensemble predicts five-year age-sex bracket shares from local agricultural intensity (arable cropland, shifting cultivation, and irrigation), settlement density, and climatic envelope priors [@hyde2017].^[Unlike static regional life-table lookup schemes, the 34-covariate MNL ensemble evaluates local arable land per capita and settlement hierarchy at every 5-arcminute grid cell before aggregating to subnational and sovereign geocodes.]
 
-### Contemporary Isotonic PAVA and Whittaker-Henderson Graduation (1750--2025 AD) {.unnumbered}
+### Contemporary Isotonic PAVA and Whittaker-Henderson Graduation (1750-2025 AD) {.unnumbered}
 
-Across the rolling contemporary transition (1750--2025 AD), raw MNL cohort probabilities are graduated via isotonic Pool-Adjacent-Violators (PAVA) and Whittaker-Henderson smoothing kernels [@ayer1955; @whittaker1923], and subsequently clamped to Stadester total population bounds. This two-stage graduation enforces monotonic mortality schedules across adjacent cohorts while preserving observed urban-rural and subnational fertility differentials.
+Across the rolling contemporary transition (1750-2025 AD), raw MNL cohort probabilities are graduated via isotonic Pool-Adjacent-Violators (PAVA) and Whittaker-Henderson smoothing kernels [@ayer1955; @whittaker1923], and subsequently clamped to Stadester total population bounds. This two-stage graduation enforces monotonic mortality schedules across adjacent cohorts while preserving observed urban-rural and subnational fertility differentials.
 
 # Testing and Validation {.unnumbered}
 
-### Contemporary Demographic Transition (CDT) Benchmark Design (1850--2019 AD) {.unnumbered}
+### Contemporary Demographic Transition (CDT) Benchmark Design (1850-2019 AD) {.unnumbered}
 
-To verify out-of-sample fidelity before post-1950 United Nations census splicing, we subject the proxy estimators to two empirical stress tests. First, we evaluate the **Contemporary Demographic Transition (CDT)** across `r length(cdt_as_data$summary_by_epoch)` benchmark epochs (1850--2019 AD, up to $N = 189$ sovereign ISO3 jurisdictions), comparing raw MNL cohort probabilities and Stadester-clamped pyramids against empirical life tables from the Human Mortality Database (HMD) and UNWPP [@hmd2024; @unwpp2024], alongside vital birth and death stocks from Niva et al. [@niva2023].^[In the final Velkscala 1.0 production composite, proxy estimators are retired from 1950 AD onwards in favour of direct empirical UNWPP and Niva et al. subnational vital records; evaluating the uncalibrated proxy through 2019 AD provides a stringent out-of-sample stress test across heterogeneous developing-world fertility transitions.]
+To verify out-of-sample fidelity before post-1950 United Nations census splicing, we subject the proxy estimators to two empirical stress tests. First, we evaluate the **Contemporary Demographic Transition (CDT)** across `r length(cdt_as_data$summary_by_epoch)` benchmark epochs (1850-2019 AD, up to $N = 189$ sovereign ISO3 jurisdictions), comparing raw MNL cohort probabilities and Stadester-clamped pyramids against empirical life tables from the Human Mortality Database (HMD) and UNWPP [@hmd2024; @unwpp2024], alongside vital birth and death stocks from Niva et al. [@niva2023].^[In the final Velkscala 1.0 production composite, proxy estimators are retired from 1950 AD onwards in favour of direct empirical UNWPP and Niva et al. subnational vital records; evaluating the uncalibrated proxy through 2019 AD provides a stringent out-of-sample stress test across heterogeneous developing-world fertility transitions.]
 
-### Neolithic Demographic Transition (NDT) Benchmark Design (10000 BC--1000 AD) {.unnumbered}
+### Neolithic Demographic Transition (NDT) Benchmark Design (10000 BC-1000 AD) {.unnumbered}
 
-Second, we audit the **Neolithic Demographic Transition (NDT)** from 10000 BC to 1000 AD (`r length(ndt_data$regional_data[[1]]$epochs)` epochs) across five independent agricultural hearths and `r length(ndt_data$tracked_geocodes)` national and subnational geocodes against archaeological juvenile mortality priors [@bocquet2002; @bocquet2008], alongside Holocene radiocarbon and land-use reconstructions [@shennan2013; @timpson2014; @hyde2017].
+Second, we audit the **Neolithic Demographic Transition (NDT)** from 10000 BC to 1000 AD (`r length(ndt_data$regional_data[[1]]$epochs)` epochs) across five agricultural regions and `r length(ndt_data$tracked_geocodes)` national and subnational geocodes against archaeological juvenile mortality priors [@bocquet2002; @bocquet2008], alongside Holocene radiocarbon and land-use reconstructions [@shennan2013; @timpson2014; @hyde2017].
 
 # Results {.unnumbered}
 
@@ -76,7 +76,7 @@ Second, we audit the **Neolithic Demographic Transition (NDT)** from 10000 BC to
 
 Across the contemporary validation horizon, graduating raw multinomial logit age-sex probabilities through isotonic PAVA and Whittaker-Henderson kernels [@ayer1955; @whittaker1923], clamped to Stadester total population bounds, substantially improves demographic fit. Across all evaluated country-epoch pairs, geometric mean $R^2$ rises from $`r raw_geomean_str`$ under raw MNL baseline probabilities to $`r clamp_geomean_str`$ post-clamping (an overall improvement of $\Delta R^2 = `r delta_geomean_str`$; Figure \ref{fig:cdt-dashboard} and Table \ref{tab:cdt_age_sex}).^[Country-level $R^2$ is computed as the arithmetic mean of male and female five-year cohort fits per ISO3 jurisdiction and aggregated across jurisdictions via geometric mean.]
 
-Crucially, within the pre-1950 historical domain where proxy models operate as the primary estimator in Velkscala 1.0 [@hmd2024], clamped age-sex $R^2$ consistently exceeds $0,81$, reaching $0,8525$ in 1850 ($N = 8$ HMD countries), $0,8505$ in 1900 ($N = 11$), $0,8736$ in 1920 ($N = 12$), and $0,8140$ in 1940 ($N = 16$). Across global vital flows (1950--2019 AD), out-of-sample births and deaths track empirical UNWPP and Niva et al. benchmarks with median country accuracy of $83,1\%$ and $78,9\%$ respectively (Table \ref{tab:cdt_vital_flows}).
+Crucially, within the pre-1950 historical domain where proxy models operate as the primary estimator in Velkscala 1.0 [@hmd2024], clamped age-sex $R^2$ consistently exceeds $0,81$, reaching $0,8525$ in 1850 ($N = 8$ HMD countries), $0,8505$ in 1900 ($N = 11$), $0,8736$ in 1920 ($N = 12$), and $0,8140$ in 1940 ($N = 16$). Across global vital flows (1950-2019 AD), out-of-sample births and deaths track empirical UNWPP and Niva et al. benchmarks with median country accuracy of $83,1\%$ and $78,9\%$ respectively (Table \ref{tab:cdt_vital_flows}).
 
 ```{r tab-cdt-age-sex, results='asis'}
 as_epochs <- cdt_as_data$summary_by_epoch
@@ -101,7 +101,7 @@ render_table_template(
   df_cdt_as_table,
   list(
     align = c("l", "l", "l", "l", "l", "l", "l", "l", "l", "l"),
-    caption = "Contemporary Demographic Transition (CDT) age and sex bracket goodness-of-fit ($R^2$) by benchmark epoch (1850--2019 AD), comparing raw multinomial logit (MNL) baseline probabilities against PAVA/Whittaker-graduated Stadester cohorts.",
+    caption = "Contemporary Demographic Transition (CDT) age and sex bracket goodness-of-fit ($R^2$) by benchmark epoch (1850-2019 AD), comparing raw multinomial logit (MNL) baseline probabilities against PAVA/Whittaker-graduated Stadester cohorts.",
     col_names = c(
       "Epoch", "Empirical\nSource", "Sample\n($N$)",
       "Raw $R^2$\n(Male)", "Raw $R^2$\n(Female)", "Raw\nGeomean",
@@ -140,7 +140,7 @@ render_table_template(
   df_cdt_bd_table,
   list(
     align = c("l", "l", "l", "l", "l", "l", "l", "l", "l", "l"),
-    caption = "Global vital flows validation (1950--2019 AD): proxy vs. empirical annual births, deaths, relative error percentages, and net natural increase residuals across UNWPP and Niva et al. (Kummu) benchmarks.",
+    caption = "Global vital flows validation (1950-2019 AD): proxy vs. empirical annual births, deaths, relative error percentages, and net natural increase residuals across UNWPP and Niva et al. (Kummu) benchmarks.",
     col_names = c(
       "Epoch", "Benchmark\nSource", "Sample\n($N$)",
       "Proxy\nBirths", "Empirical\nBirths", "Births\nError",
@@ -158,9 +158,9 @@ render_table_template(
 
 ### Neolithic Demographic Transition (NDT) Paleodemographic Findings {.unnumbered}
 
-Across the **Neolithic Demographic Transition (NDT)** domain ($10000\text{ BC}$ to $1000\text{ AD}$, $21$ historical epochs; Figure \ref{fig:ndt_dashboard} and Table \ref{tab:ndt_scorecard}), our gridded cohorts reproduce the three canonical paleodemographic signatures established by Bocquet-Appel [@bocquet2002; @bocquet2008]: (1) a transient surge in maternal fertility and annualised population growth ($r$\%/yr) peaking approximately $\Delta t \approx 700\text{--}800$ years post-onset [@bocquet2002]; (2) a pronounced elevation in the immature juvenile proportion ($p(5\text{--}19)/p(5+)$), reflecting shortened interbirth intervals [@bocquet2008]; and (3) a subsequent post-boom deceleration or boom-bust contraction as agrarian density encountered ecological and epidemiological frontiers [@shennan2013; @timpson2014].
+Across the **Neolithic Demographic Transition (NDT)** domain ($10000\text{ BC}$ to $1000\text{ AD}$, $21$ historical epochs; Figure \ref{fig:ndt_dashboard} and Table \ref{tab:ndt_scorecard}), our gridded cohorts reproduce the three canonical paleodemographic signatures established by Bocquet-Appel [@bocquet2002; @bocquet2008]: (1) a transient surge in maternal fertility and annualised population growth ($r$\%/yr) peaking approximately $\Delta t \approx 700\text{-}800$ years post-onset [@bocquet2002]; (2) a pronounced elevation in the immature juvenile proportion ($p(5\text{-}19)/p(5+)$), reflecting shortened interbirth intervals [@bocquet2008]; and (3) a subsequent post-boom deceleration or boom-bust contraction as agrarian density encountered ecological and epidemiological frontiers [@shennan2013; @timpson2014].
 
-- **Unique Age Structure Per Geocode**: Direct audit of raster cohort buffers confirms that age-structure proportions are **spatially unique per geocode and per pixel**, driven by local covariates [@hyde2017] and graduated via isotonic PAVA/Whittaker algorithms [@ayer1955; @whittaker1923]. As shown in Table \ref{tab:ndt_geocodes}, at $0\text{ AD}$ under-5 shares ($p(0\text{--}4)$) range from $12,96\%$ (South Korea) to $16,22\%$ (Syria/Levant), while Bocquet-Appel juvenile ratios range from $30,15\%$ to $49,88\%$. At $600\text{ AD}$, Italy exhibits an elevated IJP ($41,66\%$) amidst population contraction ($7,50\text{M} \rightarrow 3,06\text{M}$), capturing demographic crisis dynamics associated with late antique mortality shocks.
+- **Unique Age Structure Per Geocode**: Direct audit of raster cohort buffers confirms that age-structure proportions are **spatially unique per geocode and per pixel**, driven by local covariates [@hyde2017] and graduated via isotonic PAVA/Whittaker algorithms [@ayer1955; @whittaker1923]. As shown in Table \ref{tab:ndt_geocodes}, at $0\text{ AD}$ under-5 shares ($p(0\text{-}4)$) range from $12,96\%$ (South Korea) to $16,22\%$ (Syria/Levant), while Bocquet-Appel juvenile ratios range from $30,15\%$ to $49,88\%$. At $600\text{ AD}$, Italy exhibits an elevated IJP ($41,66\%$) amidst population contraction ($7,50\text{M} \rightarrow 3,06\text{M}$), capturing demographic crisis dynamics associated with late antique mortality shocks.
 
 - **The European LBK Boom-and-Bust Dynamic**: In Europe, total population expands to $1,47\text{M}$ at $6000\text{ BC}$ before contracting to $1,12\text{M}$ at $5000\text{ BC}$ ($r = -0,027\%$/yr; Table \ref{tab:ndt_trajectories}). Rather than contradicting the NDT, this trajectory reproduces the empirically established **Early Neolithic Linearbandkeramik (LBK) boom-and-bust cycle** [@shennan2013; @timpson2014], wherein early farming communities expanded rapidly across European loess soils before experiencing soil depletion and pathogen-induced crashes prior to Middle Neolithic recovery ($+0,044\%$/yr by $4000\text{ BC}$).
 
@@ -168,7 +168,7 @@ Across the **Neolithic Demographic Transition (NDT)** domain ($10000\text{ BC}$ 
 render_figure_template(
   "ndt_figure_png",
   list(
-    caption = "Neolithic Demographic Transition (NDT) empirical audit dashboard (10000 BC--1000 AD) across five independent agricultural origins and 19 national/subnational geocodes. Panels illustrate (top-left) Bocquet-Appel juvenile proportion $p(5\\text{--}19)/p(5+)$ aligned to regional agricultural onset $\\Delta t = 0$; (top-right) annualised population growth rate $r$ (\\%/yr) contrasting transient Neolithic booms with European LBK boom-bust cycles; (bottom-left) HYDE 3.3 / Velkscala 1.0 per-capita arable cropland intensification; and (bottom-right) endogenous spatial variation in juvenile proportions across 19 geocodes at 0 AD.",
+    caption = "Neolithic Demographic Transition (NDT) empirical audit dashboard (10000 BC-1000 AD) across five agricultural regions and 19 national/subnational geocodes. Panels illustrate (top-left) Bocquet-Appel juvenile proportion $p(5\\text{-}19)/p(5+)$ aligned to regional agricultural onset $\\Delta t = 0$; (top-right) annualised population growth rate $r$ (\\%/yr) contrasting transient Neolithic booms with European LBK boom-bust cycles; (bottom-left) HYDE 3.3 / Velkscala 1.0 per-capita arable cropland intensification; and (bottom-right) endogenous spatial variation in juvenile proportions across 19 geocodes at 0 AD.",
     label = "fig:ndt_dashboard",
     max_height = "none",
     placement = "!htbp",
@@ -220,7 +220,7 @@ render_table_template(
   df_ndt_scorecard,
   list(
     align = c("l", "l", "l", "l", "l", "l", "l", "l", "l", "l"),
-    caption = "Cross-regional Neolithic Demographic Transition (NDT) hypothesis scorecard across five independent agricultural origins (10000 BC--1000 AD), evaluating pre-onset foraging growth baselines, post-onset boom elevation ratios, and Bocquet-Appel immature juvenile proportion ($p(5\\text{--}19)/p(5+)$) surges.",
+    caption = "Cross-regional Neolithic Demographic Transition (NDT) hypothesis scorecard across five agricultural regions (10000 BC-1000 AD), evaluating pre-onset foraging growth baselines, post-onset boom elevation ratios, and Bocquet-Appel immature juvenile proportion ($p(5\\text{-}19)/p(5+)$) surges.",
     col_names = c(
       "Agricultural\nRegion", "Onset\n($T_{\\text{onset}}$)", "Pre-NDT\nGrowth $r$",
       "Boom\nGrowth $r$", "Growth\nElevation", "Peak Early\nGrowth $r$",
@@ -267,8 +267,8 @@ render_table_template(
     caption = "Subnational and national anchor geocode audit across 19 jurisdictions at 0 AD and 600 AD, confirming spatially endogenous age-structure variation.",
     col_names = c(
       "Geocode", "Jurisdiction", "Macro-Region",
-      "Population\n(0 AD)", "$p(0\\text{--}4)$\n(0 AD)", "Bocquet IJP\n(0 AD)",
-      "Population\n(600 AD)", "$p(0\\text{--}4)$\n(600 AD)", "Bocquet IJP\n(600 AD)"
+      "Population\n(0 AD)", "$p(0\\text{-}4)$\n(0 AD)", "Bocquet IJP\n(0 AD)",
+      "Population\n(600 AD)", "$p(0\\text{-}4)$\n(600 AD)", "Bocquet IJP\n(600 AD)"
     ),
     font_size = "normalsize",
     label = "tab:ndt_geocodes",
@@ -283,15 +283,15 @@ if (knitr::is_latex_output()) cat("\\FloatBarrier\n")
 
 # Limitations {.unnumbered}
 
-Three structural limitations govern the interpretation of our paleodemographic and contemporary proxy series. First, because infant skeletal remains ($p(0\text{--}4)$) suffer differential taphonomic loss in archaeological cemeteries [@bocquet2002; @bocquet2008], the juvenile ratio $p(5\text{--}19)/p(5+)$ serves as the primary osteological index of fertility across the Neolithic transition, led by Southeast Asia ($11,8\times$ growth elevation; $+1,42\text{ pp}$ IJP surge) and the American Southwest ($1,6\times$ elevation; $+2,79\text{ pp}$ IJP surge peaking at $\Delta t = +600$).^[Osteological cemetery assemblages systematically under-represent neonatal and infant burials due to lower bone mineral density in the $0\text{--}4$ age bracket; Bocquet-Appel's $p(5\text{--}19)/p(5+)$ ratio excludes infants to provide a taphonomically invariant proxy for crude birth rates.]
+Three structural limitations govern the interpretation of our paleodemographic and contemporary proxy series. First, because infant skeletal remains ($p(0\text{-}4)$) suffer differential taphonomic loss in archaeological cemeteries [@bocquet2002; @bocquet2008], the juvenile ratio $p(5\text{-}19)/p(5+)$ serves as the primary osteological index of fertility across the Neolithic transition, led by Southeast Asia ($11,8\times$ growth elevation; $+1,42\text{ pp}$ IJP surge) and the American Southwest ($1,6\times$ elevation; $+2,79\text{ pp}$ IJP surge peaking at $\Delta t = +600$).^[Osteological cemetery assemblages systematically under-represent neonatal and infant burials due to lower bone mineral density in the $0\text{-}4$ age bracket; Bocquet-Appel's $p(5\text{-}19)/p(5+)$ ratio excludes infants to provide a taphonomically invariant proxy for crude birth rates.]
 
-Second, between $8000\text{ BC}$ and $7000\text{ BC}$, baseline population in HYDE exhibits a step increase across Eurasia ($+0,071\%$/yr in Southwest Asia; $+0,080\%$/yr in Europe) tied to Holocene climatic amelioration [@hyde2017]. Isolating this pre-onset step confirms that post-onset agricultural expansion remains distinctly elevated above homeostatic foraging baselines ($0,01\text{--}0,03\%$/yr) [@bocquet2008; @shennan2013], while continental raster integration naturally smooths micro-site cemetery peaks ($\sim 0,8\text{--}1,1\%$/yr) to macro-regional millennial rates ($\sim 0,07\text{--}0,15\%$/yr).
+Second, between $8000\text{ BC}$ and $7000\text{ BC}$, baseline population in HYDE exhibits a step increase across Eurasia ($+0,071\%$/yr in Southwest Asia; $+0,080\%$/yr in Europe) tied to Holocene climatic amelioration [@hyde2017]. Isolating this pre-onset step confirms that post-onset agricultural expansion remains distinctly elevated above homeostatic foraging baselines ($0,01\text{-}0,03\%$/yr) [@bocquet2008; @shennan2013], while continental raster integration naturally smooths micro-site cemetery peaks ($\sim 0,8\text{-}1,1\%$/yr) to macro-regional millennial rates ($\sim 0,07\text{-}0,15\%$/yr).
 
-Third, across the post-1950 contemporary horizon, uncalibrated proxy divergence reflects the expansion of the validation sample from historical European HMD registers ($N = 8\text{--}16$) to $N = 189$ global UNWPP jurisdictions [@hmd2024; @unwpp2024], which exhibit heterogeneous fertility transitions and subnational migration schedules [@niva2023].
+Third, across the post-1950 contemporary horizon, uncalibrated proxy divergence reflects the expansion of the validation sample from historical European HMD registers ($N = 8\text{-}16$) to $N = 189$ global UNWPP jurisdictions [@hmd2024; @unwpp2024], which exhibit heterogeneous fertility transitions and subnational migration schedules [@niva2023].
 
 # Conclusion {.unnumbered}
 
-Taken together, our dual-regime validation demonstrates that coupling a 34-covariate premodern multinomial logit ensemble with isotonic PAVA and Whittaker-Henderson graduation [@ayer1955; @whittaker1923] yields internally consistent, spatially endogenous age-sex pyramids and vital flows across the full 12025-year Velkscala 1.0 domain. Across the Contemporary Demographic Transition, Stadester-clamped graduation elevates overall geometric mean $R^2$ by $+0,1466$ (reaching $0,8140\text{--}0,8736$ prior to 1950 AD), while across the Neolithic Demographic Transition, pixel-level cohort graduation captures both regional Bocquet-Appel juvenile surges and the European Linearbandkeramik boom-and-bust dynamic.
+Taken together, our dual-regime validation demonstrates that coupling a 34-covariate premodern multinomial logit ensemble with isotonic PAVA and Whittaker-Henderson graduation [@ayer1955; @whittaker1923] yields internally consistent, spatially endogenous age-sex pyramids and vital flows across the full 12025-year Velkscala 1.0 domain. Across the Contemporary Demographic Transition, Stadester-clamped graduation elevates overall geometric mean $R^2$ by $+0,1466$ (reaching $0,8140\text{-}0,8736$ prior to 1950 AD), while across the Neolithic Demographic Transition, pixel-level cohort graduation captures both regional Bocquet-Appel juvenile surges and the European Linearbandkeramik boom-and-bust dynamic.
 
 # Appendix {.unnumbered}
 
@@ -339,12 +339,12 @@ render_packed_subtables(
   subtables_ndt,
   list(
     align = c("l", "l", "l", "l", "l", "l", "l", "l", "l", "l"),
-    caption = "Regional paleodemographic trajectories across 21 historical epochs (10000 BC--1000 AD) for all five agricultural origins, packed across multi-panel pages.",
+    caption = "Regional paleodemographic trajectories across 21 historical epochs (10000 BC-1000 AD) for all five agricultural regions, packed across multi-panel pages.",
     col_names = c(
       "Epoch", "Onset\n$\\Delta t$", "NDT Stage /\nPhase",
       "Population\n($P$)", "Growth\n($r$/yr)", "Cropland\nArea",
-      "Cropland /\nCapita", "$p(0\\text{--}4)$\nShare",
-      "Bocquet IJP\n$p(5\\text{--}19)$", "Immature /\nTotal"
+      "Cropland /\nCapita", "$p(0\\text{-}4)$\nShare",
+      "Bocquet IJP\n$p(5\\text{-}19)$", "Immature /\nTotal"
     ),
     first_page_max_rows = 16L,
     font_size = "normalsize",
