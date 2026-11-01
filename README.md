@@ -29,7 +29,7 @@ For socioeconomic researchers, the following open datasets may also prove valuab
 1. Stadestér (Cities, part of Velkscala) | [Projects (1.1)](https://projects.confoederatio.org/c/Stadester)
 2. Velkscala (Demographics) | [Datavault (1.0)](https://datavault.confoederatio.org/s/44Pfgt7ya8wE77b)
 3. Eoscala (Economics) | [Datavault (1.5)](https://datavault.confoederatio.org/s/2Kytdej7ABpw4rr) - Subadministrative divisions used in certain demographic models may be found here, in `admin_modern/`.
-4. Atlas (Polities) | [Datavault (0.6)](https://datavault.confoederatio.org/s/aBeY4JP4QGFjqRL)
+4. Atlas (Polities) | [Datavault (0.7)](https://datavault.confoederatio.org/s/aBeY4JP4QGFjqRL)
 
 ### Data Structure.
 
