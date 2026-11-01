@@ -1,7 +1,7 @@
 # Velkscala 1.0
 
 > [!NOTE]
-> You can download Velkscala data from [Confoederatio Datavault](https://datavault.confoederatio.org/s/44Pfgt7ya8wE77b), and can be viewed at https://dataview.confoederatio.org/.
+> You can download Velkscala data from [Confoederatio Datavault](https://datavault.confoederatio.org/s/44Pfgt7ya8wE77b). It can be viewed at https://dataview.confoederatio.org/.
 
 ## Abstract.
 
