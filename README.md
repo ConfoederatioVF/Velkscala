@@ -48,7 +48,7 @@ For socioeconomic researchers, the following open datasets may also prove valuab
 ## Data Structures (Velkscala/Stadestér).
 
 <details>
-  <summary><h3>Data Structure (Stadestér).</h3></summary>
+  <summary><h3>File Structure (Stadestér).</h3></summary>
 
 ## Stadestér 1.0
 
@@ -168,7 +168,7 @@ Because historical names are already encoded in `city_metadata.json` via nearest
   
 </details>
 <details open>
-<summary><h3>Data Structure (Velkscala).</h3></summary>
+<summary><h3>File Structure (Velkscala).</h3></summary>
 
 **Cities.**
 
@@ -230,4 +230,315 @@ Because historical names are already encoded in `city_metadata.json` via nearest
   - `uopp_`: Built-Up Area (km^2/cell)
   - `urbc_`: Urban Population (pop/cell)
  
+</details>
+<details>
+  <summary><h2>Methodology.</h2></summary>
+  <details open>
+<summary><h3>Age/Sex (Total)</h3></summary>
+
+Aggregate populations per age/sex cohort. Age bands are 0-1, 1-5, 5-year age bands until 80+, and 80+ respectively, isomorphic to WorldPop. Sexes as calculated are male/female. You can view the individual population pyramid of a country by clicking on it.
+
+#### Methodology
+
+Multinomial logit regression across covariates as specified below; logits for age/sex bands are normalised to 0-1 and then multiplied across **Population (Total)**. This was broadly modelled after the methodology that [WorldPop used](https://www.worldpop.org/current-projects/completed-projects/mapping-population-age-and-sex-structures-at-high-resolution/). 
+- Source code: [Github](https://github.com/ConfoederatioVF/Collation/tree/main/histmap/3.data_transform/age_sex) | [Projects](https://projects.confoederatio.org/Confoederatio/Collation/src/branch/main/histmap/3.data_transform/age_sex)
+
+Normalisation periods are separated out into three phases:
+
+1. Prior to 1750, decreasing PAVA/isotonic regression is used at the global and ISO3 levels, ensuring monotonicity.
+2. Between 1750-1850, a logistic kernel regime (transition between PAVA and Whittaker-Henderson) is applied with a steepness of `8` [1].
+3. After 1850, we use coupled Whittaker-Henderson graduations with Huber loss.
+- Mathematical description: [Velkscala Modelling Report, 8 October 2026](https://confoederatio.org/papers/Velkscala%20Modelling%20Report%20-%208%20October%202026.pdf)
+  - This includes descriptions of parameters used.
+
+__Sources:__
+These list sources for direct training data only.
+1. [WorldPop (2019)](https://hub.worldpop.org/geodata/summary?id=24798), methodology described by [Pezzulo et al. (2017)](https://dx.doi.org/10.1038/sdata.2017.89)
+2. [UN World Population Prospects (2024)](https://population.un.org/wpp/). Backcalculated/projected forwards using WorldPop/Velkscala distributions. See **Population (Total)** for more information on Velkscala.
+3. [Human Mortality Database](https://www.mortality.org/). Used for countries prior to 1950AD.
+
+__Covariates:__
+Covariates are used for both consistent training and hindcasting.
+- [HYDE 3.3 (LU)](https://landuse.sites.uu.nl/hyde-project/): `conv_rangeland`, `cropland`, `grazing`, `ir_norice`, `ir_rice`, `pasture`, `rangeland`, `rf_norice`, `rf_rice`, `shifting`, `tot_irri`, `tot_rainfed`, `tot_rice`, `uopp_`
+- [Velkscala 1.0](https://datavault.confoederatio.org/s/44Pfgt7ya8wE77b): `popc_`, `popd_`, `rurc_`, `urbc_`
+- [Eoscala 1.5](https://datavault.confoederatio.org/s/2Kytdej7ABpw4rr): `discretionary_income`, `disposable_income`, `gdp_nominal`, `gdp_pc`, `gdp_ppp`, `gdp_ppp_pc`, `gini`, `net_income`, `net_wealth`
+- Delta covariates (annualised changes in Eoscala/Velkscala rasters).
+
+**Confused about how covariates were calculated?** Click the corresponding mapmode to highlight their methodology.
+
+__Footnotes:__
+1. This is because 1750-1850 has 8 time-steps in between at decadal resolution. It begins at 1750, since this is the first year with an HMD entry.
+
+</details>
+
+<details open>
+<summary><h3>Births (Total)</h3></summary>
+
+Aggregate annualised births per gridcell.
+
+#### Methodology
+
+Calculated as a residual of the demographic balancing equation after reconciliation for net migration and infant mortality, the former of which is estimated first. Births weighted least squares model (share of 0-1yo age band attributable to births rather than migration).
+**Note.** Deaths are hindcasted in the same logical turn and reconciled to fulfil the demographic balancing equation.
+- Mathematical description: [Velkscala Modelling Report, 8 October 2026](https://confoederatio.org/papers/Velkscala%20Modelling%20Report%20-%208%20October%202026.pdf)
+- Source code: [Github](https://github.com/ConfoederatioVF/Collation/tree/main/histmap/2.data_cleaning/births_deaths_OLS) | [Projects](https://projects.confoederatio.org/Confoederatio/Collation/src/histmap/2.data_cleaning/births_deaths_OLS)
+
+__Sources:__
+These list sources for direct training data only.
+1. [Niva et al. (2023)](https://doi.org/10.1038/s41562-023-01689-4)
+2. [UN World Population Prospects (2024)](https://population.un.org/wpp/). Backcalculated/projected forwards using Niva et al./Velkscala distributions. See **Population (Total)** for more information on Velkscala.
+3. [Human Mortality Database](https://www.mortality.org/). Used for countries prior to 1950AD.
+
+__Covariates:__
+Covariates are used for both consistent training and hindcasting.
+- [HYDE 3.3 (LU)](https://landuse.sites.uu.nl/hyde-project/): `conv_rangeland`, `cropland`, `grazing`, `ir_norice`, `ir_rice`, `pasture`, `rangeland`, `rf_norice`, `rf_rice`, `shifting`, `tot_irri`, `tot_rainfed`, `tot_rice`, `uopp_`
+- [Velkscala 1.0](https://datavault.confoederatio.org/s/44Pfgt7ya8wE77b): `popc_`, `popd_`, `rurc_`, `urbc_`
+- [Eoscala 1.5](https://datavault.confoederatio.org/s/2Kytdej7ABpw4rr): `discretionary_income`, `disposable_income`, `gdp_nominal`, `gdp_pc`, `gdp_ppp`, `gdp_ppp_pc`, `gini`, `net_income`, `net_wealth`
+- Delta covariates (annualised changes in Eoscala/Velkscala rasters).
+
+**Confused about how covariates were calculated?** Click the corresponding mapmode to highlight their methodology.
+
+</details>
+
+<details open>
+<summary><h3>Deaths (Total)</h3></summary>
+
+Aggregate annualised deaths per gridcell.
+
+#### Methodology
+
+Calculated as a residual of the demographic balancing equation after reconciliation for net migration and births, the former of which is estimated first. Deaths weighted least squares model (share of cohort declines attributable to births rather than migration), after Euler-Lotka normalisation, i.e. for changes in births affecting decline of subsequent cohorts.
+**Note.** Births are hindcasted in the same logical turn and reconciled to fulfil the demographic balancing equation.
+- Mathematical description: [Velkscala Modelling Report, 8 October 2026](https://confoederatio.org/papers/Velkscala%20Modelling%20Report%20-%208%20October%202026.pdf)
+- Source code: [Github](https://github.com/ConfoederatioVF/Collation/tree/main/histmap/2.data_cleaning/births_deaths_OLS) | [Projects](https://projects.confoederatio.org/Confoederatio/Collation/src/histmap/2.data_cleaning/births_deaths_OLS)
+
+__Sources:__
+These list sources for direct training data only.
+1. [Niva et al. (2023)](https://doi.org/10.1038/s41562-023-01689-4)
+2. [UN World Population Prospects (2024)](https://population.un.org/wpp/). Backcalculated/projected forwards using Niva et al./Velkscala distributions. See **Population (Total)** for more information on Velkscala.
+3. [Human Mortality Database](https://www.mortality.org/). Used for countries prior to 1950AD.
+
+__Covariates:__
+Covariates are used for both consistent training and hindcasting.
+- [HYDE 3.3 (LU)](https://landuse.sites.uu.nl/hyde-project/): `conv_rangeland`, `cropland`, `grazing`, `ir_norice`, `ir_rice`, `pasture`, `rangeland`, `rf_norice`, `rf_rice`, `shifting`, `tot_irri`, `tot_rainfed`, `tot_rice`, `uopp_`
+- [Velkscala 1.0](https://datavault.confoederatio.org/s/44Pfgt7ya8wE77b): `popc_`, `popd_`, `rurc_`, `urbc_`
+- [Eoscala 1.5](https://datavault.confoederatio.org/s/2Kytdej7ABpw4rr): `discretionary_income`, `disposable_income`, `gdp_nominal`, `gdp_pc`, `gdp_ppp`, `gdp_ppp_pc`, `gini`, `net_income`, `net_wealth`
+- Delta covariates (annualised changes in Eoscala/Velkscala rasters).
+
+**Confused about how covariates were calculated?** Click the corresponding mapmode to highlight their methodology.
+
+</details>
+
+<details open>
+<summary><h3>Migration (Gender) (Total)</h3></summary>
+
+Aggregate annualised net migration, stratified by sex per gridcell. See **Net Migration** for more information on the methodology used.
+
+</details>
+
+<details open>
+<summary><h3>Net Migration (Total)</h3></summary>
+
+Aggregate annualised net migration of both sexes per gridcell.
+
+#### Methodology
+
+Raw aggregates estimated by weighted least squares (WLS) over covariates, with Tukey's fences/log-tail normalisation used to preserve spatial variance.
+- Mathematical description: [Velkscala Modelling Report, 8 October 2026](https://confoederatio.org/papers/Velkscala%20Modelling%20Report%20-%208%20October%202026.pdf)
+- Source code: [Github](https://github.com/ConfoederatioVF/Collation/tree/main/histmap/2.data_cleaning/migration_OLS) | [Projects](https://projects.confoederatio.org/Confoederatio/Collation/src/histmap/2.data_cleaning/migration_OLS)
+
+(1,2) are sources for direct training data only; (3) was the model specification used during clamping.
+1. [Niva et al. (2023)](https://doi.org/10.1038/s41562-023-01689-4)
+2. [UN World Population Prospects (2024)](https://population.un.org/wpp/). Backcalculated/projected forwards using Niva et al./Velkscala distributions. See **Age/Sex**, **Population (Total)** for more information on Velkscala.
+3. [Rogers and Castro (1981)](https://pure.iiasa.ac.at/id/eprint/1543/1/RR-81-030.pdf) via [Husinger (2022)](https://raw.githubusercontent.com/AppliedDemogToolbox/Hunsinger_MMSRCode/master/MMSRCode.R)
+
+__Covariates:__
+Covariates are used for both consistent training and hindcasting.
+- [HYDE 3.3 (LU)](https://landuse.sites.uu.nl/hyde-project/): `conv_rangeland`, `cropland`, `grazing`, `ir_norice`, `ir_rice`, `pasture`, `rangeland`, `rf_norice`, `rf_rice`, `shifting`, `tot_irri`, `tot_rainfed`, `tot_rice`, `uopp_`
+- [Velkscala 1.0](https://datavault.confoederatio.org/s/44Pfgt7ya8wE77b): `popc_`, `popd_`, `rurc_`, `urbc_`
+- [Eoscala 1.5](https://datavault.confoederatio.org/s/2Kytdej7ABpw4rr): `discretionary_income`, `disposable_income`, `gdp_nominal`, `gdp_pc`, `gdp_ppp`, `gdp_ppp_pc`, `gini`, `net_income`, `net_wealth`
+- Delta covariates (annualised changes in Eoscala/Velkscala rasters).
+
+**Confused about how covariates were calculated?** Click the corresponding mapmode to highlight their methodology.
+
+</details>
+
+<details open>
+<summary><h3>Population Density (ihb/km^2)</h3></summary>
+
+Population density per gridcell in terms of inhabitants per square kilometre, i.e. total population divided by land area.
+
+</details>
+
+<details open>
+<summary><h3>Population (Total)</h3></summary>
+
+Total inhabitants per gridcell, not adjusted for landarea. Fractional inhabitants represent a population density thinner than one per gridcell, i.e. for semi-sedentary or nomadic populations, or accounting for intra-year migration.
+
+#### Methodology
+
+- Source code: [Github](https://github.com/ConfoederatioVF/Collation/tree/main/histmap/2.data_cleaning/population_Velkscala) | [Projects](https://projects.confoederatio.org/Confoederatio/Collation/src/branch/main/histmap/2.data_cleaning/population_Velkscala)
+
+Dasymetric allocation model based on a HYDE substrata with manual outlier masking (see the [Stadester repository](https://projects.confoederatio.org/c/Stadester)) for more information on specific outliers and clamps. Outliers were then replaced using a regional/globally scaled ALCC model from [Hurtt et al. (2020)](https://doi.org/10.5194/gmd-13-5425-2020) and [Kaplan and Krumhardt (2010)](https://doi.org/10.1594/PANGAEA.871369).
+
+The anthropogenic land use fraction per gridcell was then summed up for both models respectively, and the two were averaged over their common domain. Where the domain was not shared, it fell back to the most recent model with availability for the target year; LUH2 after 850AD, KK10 prior to 850AD.
+
+---
+
+- Source code (Radiocarbon): [Github](https://github.com/ConfoederatioVF/Collation/tree/main/histmap/2.data_cleaning/population_c14bazAAR) | [Projects](https://projects.confoederatio.org/Confoederatio/Collation/src/branch/main/histmap/2.data_cleaning/population_c14bazAAR)
+
+Before 1AD, we model population in 100-year increments using radiocarbon dates as a proxy for population density. Dates were taken from 28 databanks in [c14bazAAR](https://github.com/ropensci/c14bazAAR) and deduplicated. Dates were then binned to [WMO Watersheds](https://grdc.bafg.de/products/basin_layers/wmo_basins/), allowing for the estimation of prehistoric demography via summed probability distributions, see [Kelly et al. (2025)](https://doi.org/10.1073/pnas.2419454122) and [Price et al. (2021)](https://doi.org/10.1016/j.jas.2021.105473) for a discussion of the technique.
+
+Calibration was done via IntCal20 and SHCal20, see [OxCal](https://c14.arch.ox.ac.uk/oxcalhelp/hlp_curves.html). 1AD is the recommended global cutoff by [ArchaeoGLOBE](https://www.science.org/doi/10.1126/science.aax1192). Individual corrections were issued for populations in Northern America, see [Tacitus and Kätzchen (2025)](https://doi.org/10.5281/zenodo.17180328).
+
+Urban population was then overlaid on top of the substrata. Watersheds served as areal masks for underlying HYDE estimations of rural population.
+
+</details>
+
+<details open>
+<summary><h3>Population (Rural) (Rural and periurban population, total)</h3></summary>
+
+Defined as the residual of total population minus the urban population, i.e. both rural and periurban populations. See **Population (Total)** and **Population (Urban)** for more information on their respective methodologies.
+
+</details>
+
+<details open>
+<summary><h3>Population (Urban) (Urban population, total)</h3></summary>
+
+Defined as populations directly attached to an identifiable historical city, scanline allocation and buffering using ensemble regional modelling from [Angel (2010)](https://www.lincolninst.edu/app/uploads/legacy-files/pubfiles/1861_1171_angel_iii_final.pdf), [Clark (1951)](https://doi.org/10.2307/2981088) and [Stanilov and Sykora (2014)](https://doi.org/10.1002/9781118295861) via [Pénzes et al. (2023)](https://doi.org/10.3390/land12091682). Clark's law was used unconditionally prior to 1945AD.
+
+See **Stadestér** for more information on the specific methodology used to assemble databanks of historical cities.
+
+</details>
+
+<details open>
+<summary><h3>Anthropogenic Land Cover Change (ALCC) (km^2/cell)</h3></summary>
+
+Anthropogenic land use area per gridcell (cropland, managed pasture, and built-up land) in km^2/cell, dervied from KK10 and LUH2.
+
+#### Methodology
+
+Globally scaled ALCC model from [Hurtt et al. (2020)](https://doi.org/10.5194/gmd-13-5425-2020) and [Kaplan and Krumhardt (2010)](https://doi.org/10.1594/PANGAEA.871369). Referred to internally as KK10LUH2.
+
+The anthropogenic land use fraction per gridcell was then summed up for both models respectively, and the two were averaged over their common domain. Where the domain was not shared, it fell back to the most recent model with availability for the target year; LUH2 after 850AD, KK10 prior to 850AD.
+- Source code: [Github](https://github.com/ConfoederatioVF/Collation/tree/main/histmap/2.data_cleaning/population_KK10LUH2) | [Projects](https://projects.confoederatio.org/Confoederatio/Collation/src/2.data_cleaning/population_KK10LUH2)
+
+</details>
+
+<details open>
+<summary><h3>Converted Rangeland (km^2/cell)</h3></summary>
+
+Defined as rangeland being placed on a potential forest area, and thus being converted; relevant to DVGM and climate models.
+
+Taken directly from [HYDE](https://landuse.sites.uu.nl/datasets/).
+
+</details>
+
+<details open>
+<summary><h3>Cropland (km^2/cell)</h3></summary>
+
+Total cropland area, after 1960 identical to FAO's category 'Arable land and permanent crops'.
+
+Taken directly from [HYDE](https://landuse.sites.uu.nl/datasets/).
+
+</details>
+
+<details open>
+<summary><h3>Grazing (km^2/cell)</h3></summary>
+
+Total land used for grazing, after 1960 identical to FAO's category 'Permanent meadows and pastures'.
+
+Taken directly from [HYDE](https://landuse.sites.uu.nl/datasets/).
+
+</details>
+
+<details open>
+<summary><h3>Irrigated Non-Rice Cropland (km^2/cell)</h3></summary>
+
+All crops cultivated under irrigation, with the exception of rice.
+
+Taken directly from [HYDE](https://landuse.sites.uu.nl/datasets/).
+
+</details>
+
+<details open>
+<summary><h3>Irrigated Rice Cropland (km^2/cell)</h3></summary>
+
+All rice crops cultivated under irrigation.
+
+Taken directly from [HYDE](https://landuse.sites.uu.nl/datasets/).
+
+</details>
+
+<details open>
+<summary><h3>Pasture (km^2/cell)</h3></summary>
+
+Defined as grazing land with an aridity index >0,5; assumed to be more intensively managed. (Converted in climate models).
+
+Taken directly from [HYDE](https://landuse.sites.uu.nl/datasets/).
+
+</details>
+
+<details open>
+<summary><h3>Rangeland (km^2/cell)</h3></summary>
+
+Defined as grazing land with an aridity index <0,5; defined as grazing land with an aridity index <0,5; assumed to be less or not managed. (Not converted in climate models).
+
+Taken directly from [HYDE](https://landuse.sites.uu.nl/datasets/).
+
+</details>
+
+<details open>
+<summary><h3>Rainfed Non-Rice Cropland (km^2/cell)</h3></summary>
+
+Cropland reliant upon being rainfed (rather than irrigated), excluding rice cultivation.
+
+Taken directly from [HYDE](https://landuse.sites.uu.nl/datasets/).
+
+</details>
+
+<details open>
+<summary><h3>Rainfed Rice Cropland (km^2/cell)</h3></summary>
+
+Rice cropland reliant upon being rainfed (rather than irrigated).
+
+Taken directly from [HYDE](https://landuse.sites.uu.nl/datasets/).
+
+</details>
+
+<details open>
+<summary><h3>Shifting Cultivation (km^2/cell)</h3></summary>
+
+Unlike other HYDE variables, this was assessed in 1deg cells. Described as temporary agriculture in which cultivation occurs for a short period and is then fallowed post-exhaustion.
+
+Taken directly from [HYDE](https://landuse.sites.uu.nl/datasets/).
+
+</details>
+
+<details open>
+<summary><h3>Total Irrigated Area (km^2/cell)</h3></summary>
+
+Total actual irrigated area, including both rice and non-rice areas.
+
+Taken directly from [HYDE](https://landuse.sites.uu.nl/datasets/).
+
+</details>
+
+<details open>
+<summary><h3>Total Rainfed Area (km^2/cell)</h3></summary>
+
+Total area reliant upon being rainfed, not including rice areas.
+
+Taken directly from [HYDE](https://landuse.sites.uu.nl/datasets/).
+
+</details>
+
+<details open>
+<summary><h3>Total Rice Cultivation (km^2/cell)</h3></summary>
+
+Total rice cultivation including both rainfed and irrigated varieties.
+
+Taken directly from [HYDE](https://landuse.sites.uu.nl/datasets/).
+
+</details>
 </details>
