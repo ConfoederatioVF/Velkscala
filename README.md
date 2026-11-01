@@ -2,6 +2,13 @@
 
 <div align = "center">
 <img src = "https://i.postimg.cc/3ND2B1zL/crd-coat-of-arms-logo.png" height = "64">
+<br><br>
+<img src = "https://i.postimg.cc/jKCkw0M7/83-velkscala.jpg" width = "100%">
+<br><br>
+<div align = "center">
+  Figure 1. Estimated aggregate populations for males aged 15-30yo in 1400AD.
+</div>
+<br>
 
 [![Join our community (Element Matrix)!](https://img.shields.io/badge/chat-on%20matrix-51bb9c?style=for-the-badge)](https://matrix.to/#/#confoederatio:matrix.confoederatio.org) [![Join our community!](https://img.shields.io/discord/548994743925997570?label=Discord&style=for-the-badge)](https://discord.gg/89kQY2KFQz) ![](https://img.shields.io/github/languages/code-size/ConfoederatioVF/Velkscala?style=for-the-badge)
 
