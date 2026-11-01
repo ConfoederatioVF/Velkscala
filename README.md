@@ -22,12 +22,6 @@
 > [!WARNING]
 > This README as well as the contents of this repository are a **work-in-progress**. It is currently being worked on as part of Intellte.
 
-This is the testing and validation repository for **Velkscala**, a geospatial database on population and demographics from 10000BC to 2025AD. Figures and methods reports are prepared here, sorted by version.
-
-For the actual data pipelines involved in generating Velkscala data, please check [Collation](https://github.com/ConfoederatioVF/Collation).
-
-## Data Structure.
-
 **Velkscala** is a geospatial database of demographic and land use indicators from 10000BC-2025AD, at 5-arcmin resolution. Most rasters are WGS84 Equirectangular, 4320×2160, and split into 127 timesteps: 1000-year intervals from 10000BC to 1AD, 100-year intervals from 1AD-1700AD, at 10-year intervals from 1700AD to 1950AD, and at 1-year intervals from 1950AD-2025AD.
 
 `population_density`, `population_rural`, `population_total`, `population_urban` are major indicators, and as such, have been modelled at 100-year intervals between 10000BC to 1AD, using radiocarbon-watershed binning and disaggregation methodologies. 
@@ -35,6 +29,12 @@ For the actual data pipelines involved in generating Velkscala data, please chec
 Using an anchoring methodology with cropland, pasture, and urban population, each watershed’s cumulative population was then backcalculated using summed probability distributions. All watersheds are anchored to 1AD due to [ArchaeoGLOBE](https://doi.org/10.1126/science.aax1192) constraints.
 
 **Stadestér**, which includes individual city databases, has also been included in this dataset release; unlike raster datasets, it is primarily in `.json` form to model discrete city information. Since rasters are encoded as GeoPNG, `app.R` contains an R Shiny app able to decode GeoPNGs.
+
+---
+
+This is the testing and validation repository for **Velkscala**, a geospatial database on population and demographics from 10000BC to 2025AD. Figures and methods reports are prepared here, sorted by version.
+
+For the actual data pipelines involved in generating Velkscala data, please check [Collation](https://github.com/ConfoederatioVF/Collation).
 
 **Note.**
 
@@ -45,7 +45,129 @@ For socioeconomic researchers, the following open datasets may also prove valuab
 3. Eoscala (Economics) | [Datavault (1.5)](https://datavault.confoederatio.org/s/2Kytdej7ABpw4rr) - Subadministrative divisions used in certain demographic models may be found here, in `admin_modern/`.
 4. Atlas (Polities) | [Datavault (0.7)](https://datavault.confoederatio.org/s/aBeY4JP4QGFjqRL)
 
-### Data Structure.
+<details>
+  <summary><h3>Data Structure (Stadestér).</h3></summary>
+
+## Stadestér 1.0
+
+See <https://doi.org/10.5281/zenodo.17180328> for more information on Stadestér 1.0 usage.
+
+## Stadestér 1.1
+
+### Base Files.
+
+JSON data structures for base/extended files. Satellite data refers to the use of [GHS-POP](https://human-settlement.emergency.copernicus.eu/ghs_pop.php)/[GHS-UCDB](https://doi.org/10.1038/s41597-023-02691-1) modelling.
+
+<details>
+<summary><kbd>stadester_1.1_base.json</kbd> - Contains base Stadestér cities without satellite data.</summary>
+  
+`<city_name>-<country_name>`: Object
+
+- `.name`: string
+- `.other_names`: string\[\]
+- `.population`: Object
+  - `<year>`: number
+- `.coords`: number\[lat, lng\]
+- `.country`: string
+- `.key`: string
+- `.original_names`: string\[\]
+- `.type`: string - The original source this city came from.
+
+</details>
+<details>
+<summary><kbd>stadester_1.1_extended.json</kbd> - Contains Stadestér cities plus satellite data.</summary>
+  
+`stadester/ghsl-<city_name>-<country_name>`: Object
+
+- `.name`: string
+- `.population`: Object
+  - `<year>`: number
+- `.coords`: number\[lat, lng\]
+- `.country`: string
+- `.key`: string
+- `.original_names`: string\[\]
+- `.type`: string - The original source this city came from.
+- Extra fields:
+- `.area`: Object
+  - `<year>`: number
+- `.centre_density`: Object - Estimated density at city centre.
+  - `<year>`: number
+- `.density`: Object
+  - `<year>`: number
+- `.radial_buffers`: Object
+  - `<year>`: number\[\] - In 5-arcmin gridcells, estimated dropoffs in ihb/gridcell, based off radial distance.
+- `.rni`: Object - Rate of Natural Increase.
+  - `<year>`: number
+- `.region`: string - The Eoscala region the city belongs to.
+- `.pixel_coords`: number\[\] - X, Y coords on a Cartesian plane, assuming 4320×2160 WGS84 Equirectangular.
+- `.colour`: number\[\] - The R, G, B colour for the given region.
+
+</details>
+
+### City Metadata.
+
+Rich metadata can also be included for individual cities. Note that the use of `<state_id>` implies the `.state_id` field from [Atlas 0.6b Detailed](https://datavault.confoederatio.org/s/rPntqXwCxzXg4Bk). City metadata is contained in `city_metadata.json` starting from Stadestér 1.1 forwards.
+
+Metadata is meant to function as an injected layer, with Stadestér Objects being mapped onto `city_metadata.json` spatially, i.e. via nearest distance. It is formatted as an Object\[\] in JSON terms.
+
+- `.name`: string
+- `.coords`: number\[lng, lat\]
+- `.historical_names`: Object\[\]:
+  - `[n]`: Object:
+    - `.date`: string - Formatted as `yyyy.mm.dd`, negative years represent BC.
+    - `.name`: string - The historical name of the city at this date.
+- `.capital`: Object
+  - `<yyyy.mm.dd>`: number|null - Where the value is the same as `<state_id>` from Atlas 0.6b Detailed. If the value is null, the city stops being a capital at that date.
+
+### Extended Fields.
+
+Angel, Clark, and Eoscala all use different regions. Note that `.region` is the same as Eoscala regions. These regions are defined as follows for statistical and modelling purposes:
+
+`.angel_region`: east_asia, eu_and_japan, latin_america, lrdc, mena, sub_saharan_africa
+
+`.clark_region`: anglo_settler, eu_and_east_asia, global_south, socialist_world
+
+`.region`: central_asia, eastasia, eastern_europe_and_russia, europe, indian_subcontinent, latin_america, maghreb_egypt, middle_east, northern_america, oceania, southeast_asia, sub_saharan_africa.
+
+### State-centred Metadata (Capital Cities):
+
+Data structured around individual `<state_id>` values are available in the `/capital_cities/` folder and are structured as follows.
+
+`acapital_states.json`: Object\[n\]:
+
+- `.state_id`: number
+- `.name`: string
+- `.reason`: string - The reason why the polity is listed as an acapital state.
+
+`chunk_<#>.txt`: 
+
+```
+# Format:
+#   STATE: [ID] Name (start_date -> stop_date) [fill: #HEX]
+#   STATUS: CAPITAL | ACAPITAL
+#   TIMELINE: (for CAPITAL)
+#     <y.m.d> start_date -> <y.m.d> stop_date: City Name [city_key]
+#   REASON: (for ACAPITAL) Reason for acapital status
+```
+
+Example of individual entry:
+
+```
+STATE: [7573] Vijayanagara Empire (1336.1.1 -> 1647.1.1) [fill: #4E825E]
+STATUS: CAPITAL
+TIMELINE:
+  1336.1.1 -> 1565.1.26: Hampi
+  1565.1.26 -> 1592.1.1: Penukonda
+  1592.1.1 -> 1646.1.1: Chandragiri
+---
+```
+
+Because historical names are already encoded in `city_metadata.json` via nearest-coordinate name timelines, capital city chunks utilise consistent Stadestér keys, which reflect the names such cities had at their peak population.
+  
+</details>
+
+<details open>
+<summary><h3>Data Structure (Velkscala).</h3></summary>
 
 **Cities.**
 
@@ -77,8 +199,13 @@ For socioeconomic researchers, the following open datasets may also prove valuab
 - `population_total/` - Total aggregate populations.
 - `population_urban/` - Total urban populations.
 
-  
 **Land Use.**
+ 
+<div align = "center">
+  <img src = "https://i.postimg.cc/VkhQL7Cp/17-velkscala.png" width = "50%"><br><br>
+  Figure 2. Land-use reconstructions for Velkscala vs. LUH2.
+</div>
+<br>
 
 - `landuse/` - Landuse covariates, largely processed from the [History Database of the Global Environment (HYDE)](https://hyde-portal.geo.uu.nl/). HYDE suffixes are given as `<year>AD/BC.png` for legacy compatibility. Note that we use the latest internal version of HYDE3.5, which contains information for 2024-2025.
   - `alcc/` - Anthropogenic Land Cover Change, modelled from [KK10](https://journals.sagepub.com/doi/10.1177/0959683610386983) and [LUH2](https://luh.umd.edu/).
@@ -101,3 +228,5 @@ For socioeconomic researchers, the following open datasets may also prove valuab
   - `rurc_`: Rural Population (pop/cell)
   - `uopp_`: Built-Up Area (km^2/cell)
   - `urbc_`: Urban Population (pop/cell)
+ 
+</details>
