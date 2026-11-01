@@ -45,6 +45,8 @@ For socioeconomic researchers, the following open datasets may also prove valuab
 3. Eoscala (Economics) | [Datavault (1.5)](https://datavault.confoederatio.org/s/2Kytdej7ABpw4rr) - Subadministrative divisions used in certain demographic models may be found here, in `admin_modern/`.
 4. Atlas (Polities) | [Datavault (0.7)](https://datavault.confoederatio.org/s/aBeY4JP4QGFjqRL)
 
+## Data Structures (Velkscala/Stadestér).
+
 <details>
   <summary><h3>Data Structure (Stadestér).</h3></summary>
 
@@ -165,7 +167,6 @@ TIMELINE:
 Because historical names are already encoded in `city_metadata.json` via nearest-coordinate name timelines, capital city chunks utilise consistent Stadestér keys, which reflect the names such cities had at their peak population.
   
 </details>
-
 <details open>
 <summary><h3>Data Structure (Velkscala).</h3></summary>
 
