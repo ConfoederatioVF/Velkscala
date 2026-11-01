@@ -6,7 +6,7 @@
 <img src = "https://i.postimg.cc/jKCkw0M7/83-velkscala.jpg" width = "100%">
 <br><br>
 <div align = "center">
-  Figure 1. Estimated aggregate populations for males aged 15-30yo in 1400AD.
+  Figure 1. Estimated aggregate populations for males aged 15-30yo in 1400AD, with corresponding population pyramids.
 </div>
 <br>
 
