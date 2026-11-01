@@ -1,5 +1,5 @@
 > [!NOTE]
-> You can download Velkscala data from [Confoederatio Datavault](https://datavault.confoederatio.org/s/44Pfgt7ya8wE77b).
+> You can download Velkscala data from [Confoederatio Datavault](https://datavault.confoederatio.org/s/44Pfgt7ya8wE77b), and can be viewed at https://dataview.confoederatio.org/.
 
 ## Abstract.
 
@@ -19,8 +19,6 @@ For the actual data pipelines involved in generating Velkscala data, please chec
 Using an anchoring methodology with cropland, pasture, and urban population, each watershed’s cumulative population was then backcalculated using summed probability distributions. All watersheds are anchored to 1AD due to [ArchaeoGLOBE](https://doi.org/10.1126/science.aax1192) constraints.
 
 **Stadestér**, which includes individual city databases, has also been included in this dataset release; unlike raster datasets, it is primarily in `.json` form to model discrete city information. Since rasters are encoded as GeoPNG, `app.R` contains an R Shiny app able to decode GeoPNGs.
-
-For those without access to R Studio, you may also use the web viewer at [Confoederatio Dataview](https://dataview.confoederatio.org/).
 
 **Note.**
 
