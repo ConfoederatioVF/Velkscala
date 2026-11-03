@@ -14,13 +14,15 @@
 
 </div>
 
-> [!NOTE]
-> You can download Velkscala data from [Confoederatio Datavault](https://datavault.confoederatio.org/s/44Pfgt7ya8wE77b). It can be viewed at https://dataview.confoederatio.org/.
-
 ## Abstract.
 
-> [!WARNING]
-> This README as well as the contents of this repository are a **work-in-progress**. It is currently being worked on as part of Intellte.
+- E-mail: [vf@confoederatio.org](mailto:vf@confoederatio.org)
+- Dataview: https://dataview.confoederatio.org/
+- <ins>Download:</ins>
+- - Stadestér (Cities, part of Velkscala) | [Projects (1.1)](https://projects.confoederatio.org/c/Stadester)
+- - **Velkscala (Demographics)** | [Datavault (1.0)](https://datavault.confoederatio.org/s/44Pfgt7ya8wE77b)
+- - Eoscala (Economics) | [Datavault (1.5)](https://datavault.confoederatio.org/s/2Kytdej7ABpw4rr)
+- - Atlas (Polities) | [Datavault (0.7)](https://datavault.confoederatio.org/s/rPntqXwCxzXg4Bk)
 
 **Velkscala** is a geospatial database of demographic and land use indicators from 10000BC-2025AD, at 5-arcmin resolution. Most rasters are WGS84 Equirectangular, 4320×2160, and split into 127 timesteps: 1000-year intervals from 10000BC to 1AD, 100-year intervals from 1AD-1700AD, at 10-year intervals from 1700AD to 1950AD, and at 1-year intervals from 1950AD-2025AD.
 
@@ -32,23 +34,12 @@ Using an anchoring methodology with cropland, pasture, and urban population, eac
 
 ---
 
-This is the testing and validation repository for **Velkscala**, a geospatial database on population and demographics from 10000BC to 2025AD. Figures and methods reports are prepared here, sorted by version.
+This is the testing and validation repository for **Velkscala**, a geospatial database on population and demographics from 10000BC to 2025AD. Figures and methods reports are prepared here, sorted by version. For the actual data pipelines involved in generating Velkscala data, please check [Collation](https://github.com/ConfoederatioVF/Collation).
 
-For the actual data pipelines involved in generating Velkscala data, please check [Collation](https://github.com/ConfoederatioVF/Collation).
-
-**Note.**
-
-For socioeconomic researchers, the following open datasets may also prove valuable:
-
-1. Stadestér (Cities, part of Velkscala) | [Projects (1.1)](https://projects.confoederatio.org/c/Stadester)
-2. Velkscala (Demographics) | [Datavault (1.0)](https://datavault.confoederatio.org/s/44Pfgt7ya8wE77b)
-3. Eoscala (Economics) | [Datavault (1.5)](https://datavault.confoederatio.org/s/2Kytdej7ABpw4rr) - Subadministrative divisions used in certain demographic models may be found here, in `admin_modern/`.
-4. Atlas (Polities) | [Datavault (0.7)](https://datavault.confoederatio.org/s/rPntqXwCxzXg4Bk)
-
-## Data Structures (Velkscala/Stadestér).
+## File Structures (Velkscala/Stadestér).
 
 <details>
-  <summary><h3>File Structure (Stadestér).</h3></summary>
+  <summary><h3>Stadestér Metadata.</h3></summary>
 
 ## Stadestér 1.0
 
@@ -168,7 +159,7 @@ Because historical names are already encoded in `city_metadata.json` via nearest
   
 </details>
 <details open>
-<summary><h3>File Structure (Velkscala).</h3></summary>
+<summary><h3>Velkscala Metadata.</h3></summary>
 
 **Cities.**
 
