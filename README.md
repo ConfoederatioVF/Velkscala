@@ -18,6 +18,7 @@
 
 **Velkscala** is part of the **Naissance World Model**, a digital model of human society from 10000BC-2025AD.
 - E-mail: [vf@confoederatio.org](mailto:vf@confoederatio.org)
+- Collation: [Github](https://github.com/ConfoederatioVF/Collation) | [Projects](https://projects.confoederatio.org/c/Collation)
 - Dataview: https://dataview.confoederatio.org/
 - <ins>Download:</ins>
 - - Stadestér (Cities, part of Velkscala) | [Github](https://github.com/ConfoederatioVF/Stadester) | [Projects (1.1)](https://projects.confoederatio.org/c/Stadester)
